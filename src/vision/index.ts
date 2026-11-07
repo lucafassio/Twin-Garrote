@@ -8,6 +8,7 @@ import { crearClasificadorZonas, extraerRasgos } from './zonas'
 // Se clasifica que zona grande de la pantalla mira el usuario y se emite zonaMirada al bus.
 const clasificador = crearClasificadorZonas()
 let rasgosActuales: number[] | null = null
+let encuadreActual: { x: number; y: number; ancho: number } | null = null
 const recientes: number[][] = [] // ultimos cuadros con los ojos abiertos
 let probabilidades: Record<string, number> | null = null // suavizadas entre cuadros
 let zonaActual: { zona: string; confianza: number } | null = null
@@ -93,6 +94,9 @@ export type LecturaVision = {
   cerrados: boolean
   progreso: number
   mirada: Mirada
+  // Donde esta la cara en el video (para el encuadre de la preparacion): centro de los
+  // ojos (0..1) y distancia entre los rabillos externos (0..1 del ancho). null sin cara.
+  encuadre?: { x: number; y: number; ancho: number } | null
 }
 
 let lectura: LecturaVision = { izquierdo: null, derecho: null, cerrados: false, progreso: 0, mirada: { valida: false } }
@@ -306,7 +310,7 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
     const valida = valor !== null
     const cambioOjos = estado.cerrados !== lectura.cerrados || estado.progreso !== lectura.progreso ||
       valida !== (lectura.izquierdo !== null && lectura.derecho !== null)
-    lectura = { izquierdo, derecho, cerrados: estado.cerrados, progreso: estado.progreso, mirada, posturaFuera }
+    lectura = { izquierdo, derecho, cerrados: estado.cerrados, progreso: estado.progreso, mirada, posturaFuera, encuadre: encuadreActual }
     // La pérdida de cámara debe distinguirse de una reapertura real.
     const ojos = { cerrados: estado.cerrados, progreso: estado.progreso, perdido: !valida }
     if (cambioOjos) bus.emit('ojos', ojos)
@@ -319,6 +323,7 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
     muestraMirada = null
     posturaActual = null
     rasgosActuales = null
+    encuadreActual = null
     publicar(null, null, ahora)
   }
 
@@ -360,6 +365,10 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
       muestraMirada = estimarMirada(cara, aspecto)
       posturaActual = medirPostura(cara, aspecto)
       rasgosActuales = extraerRasgos(cara, categorias, resultado.facialTransformationMatrixes?.[0]?.data, aspecto)
+      const [rabilloA, rabilloB] = [cara[33], cara[263]]
+      encuadreActual = rabilloA && rabilloB
+        ? { x: (rabilloA.x + rabilloB.x) / 2, y: (rabilloA.y + rabilloB.y) / 2, ancho: Math.abs(rabilloB.x - rabilloA.x) }
+        : null
       publicar(izquierdo, derecho, ahora)
     } catch {
       perderSeguimiento(ahora)
