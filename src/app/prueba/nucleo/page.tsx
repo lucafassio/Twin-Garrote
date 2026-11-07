@@ -3,8 +3,8 @@
 import Simulador from '@/dev/Simulador'
 import DebugNucleo from '@/interfaz/DebugNucleo'
 import Pantalla from '@/interfaz/Pantalla'
+import SimuladorOjos from '@/interfaz/SimuladorOjos'
 import { useNucleo } from '@/interfaz/useNucleo'
-import SimuladorOjos from './SimuladorOjos'
 
 // Pagina de prueba del path nucleo. Solo la toca ese path.
 // Espacio = parpadeo largo directo. Mantener O = ojos cerrados (congela, 2 s = urgencia).
