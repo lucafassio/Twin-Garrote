@@ -1,4 +1,5 @@
 import type { LineaHistorial, PedidoOpciones } from '@/eventos'
+import type { Eleccion } from '@/llm/elecciones'
 import type { Accion, Efecto, Elemento, Estado, Resultado } from './tipos'
 
 // Reglas del nucleo (issue #5). Funcion pura: sin timers, sin red, sin React.
@@ -75,7 +76,12 @@ function historialPrevio(e: Estado): LineaHistorial[] {
 
 // Pedido del turno actual. Lo usan pedirOpciones y Deletrear (que no repite lo ya mostrado).
 export function pedidoActual(e: Estado): PedidoOpciones {
-  return { historial: historialPrevio(e), ultimoTurno: e.ultimoTurno, yaMostradas: [] }
+  return {
+    historial: historialPrevio(e),
+    ultimoTurno: e.ultimoTurno,
+    yaMostradas: [],
+    ...(e.tipoTurno ? { tipoTurno: e.tipoTurno } : {}),
+  }
 }
 
 // Helpers que mutan una copia del estado y acumulan efectos.
@@ -166,7 +172,34 @@ function activarUrgencia(c: Ctx) {
   c.efectos.push({ tipo: 'decir', texto: TEXTO_URGENCIA, urgencia: true })
 }
 
+// Que se registra de cada elemento: la posicion de la opcion (1..4), la fija u "otra".
+// Urgencia, Deletrear y Repetir no son una respuesta al turno: no se registran.
+function eleccionDe(e: Estado, el: Elemento): Eleccion | null {
+  switch (el.tipo) {
+    case 'opcion':
+      return e.opciones[el.indice] ? ((el.indice + 1) as Eleccion) : null
+    case 'si':
+    case 'no':
+    case 'espera':
+    case 'otra':
+      return el.tipo
+    default:
+      return null
+  }
+}
+
+// Se arma con el estado de antes de ejecutar: las opciones en pantalla y el turno que se respondio.
+function registrar(c: Ctx, eleccion: Eleccion) {
+  const { opciones, ultimoTurno, tipoTurno } = c.e
+  c.efectos.push({
+    tipo: 'registrarEleccion',
+    pedido: { opciones, eleccion, turno: ultimoTurno, cercania: null, ...(tipoTurno ? { tipoTurno } : {}) },
+  })
+}
+
 function ejecutar(c: Ctx, el: Elemento) {
+  const eleccion = eleccionDe(c.e, el)
+  if (eleccion !== null) registrar(c, eleccion)
   switch (el.tipo) {
     case 'opcion': {
       const opcion = c.e.opciones[el.indice]
@@ -203,6 +236,7 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
 
   switch (accion.tipo) {
     case 'turno':
+      e.tipoTurno = null // tipeado por el operador: sin lectura, no hereda el tipo de un turno anterior
       if (e.ojosCerrados && !e.urgencia) e.turnoPendiente = accion.texto
       else recibirTurno(c, accion.texto)
       break
@@ -212,6 +246,7 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       e.descartado = null
       // En la urgencia no se filtra: lo que diga la sala entra directo.
       if (e.urgencia) {
+        e.tipoTurno = null
         recibirTurno(c, accion.texto)
         break
       }

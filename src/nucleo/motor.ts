@@ -1,4 +1,5 @@
 import { bus, type LineaHistorial, type Opcion, type PedidoOpciones } from '@/eventos'
+import type { PedidoEleccion } from '@/llm/elecciones'
 import { leerTurnoLocal } from './lecturaLocal'
 import { estadoInicial, reducir } from './reductor'
 import type { Accion, Efecto, Estado, LecturaTurno } from './tipos'
@@ -20,6 +21,7 @@ export type LeerTurno = (texto: string, historial: LineaHistorial[]) => Promise<
 export type OpcionesNucleo = {
   pedirOpciones: (pedido: PedidoOpciones) => Promise<Opcion[]>
   leerTurno?: LeerTurno // lector con modelo (Jev, LLM tipado); sin el, solo heuristica local
+  registrarEleccion?: (pedido: PedidoEleccion) => unknown // segundo plano: no se espera y sus fallas se ignoran
   nombreUsuario?: string
   velocidadMs?: number
 }
@@ -40,6 +42,7 @@ export type Nucleo = {
 export function crearNucleo({
   pedirOpciones,
   leerTurno,
+  registrarEleccion,
   nombreUsuario = 'Roberto',
   velocidadMs = VELOCIDAD_INICIAL_MS,
 }: OpcionesNucleo): Nucleo {
@@ -138,6 +141,12 @@ export function crearNucleo({
       case 'desarmarGestoUrgencia':
         if (gesto) clearTimeout(gesto)
         gesto = null
+        break
+      case 'registrarEleccion':
+        // Si falla (tira o rechaza), el barrido y el decir siguen igual.
+        try {
+          Promise.resolve(registrarEleccion?.(efecto.pedido)).catch(() => {})
+        } catch {}
         break
       case 'armarEsperaHabla':
         if (espera) clearTimeout(espera)

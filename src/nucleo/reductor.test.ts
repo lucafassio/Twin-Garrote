@@ -650,3 +650,80 @@ describe('deletrear', () => {
     assert.deepEqual(pedido.yaMostradas, [])
   })
 })
+
+describe('tipo de turno y registro de elecciones', () => {
+  const ABIERTA: LecturaTurno = { paraUsuario: 0.9, completo: 0.9, tipo: 'abierta' }
+  const registros = (efectos: Efecto[]) =>
+    efectos.filter((x): x is Extract<Efecto, { tipo: 'registrarEleccion' }> => x.tipo === 'registrarEleccion')
+
+  // Turno leido por la lectura (con tipo) y opciones recibidas.
+  function leidoConOpciones() {
+    const r1 = reducir(estadoInicial, { tipo: 'fragmento', texto: '¿Que queres comer?' })
+    return aplicar(
+      r1.estado,
+      { tipo: 'lectura', lecturaId: r1.estado.lecturaId, lectura: ABIERTA },
+      { tipo: 'opcionesRecibidas', pedidoId: 1, opciones: OPCIONES },
+    )
+  }
+
+  test('el pedido de opciones lleva el tipo de turno que dio la lectura', () => {
+    const pedido = leidoConOpciones().efectos.find((x) => x.tipo === 'pedirOpciones')
+    assert.ok(pedido && pedido.tipo === 'pedirOpciones')
+    assert.equal(pedido.pedido.tipoTurno, 'abierta')
+  })
+
+  test('sin lectura (turno tipeado) el pedido no lleva tipo de turno', () => {
+    const r = reducir(estadoInicial, { tipo: 'turno', texto: '¿Queres empanadas?' })
+    const pedido = r.efectos.find((x) => x.tipo === 'pedirOpciones')
+    assert.ok(pedido && pedido.tipo === 'pedirOpciones')
+    assert.ok(!('tipoTurno' in pedido.pedido))
+  })
+
+  test('un turno tipeado despues de uno leido no hereda su tipo', () => {
+    const e = reducir(iluminar(leidoConOpciones().estado, 'espera'), { tipo: 'parpadeoLargo' }).estado
+    const r = reducir(e, { tipo: 'turno', texto: 'Y para tomar?' })
+    const pedido = r.efectos.find((x) => x.tipo === 'pedirOpciones')
+    assert.ok(pedido && pedido.tipo === 'pedirOpciones')
+    assert.ok(!('tipoTurno' in pedido.pedido))
+  })
+
+  test('elegir una opcion la registra con su posicion y las opciones en pantalla', () => {
+    const e = iluminar(leidoConOpciones().estado, 'opcion2')
+    const [registro, ...resto] = registros(reducir(e, { tipo: 'parpadeoLargo' }).efectos)
+    assert.equal(resto.length, 0)
+    assert.deepEqual(registro.pedido, {
+      opciones: OPCIONES, eleccion: 3, turno: '¿Que queres comer?', cercania: null, tipoTurno: 'abierta',
+    })
+  })
+
+  test('Otra registra "otra" con las opciones que se descartan', () => {
+    const e = iluminar(conOpciones(), 'otra')
+    const [registro] = registros(reducir(e, { tipo: 'parpadeoLargo' }).efectos)
+    assert.equal(registro.pedido.eleccion, 'otra')
+    assert.deepEqual(registro.pedido.opciones, OPCIONES)
+    assert.equal(registro.pedido.turno, '¿Queres empanadas?')
+    assert.ok(!('tipoTurno' in registro.pedido))
+  })
+
+  for (const fija of ['si', 'no', 'espera'] as const) {
+    test(`${fija} se registra como fija`, () => {
+      const e = iluminar(conOpciones(), fija)
+      const [registro] = registros(reducir(e, { tipo: 'parpadeoLargo' }).efectos)
+      assert.equal(registro.pedido.eleccion, fija)
+    })
+  }
+
+  test('una eleccion con los ojos cerrados se registra al abrirlos', () => {
+    const e = aplicar(iluminar(conOpciones(), 'opcion0'), { tipo: 'ojos', cerrados: true, progreso: 1 }, { tipo: 'parpadeoLargo' })
+    assert.equal(registros(e.efectos).length, 0)
+    const r = reducir(e.estado, { tipo: 'ojos', cerrados: false, progreso: 0 })
+    assert.equal(registros(r.efectos)[0]?.pedido.eleccion, 1)
+  })
+
+  test('Urgencia y Deletrear no se registran', () => {
+    for (const el of ['urgencia', 'deletrear']) {
+      const r = reducir(iluminar(conOpciones(), el), { tipo: 'parpadeoLargo' })
+      assert.equal(registros(r.efectos).length, 0, el)
+    }
+  })
+})

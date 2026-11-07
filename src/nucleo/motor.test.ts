@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { bus, type Opcion, type PedidoOpciones } from '@/eventos'
+import type { PedidoEleccion } from '@/llm/elecciones'
 import { crearNucleo, type Nucleo } from './motor'
 
 const OPCIONES: Opcion[] = [
@@ -257,5 +258,47 @@ describe('motor', () => {
     bus.emit('turno', { texto: 'Hola' })
     assert.equal(pedidos.length, 0)
     nucleo.iniciar() // para que afterEach pueda detener sin romper
+  })
+})
+
+describe('registro de elecciones', () => {
+  // Reemplaza el nucleo del beforeEach por uno con registrarEleccion.
+  function conRegistro(registrarEleccion: (p: PedidoEleccion) => unknown) {
+    nucleo.detener()
+    nucleo = crearNucleo({ velocidadMs: 1000, pedirOpciones: async () => OPCIONES, registrarEleccion })
+    nucleo.iniciar()
+  }
+
+  async function elegirSegunda() {
+    bus.emit('turno', { texto: '¿Qué querés tomar?' }) // abierta: la opcion 1 va primero
+    await vaciarPromesas() // lectura del turno
+    await vaciarPromesas() // opciones
+    mock.timers.tick(1000)
+    bus.emit('parpadeoLargo', {})
+  }
+
+  test('elegir una opcion la registra con la posicion correcta', async () => {
+    const registrados: PedidoEleccion[] = []
+    conRegistro((p) => registrados.push(p))
+    await elegirSegunda()
+    assert.equal(registrados.length, 1)
+    assert.equal(registrados[0].eleccion, 2)
+    assert.deepEqual(registrados[0].opciones, OPCIONES)
+    assert.equal(registrados[0].turno, '¿Qué querés tomar?')
+  })
+
+  test('si el registro falla, igual se dice y el barrido sigue', async () => {
+    conRegistro(() => {
+      throw new Error('sin red')
+    })
+    await elegirSegunda()
+    assert.deepEqual(dichos, [{ texto: 'No, gracias.' }])
+    conRegistro(() => Promise.reject(new Error('sin red')))
+    await elegirSegunda()
+    await vaciarPromesas()
+    assert.equal(dichos.length, 2)
+    mock.timers.tick(3000) // fin de la espera de habla: el barrido vuelve a arrancar
+    mock.timers.tick(1000)
+    assert.equal(nucleo.obtener().iluminado, 1)
   })
 })

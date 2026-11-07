@@ -1,4 +1,5 @@
 import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
+import type { PedidoEleccion } from '@/llm/elecciones'
 
 // Lectura del turno: que es lo que se escucho, antes de pedir opciones.
 // paraUsuario y completo son probabilidades 0..1 (de un modelo o de la heuristica local).
@@ -82,5 +83,6 @@ export type Efecto =
   | { tipo: 'armarGestoUrgencia' }
   | { tipo: 'desarmarGestoUrgencia' }
   | { tipo: 'armarEsperaHabla' }
+  | { tipo: 'registrarEleccion'; pedido: PedidoEleccion } // segundo plano: si falla, no cambia nada
 
 export type Resultado = { estado: Estado; efectos: Efecto[] }
