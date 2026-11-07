@@ -8,6 +8,7 @@
 // Todo en una sola llamada al proveedor. Nunca toca el perfil: el almacen no tiene como escribirlo.
 import type { LineaHistorial } from '@/eventos'
 import { enFila } from './fila.ts'
+import { crearNiveles, idResumen, type ProveedorRollup } from './niveles.ts'
 import { crearCierre, crearOpciones } from './opciones.ts'
 import { conservarUsosNuevos } from './saliencia.ts'
 import { DIAS_SEMANA, describirDia, describirFecha, estaVencido, finDelDia, resolverFecha } from './fechas.ts'
@@ -126,6 +127,7 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
     memoria.hechos = reconciliar(memoria.hechos, respuesta.hechos, conversacion)
     if (respuesta.resumen) {
       const resumen: ResumenConversacion = { inicio: conversacion.inicio, fin: conversacion.fin, resumen: respuesta.resumen }
+      resumen.id = idResumen(resumen) // para citarlo como fuente de los bloques de dia
       // La cola de una conversacion cerrada por tiempo trae el resumen de toda la conversacion: reemplaza al de antes.
       const otros = memoria.resumenes.filter((r) => r.inicio !== conversacion.inicio)
       memoria.resumenes = [...otros, resumen].slice(-MAX_RESUMENES_GUARDADOS)
@@ -137,26 +139,48 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
 // Disparador en segundo plano: lo que se le pasa a crearOpciones como alCerrarConversacion.
 // Devuelve void al instante; el trabajo corre aparte y los errores se loguean, nunca rompen un turno.
 // `listo` permite esperar a que terminen los trabajos pendientes (tests, cierre del server).
+// Con proveedorRollup, despues del agente arma los niveles (ver niveles.ts); un rollup que falla
+// va a alFallarNivel, no a alFallar: no rompe el cierre y se reintenta en el proximo.
 export function crearDisparadorMemoria(deps: {
   proveedor: Proveedor
   almacen: Almacen
   alTerminar?: (memoria: Memoria) => void
   alFallar?: (error: unknown) => void
+  proveedorRollup?: ProveedorRollup
+  reloj?: () => Date
+  alFallarNivel?: (error: unknown) => void
 }) {
   const agente = crearAgenteMemoria({ proveedor: deps.proveedor })
   let cola: Promise<void> = Promise.resolve()
   const alFallar = deps.alFallar ?? ((e) => console.error('[agente de memoria]', e))
+  const alFallarNivel = deps.alFallarNivel ?? ((e) => console.error('[niveles de memoria]', e))
+  const reloj = deps.reloj ?? (() => new Date())
+  const niveles = deps.proveedorRollup
+    ? crearNiveles({ almacen: deps.almacen, proveedorRollup: deps.proveedorRollup })
+    : null
 
-  async function correr(conversacion: ConversacionCerrada) {
+  async function consolidar() {
+    if (!niveles) return
+    try {
+      await niveles.alCerrar(reloj())
+    } catch (e) {
+      alFallarNivel(e)
+    }
+  }
+
+  // true si el agente termino bien: solo ahi se arman los niveles, que necesitan su resumen.
+  async function correr(conversacion: ConversacionCerrada): Promise<boolean> {
     const [perfil, memoria] = await Promise.all([deps.almacen.leerPerfil(), deps.almacen.leerMemoria()])
     let nueva: Memoria
+    let ok = true
     try {
       nueva = await agente(conversacion, memoria, perfil)
     } catch (e) {
       alFallar(e)
       const parcial = e instanceof ErrorMemoria ? e.memoriaParcial : null
-      if (!parcial) return
+      if (!parcial) return false
       nueva = parcial
+      ok = false
     }
     // Releer antes de guardar (en fila): mientras el modelo pensaba, opciones o un cierre pudieron
     // mover la conversacion actual. Desde aca solo se escriben hechos, resumenes y ejemplos.
@@ -169,14 +193,30 @@ export function crearDisparadorMemoria(deps: {
       return m
     })
     deps.alTerminar?.(guardar)
+    return ok
   }
 
   function disparar(conversacion: ConversacionCerrada): void {
-    // En fila: dos cierres seguidos no se pisan la memoria.
-    cola = cola.then(() => correr(conversacion)).catch(alFallar)
+    // En fila: dos cierres seguidos no se pisan la memoria. Los niveles van despues del agente; si
+    // el agente falla, esperan al proximo cierre (si no, el dia se armaria sin esta conversacion).
+    cola = cola
+      .then(() => correr(conversacion))
+      .then((ok) => (ok ? consolidar() : undefined))
+      .catch(alFallar)
   }
 
-  return { disparar, listo: () => cola }
+  // "Consolidar ahora" (demo): en la misma fila, ignorando el corte. El error vuelve a quien llama.
+  function consolidarAhora() {
+    if (!niveles) return Promise.reject(new Error('Sin proveedorRollup no hay niveles'))
+    const trabajo = cola.then(() => niveles.consolidarAhora(reloj()))
+    cola = trabajo.then(
+      () => {},
+      () => {},
+    )
+    return trabajo
+  }
+
+  return { disparar, consolidarAhora, listo: () => cola }
 }
 
 // --- Ejemplos de estilo -------------------------------------------------------
@@ -453,14 +493,16 @@ function reconciliar(hechos: Hecho[], candidatos: Candidato[], conversacion: Con
 
 // crearOpciones y el cierre con el agente de memoria enganchado: cuando opciones detecta que la
 // conversacion anterior cerro, o se la cierra por tiempo o a mano, el agente corre en segundo plano.
+// Con proveedorRollup, despues del agente se arman los niveles (bloque del dia, #34).
 // Es lo que usa el servidor (servidor.ts).
 export function crearOpcionesConMemoria(deps: {
   proveedor: Proveedor
   almacen: Almacen
   alFallar?: (error: unknown) => void
+  proveedorRollup?: ProveedorRollup
 }) {
   const memoria = crearDisparadorMemoria(deps)
-  const generarOpciones = crearOpciones({ ...deps, alCerrarConversacion: memoria.disparar })
+  const generarOpciones = crearOpciones({ proveedor: deps.proveedor, almacen: deps.almacen, alCerrarConversacion: memoria.disparar })
   const cierre = crearCierre({ almacen: deps.almacen, alCerrarConversacion: memoria.disparar })
   return { generarOpciones, cierre, memoria }
 }

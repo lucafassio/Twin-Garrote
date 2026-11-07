@@ -15,7 +15,7 @@ import type {
   ResultadoOpciones,
   ResumenConversacion,
 } from './tipos.ts'
-import { hechosVigentes, textoConFecha } from './fechas.ts'
+import { describirDia, hechosVigentes, textoConFecha } from './fechas.ts'
 import {
   abrirConversacion,
   armarCerrada,
@@ -25,6 +25,7 @@ import {
   sumarLineas,
 } from './conversacion.ts'
 import { enFila } from './fila.ts'
+import { bloqueDelDia } from './niveles.ts'
 import { MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
@@ -309,6 +310,9 @@ function promptUsuario(p: {
   if (ejemplos.length > 0) {
     partes.push(`## Frases que dijo hace poco\n${ejemplos.map((e) => `- "${e.texto}"`).join('\n')}`)
   }
+  // El bloque del dia (#34): despues de la huella, para no colgar sus subsecciones de el.
+  const dia = bloqueDelDia(memoria, pedido.cercania, ahora)
+  if (dia) partes.push(`# Resumen del ${describirDia(new Date(dia.desde))}\n${dia.texto}`)
 
   const memoriaCorta = seccionMemoriaCorta(memoria.resumenes, ahora)
   if (memoriaCorta) partes.push(memoriaCorta)

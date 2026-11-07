@@ -1,9 +1,9 @@
 // Eleccion del proveedor por LLM_PROVEEDOR (gateway | anthropic | falso).
 // Sin la key que hace falta, queda el falso: la app nunca se rompe por no tener claves.
-import { crearProveedorAnthropic } from './proveedor-anthropic.ts'
+import { crearProveedorAnthropic, MODELO_ANTHROPIC } from './proveedor-anthropic.ts'
 import { crearProveedorFalso } from './proveedor-falso.ts'
-import { crearProveedorGateway } from './proveedor-gateway.ts'
-import type { Proveedor } from './tipos.ts'
+import { crearProveedorGateway, MODELO_GATEWAY } from './proveedor-gateway.ts'
+import type { NivelRollup, Proveedor } from './tipos.ts'
 
 export type NombreProveedor = 'gateway' | 'anthropic' | 'falso'
 
@@ -23,13 +23,38 @@ export function nombreProveedor(env: Entorno = process.env): NombreProveedor {
   return 'falso'
 }
 
-export function elegirProveedor(env: Entorno = process.env): Proveedor {
+export function elegirProveedor(env: Entorno = process.env, modelo = env.LLM_MODELO || undefined): Proveedor {
   switch (nombreProveedor(env)) {
     case 'gateway':
-      return crearProveedorGateway(env.LLM_MODELO || undefined)
+      return crearProveedorGateway(modelo)
     case 'anthropic':
-      return crearProveedorAnthropic(env.LLM_MODELO || undefined)
+      return crearProveedorAnthropic(modelo)
     default:
       return crearProveedorFalso()
   }
+}
+
+// --- Rollups de los niveles de memoria -----------------------------------------
+// Cada uno con su modelo: Haiku para dia y semana, Sonnet para mes y la propuesta de huella.
+// Se cambia con LLM_MODELO_DIA, LLM_MODELO_SEMANA, LLM_MODELO_MES y LLM_MODELO_HUELLA:
+// 'haiku', 'sonnet' o el id completo del modelo para el proveedor elegido.
+
+type Alias = 'haiku' | 'sonnet'
+
+const MODELO_POR_DEFECTO: Record<NivelRollup, Alias> = { dia: 'haiku', semana: 'haiku', mes: 'sonnet', huella: 'sonnet' }
+
+const IDS: Record<'gateway' | 'anthropic', Record<Alias, string>> = {
+  gateway: { haiku: MODELO_GATEWAY, sonnet: 'anthropic/claude-sonnet-5.5' },
+  anthropic: { haiku: MODELO_ANTHROPIC, sonnet: 'claude-sonnet-5-5' },
+}
+
+export function modeloRollup(nivel: NivelRollup, env: Entorno = process.env): string {
+  const pedido = env[`LLM_MODELO_${nivel.toUpperCase()}`]?.trim() || MODELO_POR_DEFECTO[nivel]
+  const proveedor = nombreProveedor(env)
+  if (proveedor === 'falso') return 'falso'
+  return pedido === 'haiku' || pedido === 'sonnet' ? IDS[proveedor][pedido] : pedido
+}
+
+export function elegirProveedorRollup(nivel: NivelRollup, env: Entorno = process.env): Proveedor {
+  return elegirProveedor(env, modeloRollup(nivel, env))
 }

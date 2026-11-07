@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Cercania, LineaHistorial } from '@/eventos'
 import { describirFecha } from '@/llm/fechas'
 import type { HechoListado } from '@/llm/controles-memoria'
-import type { Hecho } from '@/llm/tipos'
+import type { Bloque, Hecho, Niveles } from '@/llm/tipos'
 
 // Demo del aprendizaje (#12): "Lo que aprendí de vos" y el botón para cerrar la conversación.
 // El botón es solo para la demo: en el producto la conversación se cierra sola por el silencio.
+// Consolidar ahora (#34) arma el bloque del dia de hoy sin esperar la medianoche.
 
 type Hechos = { activos: HechoListado[]; vencidos: HechoListado[]; invalidados: HechoListado[] }
 
@@ -24,6 +25,18 @@ function fechaDelEvento(h: Hecho) {
   return h.fechaEvento ? describirFecha(h.fechaEvento, new Date()) : null
 }
 
+const ZONA = 'America/Argentina/Buenos_Aires'
+
+// "viernes 6/11", y si el bloque es de Consolidar ahora (no cubre el dia entero), hasta que hora.
+function fechaBloque(b: Bloque) {
+  const dia = new Date(b.desde).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric', timeZone: ZONA })
+  const parcial = Date.parse(b.hasta) - Date.parse(b.desde) < 24 * 3_600_000
+  const hasta = new Date(b.hasta).toLocaleTimeString('es-AR', { timeStyle: 'short', timeZone: ZONA })
+  return parcial ? `${dia}, hasta las ${hasta}` : dia
+}
+
+const fuentes = (n: number) => `${n} ${n === 1 ? 'fuente' : 'fuentes'}`
+
 function fecha(iso: string | null) {
   if (!iso) return '—'
   return new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
@@ -39,6 +52,7 @@ export function LoQueAprendi({
   alCerrar: () => void
 }) {
   const [hechos, setHechos] = useState<Hechos | null>(null)
+  const [niveles, setNiveles] = useState<Niveles | null>(null)
   const [ocupado, setOcupado] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -48,6 +62,7 @@ export function LoQueAprendi({
     const datos = await r.json()
     if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
     setHechos({ activos: datos.activos, vencidos: datos.vencidos, invalidados: datos.invalidados })
+    if (datos.niveles) setNiveles(datos.niveles)
     return datos
   }, [])
 
@@ -97,6 +112,18 @@ export function LoQueAprendi({
     alCerrar()
   }
 
+  async function consolidar() {
+    const inicio = performance.now()
+    const datos = await enviar('consolidar', { accion: 'consolidar' })
+    if (!datos) return
+    const ms = Math.round(performance.now() - inicio)
+    setAviso(
+      datos.bloque
+        ? `Bloque del dia armado (${ms} ms, ${datos.modelo}), con ${fuentes(datos.bloque.fuentes.length)}.`
+        : `No se armo bloque (${datos.modelo}): no hay nada de hoy o el proveedor no resumio.`,
+    )
+  }
+
   return (
     <section className="space-y-4 rounded border p-4">
       <div className="flex flex-wrap items-center gap-4">
@@ -108,13 +135,37 @@ export function LoQueAprendi({
         >
           Cerrar conversación
         </button>
+        <button
+          className="rounded bg-sky-700 px-4 py-2 font-semibold text-white disabled:opacity-50"
+          disabled={ocupado !== null}
+          onClick={consolidar}
+        >
+          Consolidar ahora
+        </button>
         <button className="text-sm underline" disabled={ocupado !== null} onClick={recargar}>
           Recargar
         </button>
         {ocupado === 'cerrar' && <span>Aprendiendo…</span>}
+        {ocupado === 'consolidar' && <span>Resumiendo el dia…</span>}
       </div>
       {aviso && <p className="text-sm">{aviso}</p>}
       {error && <p className="rounded bg-red-100 p-3 text-red-800">Error: {error}</p>}
+
+      {niveles && niveles.dia.length > 0 && (
+        <div>
+          <p className="font-semibold">Dia por dia</p>
+          <ul className="space-y-2">
+            {[...niveles.dia].reverse().map((b) => (
+              <li key={b.id} className={`rounded border p-3 ${b.descartado ? 'opacity-50' : ''}`}>
+                <p className="text-sm text-gray-500">
+                  {fechaBloque(b)} · {fuentes(b.fuentes.length)}{b.descartado ? ' · descartado' : ''}
+                </p>
+                <p>{b.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {hechos && hechos.activos.length === 0 && hechos.vencidos.length === 0 && (
         <p className="text-sm text-gray-500">Todavía no aprendí nada.</p>

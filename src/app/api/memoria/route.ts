@@ -13,9 +13,14 @@
 //   POST { accion: 'elegir', eleccion }                  -> { subidos }
 // 'elegir' registra lo que eligio el usuario (#36): si es una opcion del LLM, sus hechos suben de
 // saliencia. "Otra" y las fijas no tocan nada. El registro de elecciones de #19 extiende esta accion.
+//   POST { accion: 'consolidar' }                        -> { bloque, modelo, activos, vencidos, invalidados, niveles }
+// 'consolidar' (Consolidar ahora, #34) arma el bloque del dia de hoy con lo que haya, sin esperar el
+// corte. GET, invalidar y cerrar tambien devuelven los niveles (bloques de dia), para la demo.
 import { connection } from 'next/server'
 import type { LineaHistorial } from '@/eventos'
-import { esEleccion, invalidarHecho, listarHechos, registrarEleccion } from '@/llm'
+import { esEleccion, invalidarHecho, listarHechos, nivelesDe, registrarEleccion } from '@/llm'
+import type { Almacen } from '@/llm'
+import { modeloRollup } from '@/llm/proveedores'
 import { servidorLlm } from '@/llm/servidor'
 
 function esLinea(x: unknown): x is LineaHistorial {
@@ -24,9 +29,15 @@ function esLinea(x: unknown): x is LineaHistorial {
   return (l.quien === 'usuario' || l.quien === 'interlocutor') && typeof l.texto === 'string'
 }
 
+// Hechos y niveles: lo que muestra "Lo que aprendi de vos".
+async function loAprendido(almacen: Almacen) {
+  const [hechos, memoria] = await Promise.all([listarHechos(almacen), almacen.leerMemoria()])
+  return { ...hechos, niveles: nivelesDe(memoria) }
+}
+
 export async function GET() {
   await connection() // siempre al momento: la memoria cambia en segundo plano
-  return Response.json(await listarHechos(servidorLlm().almacen))
+  return Response.json(await loAprendido(servidorLlm().almacen))
 }
 
 export async function POST(request: Request) {
@@ -45,7 +56,7 @@ export async function POST(request: Request) {
     if (typeof cuerpo.id !== 'string') return Response.json({ error: 'Falta el id del hecho' }, { status: 400 })
     const hecho = await invalidarHecho(almacen, cuerpo.id)
     if (!hecho) return Response.json({ error: 'No hay un hecho activo con ese id' }, { status: 404 })
-    return Response.json({ hecho, ...(await listarHechos(almacen)) })
+    return Response.json({ hecho, ...(await loAprendido(almacen)) })
   }
 
   if (cuerpo.accion === 'cerrar') {
@@ -69,7 +80,7 @@ export async function POST(request: Request) {
       cerrada: cerrada !== null,
       lineas: cerrada?.lineas.length ?? 0,
       proveedor: proveedor.nombre,
-      ...(await listarHechos(almacen)),
+      ...(await loAprendido(almacen)),
     })
   }
 
@@ -78,5 +89,17 @@ export async function POST(request: Request) {
     return Response.json({ subidos: await registrarEleccion(almacen, cuerpo.eleccion) })
   }
 
-  return Response.json({ error: "accion tiene que ser 'invalidar', 'cerrar' o 'elegir'" }, { status: 400 })
+  if (cuerpo.accion === 'consolidar') {
+    const modelo = modeloRollup('dia')
+    try {
+      const bloque = await memoria.consolidarAhora()
+      return Response.json({ bloque, modelo, ...(await loAprendido(almacen)) })
+    } catch (e) {
+      console.error('[api/memoria] consolidar', e)
+      const mensaje = e instanceof Error ? e.message : String(e)
+      return Response.json({ error: `No se pudo consolidar: ${mensaje}`, modelo }, { status: 502 })
+    }
+  }
+
+  return Response.json({ error: "accion tiene que ser 'invalidar', 'cerrar', 'elegir' o 'consolidar'" }, { status: 400 })
 }

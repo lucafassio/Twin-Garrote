@@ -72,6 +72,8 @@ export type EjemploEstilo = {
 
 // Resumen de 2 o 3 lineas de una conversacion cerrada (memoria corta).
 export type ResumenConversacion = {
+  // Para citarlo como fuente de un bloque. Uno viejo sin id usa el derivado del fin (idResumen en niveles.ts).
+  id?: string
   inicio: string // ISO
   fin: string // ISO
   resumen: string
@@ -105,6 +107,23 @@ export type ConversacionActual = {
 
 export type OpcionMostrada = { texto: string; hechos: string[] }
 
+// Resumen de un periodo cerrado (dia, semana o mes), armado en segundo plano. Cita de que salio.
+export type Bloque = {
+  id: string // 'dia-2026-11-06': nivel y fecha de inicio en Argentina
+  desde: string // ISO, incluido
+  hasta: string // ISO, excluido
+  texto: string
+  // Ids de lo que lo origino: resumenes, bloques del nivel de abajo y hechos.
+  // De aca se deriva si cita algo intimo, no del modelo.
+  fuentes: string[]
+  descartado?: string // ISO
+}
+
+export type Niveles = { dia: Bloque[]; semana: Bloque[]; mes: Bloque[] }
+
+// Cada rollup en segundo plano tiene su modelo, elegido por configuracion.
+export type NivelRollup = 'dia' | 'semana' | 'mes' | 'huella'
+
 export type Memoria = {
   hechos: Hecho[]
   resumenes: ResumenConversacion[]
@@ -113,6 +132,8 @@ export type Memoria = {
   // La ultima conversacion cerrada por tiempo, con las lineas que se aprendieron. Su cola (la
   // respuesta al ultimo turno) llega recien con el pedido siguiente: ese pedido la completa y la borra.
   cerradaPorTiempo?: ConversacionActual
+  // Opcional: una memoria vieja sin niveles se lee como siempre.
+  niveles?: Niveles
 }
 
 // Donde viven el perfil y la memoria. En la app: archivos. En tests: en memoria.

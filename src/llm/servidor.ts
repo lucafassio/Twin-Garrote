@@ -10,7 +10,7 @@
 // dev), la instancia nueva reemplaza a la anterior y frena su chequeo, y todos usan la ultima.
 import { crearAlmacenEnArchivos } from './almacen-archivos.ts'
 import { crearOpcionesConMemoria } from './memoria.ts'
-import { elegirProveedor } from './proveedores.ts'
+import { elegirProveedor, elegirProveedorRollup } from './proveedores.ts'
 
 export const CHEQUEO_CIERRE_MS = 60_000
 
@@ -26,6 +26,8 @@ function crearServidorLlm() {
       estado.ultimoErrorMemoria = e instanceof Error ? e.message : String(e)
       console.error('[llm] agente de memoria', e)
     },
+    // Despues del agente, el bloque del dia (#34) con su propio modelo.
+    proveedorRollup: elegirProveedorRollup,
   })
   const chequeo = setInterval(() => {
     llm.cierre.cerrarSiInactiva().catch((e) => console.error('[llm] cierre por tiempo', e))
