@@ -83,7 +83,33 @@ describe('controles de memoria', () => {
       inicio: '2026-11-07T14:00:00.000Z',
       fin: '2026-11-07T14:05:00.000Z',
       lineas: historial.slice(2),
+      cercania: null, // memoria vieja sin cercania guardada: igual que el cierre de opciones
+      interlocutor: null,
+    })
+    assert.equal(almacen.memoria().conversacion, null)
+  })
+
+  test('cerrarConversacion usa las lineas, la cercania y el interlocutor guardados, aunque el historial llegue vacio', async () => {
+    const almacen = crearAlmacenEnMemoria({
+      memoria: {
+        conversacion: {
+          inicio: '2026-11-07T14:00:00.000Z',
+          ultimaActividad: '2026-11-07T14:05:00.000Z',
+          desdeLinea: 0,
+          cercania: 'familia',
+          interlocutor: 'Marta',
+          lineas: historial.slice(0, 3),
+        },
+      },
+    })
+    // Despues de una recarga, el cliente manda lo que lleva desde entonces (o nada).
+    const cerrada = await cerrarConversacion(almacen, historial.slice(3), 'formal')
+    assert.deepEqual(cerrada, {
+      inicio: '2026-11-07T14:00:00.000Z',
+      fin: '2026-11-07T14:05:00.000Z',
+      lineas: historial,
       cercania: 'familia',
+      interlocutor: 'Marta',
     })
     assert.equal(almacen.memoria().conversacion, null)
   })

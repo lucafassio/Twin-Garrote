@@ -13,6 +13,9 @@ import type {
   Registro,
   ResultadoOpciones,
 } from './tipos.ts'
+import { abrirConversacion, armarCerrada, lineasDeConversacion, seguirConversacion } from './conversacion.ts'
+// Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
+export { lineasDeConversacion } from './conversacion.ts'
 
 const MINUTO = 60_000
 export const MISMA_CONVERSACION_MS = 3 * MINUTO // menos que esto: misma conversacion
@@ -64,12 +67,6 @@ type Deteccion =
   | { tipo: 'misma'; lineas: LineaHistorial[] } // menos de 3 min
   | { tipo: 'dudosa'; minutos: number; lineas: LineaHistorial[] } // entre medio: decide el modelo
 
-function lineasDeConversacion(conversacion: ConversacionActual, historial: LineaHistorial[]) {
-  // Si el historial se achico (el nucleo arranco de cero), la conversacion es todo lo que hay.
-  const desde = conversacion.desdeLinea <= historial.length ? conversacion.desdeLinea : 0
-  return historial.slice(desde)
-}
-
 function detectarConversacion(
   conversacion: ConversacionActual | null,
   historial: LineaHistorial[],
@@ -91,29 +88,20 @@ async function actualizarConversacion(
   nueva: boolean,
 ) {
   const anterior = memoria.conversacion
-  const iso = ahora.toISOString()
   if (nueva) {
-    if (anterior) {
-      const lineas = lineasDeConversacion(anterior, pedido.historial)
-      if (lineas.length > 0 && deps.alCerrarConversacion) {
-        const cerrada: ConversacionCerrada = {
-          inicio: anterior.inicio,
-          fin: anterior.ultimaActividad,
-          lineas,
-          cercania: pedido.cercania ?? null,
-          interlocutor: pedido.interlocutor?.trim() || null,
-        }
-        // Segundo plano: no se espera ni se deja que un error rompa el turno.
-        queueMicrotask(() => {
-          try {
-            deps.alCerrarConversacion!(cerrada)
-          } catch {}
-        })
-      }
+    // La cerrada lleva sus lineas guardadas y su contexto, nunca el del pedido que abre la siguiente.
+    const cerrada = anterior ? armarCerrada(anterior, pedido.historial) : null
+    if (cerrada && deps.alCerrarConversacion) {
+      // Segundo plano: no se espera ni se deja que un error rompa el turno.
+      queueMicrotask(() => {
+        try {
+          deps.alCerrarConversacion!(cerrada)
+        } catch {}
+      })
     }
-    memoria.conversacion = { inicio: iso, ultimaActividad: iso, desdeLinea: pedido.historial.length }
+    memoria.conversacion = abrirConversacion(pedido, ahora)
   } else if (anterior) {
-    memoria.conversacion = { ...anterior, ultimaActividad: iso }
+    memoria.conversacion = seguirConversacion(anterior, pedido, ahora)
   }
   // Releer antes de guardar: mientras el modelo pensaba, el agente de memoria pudo guardar hechos.
   // Desde aca solo se escribe la conversacion actual.
