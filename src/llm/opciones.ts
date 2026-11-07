@@ -101,6 +101,7 @@ async function actualizarConversacion(
           fin: anterior.ultimaActividad,
           lineas,
           cercania: pedido.cercania ?? null,
+          interlocutor: pedido.interlocutor?.trim() || null,
         }
         // Segundo plano: no se espera ni se deja que un error rompa el turno.
         queueMicrotask(() => {
@@ -140,6 +141,7 @@ Reglas:
 10. Nunca repitas una opcion ya mostrada para este turno.
 11. Si no hay turno (SIN_TURNO), propone 4 arranques de charla basados en la huella y los temas recientes.
 12. Si te dicen los minutos de silencio desde el ultimo turno, decidi si es una conversacion nueva (nuevaConversacion).
+13. Quien habla: si la seccion Interlocutor lo dice, podes nombrarlo y adaptar el tono a esa persona. Si no lo dice, no sabes quien es: no lo nombres ni asumas que es alguien de la huella. Las personas de la huella son de quienes se habla, no quien habla.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
 {"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"..."}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
@@ -201,6 +203,7 @@ function promptUsuario(p: {
   }
 
   partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
+  partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado: no sabes quien habla, no lo nombres'}`)
 
   const lineas = deteccion.tipo === 'nueva' ? [] : deteccion.lineas
   if (deteccion.tipo === 'dudosa') {

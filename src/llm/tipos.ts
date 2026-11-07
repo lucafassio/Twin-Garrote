@@ -101,4 +101,5 @@ export type ConversacionCerrada = {
   fin: string
   lineas: LineaHistorial[]
   cercania: Cercania | null
+  interlocutor?: string | null // quien hablaba, si la interfaz lo aclaro
 }

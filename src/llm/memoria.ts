@@ -94,6 +94,9 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
     // El nombre del usuario nunca es el interlocutor: el interlocutor suele nombrarlo al hablarle.
     for (const c of respuesta.hechos) {
       if (nombre && c.interlocutor && normalizar(c.interlocutor) === normalizar(nombre)) c.interlocutor = null
+      // Si la interfaz aclaro quien hablaba, eso vale para lo que salio de sus lineas.
+      const linea = c.linea !== null ? conversacion.lineas[c.linea - 1] : undefined
+      if (!c.interlocutor && conversacion.interlocutor && linea?.quien === 'interlocutor') c.interlocutor = conversacion.interlocutor
     }
 
     memoria.hechos = reconciliar(memoria.hechos, respuesta.hechos, conversacion)
@@ -221,7 +224,7 @@ function promptUsuario(conversacion: ConversacionCerrada, activos: Hecho[], perf
       : '# Hechos existentes\nNinguno todavia.',
   )
   partes.push(
-    `# Conversacion\nDesde ${conversacion.inicio} hasta ${conversacion.fin}. Cercania: ${conversacion.cercania ?? 'no aclarada'}.\n\n` +
+    `# Conversacion\nDesde ${conversacion.inicio} hasta ${conversacion.fin}. Cercania: ${conversacion.cercania ?? 'no aclarada'}. Interlocutor: ${conversacion.interlocutor || 'no aclarado'}.\n\n` +
       conversacion.lineas.map(renderLinea).join('\n'),
   )
   return partes.join('\n\n')

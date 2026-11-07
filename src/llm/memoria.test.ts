@@ -99,6 +99,19 @@ describe('agente de memoria', () => {
     assert.match(prompts[0].sistema, /se llama Roberto/)
   })
 
+  test('si la interfaz aclaro el interlocutor, lo usa en los hechos que salen de sus lineas', async () => {
+    const { proveedor } = guionado([
+      respuesta([
+        { accion: 'agregar', texto: 'Laura se opera el jueves.', linea: 1, interlocutor: '', importancia: 8 },
+        { accion: 'agregar', texto: 'Roberto le manda un beso a Laura.', linea: 4, interlocutor: '', importancia: 3 },
+      ]),
+    ])
+    const r = await crearAgenteMemoria({ proveedor })({ ...cerrada(), interlocutor: 'Marta' }, memoria(), PERFIL_ROBERTO)
+
+    assert.equal(r.hechos[0].interlocutor, 'Marta')
+    assert.equal(r.hechos[1].interlocutor, null)
+  })
+
   test('el origen sale de la linea: deletreo si el usuario lo deletreo', async () => {
     const { proveedor } = guionado([
       respuesta([{ accion: 'agregar', texto: 'Roberto le manda un beso a Laura.', linea: 4, importancia: 3 }]),

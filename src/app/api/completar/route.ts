@@ -16,7 +16,8 @@ function esPedido(x: unknown): x is PedidoOpciones {
     Array.isArray(p.historial) &&
     (p.ultimoTurno === null || typeof p.ultimoTurno === 'string') &&
     Array.isArray(p.yaMostradas) &&
-    (p.cercania === undefined || ['familia', 'conocido', 'formal'].includes(p.cercania as string))
+    (p.cercania === undefined || ['familia', 'conocido', 'formal'].includes(p.cercania as string)) &&
+    (p.interlocutor === undefined || typeof p.interlocutor === 'string')
   )
 }
 

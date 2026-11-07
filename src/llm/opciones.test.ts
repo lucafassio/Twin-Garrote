@@ -124,6 +124,15 @@ describe('opciones', () => {
     assert.match(familia.prompts[0].usuario, /Laura se opera/)
   })
 
+  test('el interlocutor aclarado llega al prompt; sin aclarar, se pide no nombrarlo', async () => {
+    const con = armar([respuesta()])
+    await con.generar(pedido({ interlocutor: 'Marta' }), T0)
+    assert.match(con.prompts[0].usuario, /# Interlocutor\nMarta/)
+    const sin = armar([respuesta()])
+    await sin.generar(pedido(), T0)
+    assert.match(sin.prompts[0].usuario, /# Interlocutor\nno aclarado/)
+  })
+
   test('los hechos invalidados no entran al prompt', async () => {
     const { generar, prompts } = armar([respuesta()], {
       hechos: [hecho({ texto: 'Laura vive en Cordoba', estado: 'invalidado', fechaInvalidacion: T0.toISOString() })],

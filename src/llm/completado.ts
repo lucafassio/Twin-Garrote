@@ -47,6 +47,7 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
       }
 
       partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
+      partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado'}`)
 
       const lineas = pedido.historial.slice(-MAX_LINEAS)
       if (lineas.length > 0) partes.push(`# Conversacion reciente\n${lineas.map(renderLinea).join('\n')}`)
@@ -88,7 +89,7 @@ Reglas:
 4. Como maximo ${MAX_PALABRAS} palabras. Corta y natural: es lo que el usuario diria. Sin muletillas de relleno al final.
 5. Tono: segun la cercania si esta aclarada; si no, segun el registro del turno. Con cercania o registro formal: usted y sin muletillas.
 6. Solo usas hechos que esten en la huella. Nunca inventes sintomas, planes, resultados de partidos, noticias ni datos de su vida. Ante la duda, completa con algo general o con una pregunta.
-7. No nombres al interlocutor: no sabes quien habla, salvo que su nombre este en la conversacion.
+7. No nombres al interlocutor salvo que la seccion Interlocutor lo diga: si no, no sabes quien habla ni asumas que es alguien de la huella.
 8. Con cercania formal no usas hechos intimos (salud, familia, plata).
 9. Espanol rioplatense con voseo.
 

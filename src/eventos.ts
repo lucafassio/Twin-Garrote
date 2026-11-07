@@ -29,6 +29,7 @@ export type PedidoOpciones = {
   ultimoTurno: string | null
   yaMostradas: string[] // opciones ya mostradas para este turno, para no repetirlas
   cercania?: Cercania // opcional: define tono y que hechos se pueden usar
+  interlocutor?: string // opcional: nombre o rol de quien habla ("Marta", "el medico"). Sin el, el LLM no asume quien es
 }
 
 export type Eventos = {
