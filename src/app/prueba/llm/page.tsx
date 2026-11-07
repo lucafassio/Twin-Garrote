@@ -96,7 +96,7 @@ export default function Prueba() {
       <section className="space-y-3">
         <label className="block text-sm font-semibold">Turno del interlocutor</label>
         <textarea
-          className="w-full rounded border p-3 text-lg text-black"
+          className="w-full rounded border bg-transparent p-3 text-lg"
           rows={2}
           value={turno}
           disabled={sinTurno}
@@ -110,7 +110,7 @@ export default function Prueba() {
           <label className="flex items-center gap-2">
             Cercanía
             <select
-              className="rounded border p-1 text-black"
+              className="rounded border bg-transparent p-1"
               value={cercania}
               onChange={(e) => setCercania(e.target.value as Cercania | '')}
             >
