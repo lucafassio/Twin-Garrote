@@ -4,7 +4,8 @@
 
 import { bus } from '@/eventos'
 import { anotarEnCurso, anotarLinea, contextoCharla } from './charla'
-import { crearEscucha } from './escuchar'
+import { crearEscucha, depuracionEscucha, type Escucha } from './escuchar'
+import { crearEscuchaGroq, groqDisponible } from './escucharGroq'
 import { callar, cargarVoces, hablar } from './hablar'
 import { cortarSonidos, sonarAlarma, sonarAviso } from './sonidos'
 import { registrarCierre } from './turnoManual'
@@ -13,8 +14,14 @@ export { default as CampoTurno } from './CampoTurno'
 export { escuchaDisponible } from './escuchar'
 export { cerrarTurno } from './turnoManual'
 
+// Motor para escuchar. "groq" cae solo a "google" si falta la clave, el microfono o la red.
+export type Motor = 'google' | 'groq'
+
 // Ajustables en vivo desde /prueba/voz.
 export const ajustesVoz = {
+  motor: 'google' as Motor,
+  silencioVadMs: 900, // groq: silencio que cierra la frase (el detector no tiene el atraso de Chrome)
+  sensibilidadVad: 3, // groq: veces por encima del ruido de fondo que cuenta como habla
   silencioMs: 1500, // silencio que cierra el turno cuando Chrome ya marco la frase como final
   extraSinFinalMs: 1000, // espera de mas si Chrome todavia no la cerro: sus resultados llegan en tandas
   palabrasFraseCorta: 2, // "Roberto..." o "Che..." esperan el doble: casi seguro sigue algo
@@ -41,12 +48,7 @@ export function iniciarVoz(): () => void {
   let ultimaRespuesta: string | null = null
   let reabrir: ReturnType<typeof setTimeout> | null = null
 
-  const escucha = crearEscucha({
-    esperaMs: esperaFinDeTurno,
-    alParcial: (texto) => bus.emit('transcripcionParcial', { texto }),
-    alTurno: (texto) => bus.emit('turno', { texto }),
-    alEstado: (activo) => bus.emit('escuchando', { activo }),
-  })
+  const escucha = crearEscuchaConMotor()
   const soltarCierre = registrarCierre(escucha.cerrarTurno)
   void cargarVoces()
   escucha.abrir()
@@ -125,9 +127,65 @@ export function iniciarVoz(): () => void {
     generacion++
     if (reabrir) clearTimeout(reabrir)
     escucha.cerrar()
+    escucha.destruir?.()
     callar()
     cortarSonidos()
     soltarCierre()
+  }
+}
+
+// Arma la escucha con el motor elegido. Groq tiene a Google de respaldo: si falla, cambia solo.
+function crearEscuchaConMotor(): Escucha {
+  const base = {
+    alParcial: (texto: string) => bus.emit('transcripcionParcial', { texto }),
+    alTurno: (texto: string) => bus.emit('turno', { texto }),
+    alEstado: (activo: boolean) => bus.emit('escuchando', { activo }),
+  }
+  const google = () => {
+    depuracionEscucha.alMotor?.('google')
+    return crearEscucha({ ...base, esperaMs: esperaFinDeTurno })
+  }
+  if (ajustesVoz.motor === 'google') return google()
+
+  let abierta = false
+  const groq: Escucha = crearEscuchaGroq({
+    ...base,
+    silencioMs: () => ajustesVoz.silencioVadMs,
+    sensibilidad: () => ajustesVoz.sensibilidadVad,
+    alFallar: (motivo) => pasarAGoogle(motivo),
+    alSegmento: (s) => depuracionEscucha.alSegmento?.(s),
+    alNivel: (n) => depuracionEscucha.alNivel?.(n),
+  })
+  let actual = groq
+  depuracionEscucha.alMotor?.('groq')
+
+  function pasarAGoogle(motivo: string) {
+    if (actual !== groq) return
+    console.warn(`voz: Groq no anda (${motivo}); sigo con el reconocimiento de Chrome`)
+    groq.cerrar()
+    groq.destruir?.()
+    actual = google()
+    if (abierta) actual.abrir()
+  }
+  void groqDisponible().then((hay) => {
+    if (!hay) pasarAGoogle('falta GROQ_API_KEY')
+  })
+
+  return {
+    abrir() {
+      abierta = true
+      actual.abrir()
+    },
+    cerrar() {
+      abierta = false
+      actual.cerrar()
+    },
+    cerrarTurno() {
+      actual.cerrarTurno()
+    },
+    destruir() {
+      actual.destruir?.()
+    },
   }
 }
 

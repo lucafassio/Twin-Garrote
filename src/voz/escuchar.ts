@@ -29,11 +29,16 @@ export type Escucha = {
   abrir(): void
   cerrar(): void // corta y descarta lo que se estaba diciendo
   cerrarTurno(): void // cierra a mano el turno en curso
+  destruir?(): void // suelta el microfono para siempre (al desmontar la voz)
 }
 
 // Para /prueba/voz: cada resultado de Chrome con el tiempo desde el anterior, para ajustar el fin de turno.
+// Tambien el motor activo y, con Groq, cada frase transcripta y el nivel del microfono.
 export const depuracionEscucha: {
   alResultado: ((r: { texto: string; final: boolean; desdeAnteriorMs: number }) => void) | null
+  alMotor?: ((motor: string) => void) | null
+  alSegmento?: ((s: { texto: string; audioMs: number; respuestaMs: number }) => void) | null
+  alNivel?: ((n: { nivel: number; piso: number; hablando: boolean }) => void) | null
 } = { alResultado: null }
 
 type OpcionesEscucha = {
@@ -143,5 +148,10 @@ export function crearEscucha({ esperaMs, alParcial, alTurno, alEstado }: Opcione
       alEstado(false)
     },
     cerrarTurno,
+    destruir() {
+      quiere = false
+      descartar()
+      if (corriendo) rec.abort()
+    },
   }
 }

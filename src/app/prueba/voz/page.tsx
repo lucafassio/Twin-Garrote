@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { bus } from '@/eventos'
-import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz, mensajeUrgencia } from '@/voz'
+import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz, mensajeUrgencia, type Motor } from '@/voz'
 import { depuracionEscucha } from '@/voz/escuchar'
 import { cargarVoces, elegirVoz } from '@/voz/hablar'
 
@@ -22,6 +22,11 @@ export default function Prueba() {
   const [frase, setFrase] = useState('Si, dale, me encantaria.')
   const [voces, setVoces] = useState<SpeechSynthesisVoice[]>([])
   const [hayReconocimiento, setHayReconocimiento] = useState(true)
+  const [motor, setMotor] = useState<Motor>(ajustesVoz.motor)
+  const [motorActivo, setMotorActivo] = useState('')
+  const [nivel, setNivel] = useState({ nivel: 0, piso: 0, hablando: false })
+  const [silencioVad, setSilencioVad] = useState(ajustesVoz.silencioVadMs)
+  const [sensibilidad, setSensibilidad] = useState(ajustesVoz.sensibilidadVad)
 
   useEffect(() => {
     void cargarVoces().then(setVoces)
@@ -44,16 +49,24 @@ export default function Prueba() {
     ]
     depuracionEscucha.alResultado = ({ texto, final, desdeAnteriorMs }) =>
       setResultados((r) => [`+${desdeAnteriorMs} ms ${final ? 'FINAL' : 'parcial'}: ${texto}`, ...r].slice(0, 60))
+    depuracionEscucha.alSegmento = ({ texto, audioMs, respuestaMs }) =>
+      setResultados((r) => [`groq: ${audioMs} ms de audio, respondio en ${respuestaMs} ms: ${texto || '(vacio)'}`, ...r].slice(0, 60))
+    depuracionEscucha.alMotor = setMotorActivo
+    depuracionEscucha.alNivel = setNivel
     return () => {
       offs.forEach((off) => off())
       depuracionEscucha.alResultado = null
+      depuracionEscucha.alSegmento = null
+      depuracionEscucha.alMotor = null
+      depuracionEscucha.alNivel = null
     }
   }, [])
 
+  // Cambiar de motor con la voz prendida la reinicia con el motor nuevo.
   useEffect(() => {
     if (!activa) return
     return iniciarVoz()
-  }, [activa])
+  }, [activa, motor])
 
   const vozRed = voces.length ? elegirVoz(false) : null
   const vozLocal = voces.length ? elegirVoz(true) : null
@@ -75,6 +88,7 @@ export default function Prueba() {
           {escuchando ? 'Escuchando' : 'No escucha'}
         </span>
         {hablando && <span className="rounded-full bg-sky-600 px-3 py-1 text-sm">Hablando</span>}
+        {activa && motorActivo && <span className="text-sm text-zinc-400">motor: {motorActivo}</span>}
         <a className="ml-auto text-sm text-sky-400 underline" href="/prueba/voz/conversacion">
           Conversacion completa
         </a>
@@ -83,6 +97,71 @@ export default function Prueba() {
       {!hayReconocimiento && (
         <p className="rounded bg-red-900 p-3">Este navegador no tiene reconocimiento de voz: usar Chrome. Queda el campo de texto.</p>
       )}
+
+      <section className="space-y-2">
+        <h2 className="text-sm uppercase text-zinc-400">Motor para escuchar</h2>
+        <div className="flex gap-2">
+          {(['google', 'groq'] as Motor[]).map((m) => (
+            <button
+              key={m}
+              className={`rounded px-4 py-2 ${motor === m ? 'bg-sky-700 font-bold' : 'bg-zinc-800'}`}
+              onClick={() => {
+                ajustesVoz.motor = m
+                setMotor(m)
+              }}
+            >
+              {m === 'google' ? 'Google (Chrome)' : 'Groq (Whisper)'}
+            </button>
+          ))}
+        </div>
+        {motor === 'groq' && (
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-3">
+              Microfono
+              <div className="relative h-3 w-64 rounded bg-zinc-800">
+                <div
+                  className={`h-3 rounded ${nivel.hablando ? 'bg-emerald-500' : 'bg-zinc-500'}`}
+                  style={{ width: `${Math.min(100, nivel.nivel * 800)}%` }}
+                />
+                <div
+                  className="absolute top-0 h-3 w-0.5 bg-amber-400"
+                  style={{ left: `${Math.min(100, Math.max(nivel.piso, 0.002) * sensibilidad * 800)}%` }}
+                  title="umbral de habla"
+                />
+              </div>
+              <span className="text-zinc-500">la raya amarilla es el umbral: hablando tiene que pasarla, el ruido no</span>
+            </div>
+            <label className="flex items-center gap-3">
+              Silencio que cierra la frase: {silencioVad} ms
+              <input
+                type="range"
+                min={400}
+                max={2500}
+                step={100}
+                value={silencioVad}
+                onChange={(e) => {
+                  ajustesVoz.silencioVadMs = Number(e.target.value)
+                  setSilencioVad(ajustesVoz.silencioVadMs)
+                }}
+              />
+            </label>
+            <label className="flex items-center gap-3">
+              Sensibilidad (mas alto = ignora mas ruido): {sensibilidad}
+              <input
+                type="range"
+                min={1.5}
+                max={8}
+                step={0.5}
+                value={sensibilidad}
+                onChange={(e) => {
+                  ajustesVoz.sensibilidadVad = Number(e.target.value)
+                  setSensibilidad(ajustesVoz.sensibilidadVad)
+                }}
+              />
+            </label>
+          </div>
+        )}
+      </section>
 
       <section>
         <h2 className="text-sm uppercase text-zinc-400">En vivo</h2>
