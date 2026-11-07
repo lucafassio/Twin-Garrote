@@ -29,3 +29,9 @@ Labels default: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-huma
 ### Domain docs
 
 Single-context: `GLOSSARY.md` + `docs/adr/` en la raiz. See `docs/agents/domain.md`.
+
+## graphify
+
+Grafo del repo en `graphify-out/` (`GRAPH_REPORT.md`, `graph.json`, `graph.html`). Si tenes graphify instalado (`uv tool install graphifyy`):
+- Para preguntas del codigo, primero `graphify query "<pregunta>"`; `graphify path "<A>" "<B>"` y `graphify explain "<concepto>"` para relaciones puntuales.
+- Despues de cambiar codigo, `graphify update .` (solo AST, sin costo de API) y commitear `graphify-out/` junto con el cambio.
