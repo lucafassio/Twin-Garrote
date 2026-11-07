@@ -15,18 +15,60 @@ Quien le habla al usuario en voz alta (familiar, medico, jurado).
 _Avoid_: hablante, otro
 
 **Perfil**:
-Datos del usuario y su forma de hablar (familia, gustos, tono, frases tipicas) que dan personalidad a las opciones.
+Datos del usuario y su forma de hablar (familia, gustos, tono, frases tipicas, temas a evitar) que carga un familiar en el onboarding. Es la base de la huella: el aprendizaje no lo modifica.
 _Avoid_: config, persona
 
+**Onboarding**:
+Carga inicial del perfil para un usuario nuevo, hecha por un familiar en menos de 10 minutos. Lo que carga la familia queda marcado como dicho *sobre* el usuario, no *por* el usuario.
+_Avoid_: setup, alta
+
+**Cercania**:
+Relacion del interlocutor con el usuario (familia, conocido, formal). Opcional y no bloquea: la aclara el interlocutor o un cuidador, nunca el usuario con el barrido. Si nadie la aclara, la infiere el LLM. Define el tono y que hechos se pueden usar.
+_Avoid_: relacion, nivel de confianza
+
+### Memoria
+
+**Huella**:
+Lo que el sistema sabe del usuario y entra en cada pedido de opciones: el perfil, los hechos activos mas importantes y frases reales del usuario como ejemplos de estilo.
+_Avoid_: fingerprint, persona, contexto
+
+**Hecho**:
+Dato sobre el usuario o su entorno extraido de una conversacion ("Laura se opera el jueves"), con fecha, origen, interlocutor e importancia de 1 a 10. Cuando otro hecho lo contradice se invalida, no se borra.
+_Avoid_: recuerdo, dato, memoria
+
+**Memoria corta**:
+La conversacion actual literal y un resumen de 2 o 3 lineas de cada conversacion de las ultimas ~12 horas.
+_Avoid_: contexto, ventana
+
+**Memoria larga**:
+La huella: el perfil y los hechos activos. No vence por tiempo.
+_Avoid_: historial, base de datos
+
+**Agente de memoria**:
+Proceso en segundo plano que, al cerrarse una conversacion, extrae hechos de la conversacion cruda, los reconcilia con los que ya hay (agregar, actualizar, invalidar o nada) y escribe el resumen. Nunca corre durante un turno.
+_Avoid_: extractor, consolidador
+
 ### Conversacion
+
+**Conversacion**:
+Serie de turnos y respuestas sin un silencio largo en el medio. Se detecta sola, sin UI para el usuario: mas de 15 min sin turnos es una conversacion nueva, menos de 3 min es la misma, y entre medio lo infiere el LLM.
+_Avoid_: sesion, chat, hilo
+
+**Registro**:
+Tono de la conversacion (formal, casual, intimo) que el LLM infiere del turno y ajusta el tono de las opciones. Si hay cercania aclarada, gana la cercania.
+_Avoid_: formalidad, estilo
 
 **Turno**:
 Una frase completa del interlocutor, cerrada por un segundo de silencio.
 _Avoid_: pregunta, mensaje, input
 
 **Opcion**:
-Una de las 4 respuestas candidatas que propone el LLM para el ultimo turno.
+Una de las 4 respuestas candidatas que propone el LLM para el ultimo turno. Llegan ordenadas por probabilidad, la mas probable primero.
 _Avoid_: sugerencia, candidata
+
+**Completado**:
+Frase entera que propone el LLM mientras el usuario deletrea, a partir de lo que lleva escrito y del contexto. Aparece como un elemento mas del barrido de deletrear.
+_Avoid_: autocompletado de palabra, sugerencia
 
 **Respuesta**:
 Opcion, Si o No que el usuario eligio y que el sistema dijo en voz alta. Responde el turno: entra al historial y limpia las opciones. "Espera" no es respuesta.

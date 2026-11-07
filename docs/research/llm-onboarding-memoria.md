@@ -1,0 +1,120 @@
+# Research: onboarding, aprendizaje y memoria del usuario (huella)
+
+Fecha: 2026-11-07. Alcance: como arrancar el perfil (huella) de un usuario nuevo, como seguir aprendiendo durante el uso, como cortar conversaciones sin UI, en que formato guardar y que riesgos hay. Fuentes primarias cuando se pudo; lo secundario o no verificado esta marcado con **[secundaria]** o **[no verificado]**.
+
+---
+
+## 1. Onboarding en AAC personalizada
+
+### Que hacen los productos y programas reales
+
+- **Message banking (Boston Children's, Team Gleason).** Se graban palabras, frases y sonidos con la voz natural, incluyendo "legacy messages" (frase de cabecera, apodo, un carraspeo sarcastico) que no tienen que significar nada para otros. Los seres queridos ayudan a identificarlos porque la persona a veces no sabe que es conocida por ellos. Se han banqueado entre 150 y mas de 4.000 mensajes; la recomendacion es enfocarse en humor, ternura y personalidad. [BCH Message Banking](https://bchcmg.tch.harvard.edu/services/als-augmentative-communication-program/protocol-assessment-considerations/voice-0/bch)
+- **Timing: lo antes posible.** ALS Association recomienda voice/message banking "as soon as possible" tras el diagnostico, mientras la voz es la mas fuerte ([ALS.org FYI](https://ALS.org/navigating-als/resources/fyi-guide-voice-banking-services)); Team Gleason dice lo mismo y aclara que se puede empezar con cambios leves aunque quede menos completo ([Team Gleason](https://teamgleason.org/pals-resource/voice-message-banking/)). Que los modelos entrenados con habla ya disartrica producen voz disartrica viene de un blog comercial **[secundaria]** ([Voxbooster](https://voxbooster.com/blog/voice-cloning-als-assistive-tech)).
+- **Acceso por derivacion clinica.** En el programa de Boston Children's el timing depende del diagnostico y de cuando la persona es derivada, segun una fonoaudiologa de Team Gleason **[secundaria, podcast ASHA]** ([ASHA Voices](https://leader.pubs.asha.org/do/10.1044/2022-0929-transvoices-team-gleason-aac)).
+- **Voice banking: costo de onboarding.** ModelTalker pide registrarse, instalar software, elegir un inventario y grabar frases, por unas GBP 75 ([MND Association, comparativa](https://mndassociation.org/sites/default/files/2025-02/Voice%20banking%20services%20-%20comparison%20charts%20-%20v6.pdf)). Apple Personal Voice baja el costo a unos 15 minutos de frases con prompts, divisibles en sesiones y procesado en el dispositivo; Live Speech permite tipear y guardar frases frecuentes **[secundaria: prensa 2023]** ([9to5mac](https://9to5mac.com/2023/05/16/apple-personal-voice-creation-feature-ios-17/), [Fast Company](https://www.fastcompany.com/90896931/apple-iphone-personal-voice-als-voice-banking)).
+- **Clonar desde grabaciones viejas.** El ElevenLabs Impact Program (con Bridging Voice y Scott-Morgan Foundation) ofrece licencias gratuitas y documenta un caso de clon hecho con grabaciones viejas y otro con mas de 200 episodios de podcast ([ElevenLabs](https://elevenlabs.io/blog/impact-program-announcement), [Ben Baldanza](https://www.elevenlabs.io/blog/ben-baldanza)). Esto muestra el patron "importar material existente" en vez de pedir esfuerzo nuevo.
+- **Project Relate (Google).** El onboarding pide grabar 500 frases para entrenar un reconocedor personal, mas "Custom Cards" para nombres, lugares y frases importantes. La duracion de 30 a 90 minutos en varias sesiones es **[secundaria]**. Hoy no acepta inscripciones nuevas ([Project Relate](https://sites.research.google/relate/), [Freethink](https://www.freethink.com/technology/speech-impairments)).
+- **Grid 3 (Smartbox).** Tiene message banking integrado, y su "chat history" (opt-in, con permiso) recuerda lo que decis y sugiere frases segun donde y cuando lo dijiste. La grid set "Fast Talker" para ELA/MND la hizo una SLP especialista ([Smartbox, text vocabularies](https://thinksmartbox.com/?p=10742)). Es el antecedente comercial mas cercano a "aprender durante el uso".
+- **TD Snap / Core First (Tobii Dynavox).** La personalizacion pasa por crear un perfil y editar vocabulario; la capacitacion esta dirigida a familia y profesionales ([Core First](https://us.tobiidynavox.com/pages/corefirst-page-set), [training](https://us.tobiidynavox.com/blogs/live-training/explore-customize-td-snap-core-first-2026-07-20)). No encontre una pagina "About me" documentada **[no verificado]**.
+- **Cboard.** Es open source y web, con tableros totalmente personalizables (texto a voz del navegador, unos 3.400 simbolos) ([cboard.io](https://www.cboard.io/cboard/open-source/2017/12/05/open-source-communication-board/)). No hay un onboarding de perfil "de quien sos".
+- **Voiceitt.** Reconocimiento de habla atipica que se entrena con la voz del usuario y mejora con el tiempo **[secundaria]** ([Augsburg](https://www.augsburg.edu/class/groves/assistive-technology/everyone/communication/)). No verifique su proceso especifico para ELA.
+- **Cognixion Axon-R.** El ensayo NCT06810219 (hasta 10 participantes con ELA avanzada, unos 3 meses cada uno) se pregunta explicitamente cuanto mejora la calidad de comunicacion la "personalizacion basada en IA generativa" ([BioSpace](https://www.biospace.com/press-releases/cognixion-launches-clinical-trial-for-late-stage-als-to-deliver-conversation-level-communication-with-adaptive-ai-driven-brain-computer-interface)). No hay detalle publico de como arman el perfil ni de que modelo usan **[no verificado]**.
+
+### Investigacion con LLMs
+
+- **SpeakFaster (Google + Team Gleason).** Expansion de abreviaturas con LLMs fine-tuneados con unos 1,8M de tripletes sinteticos sacados de dialogos publicos, no de datos del usuario. Ahorra 57% de acciones motoras en simulacion y subio la velocidad 29-60% en 2 usuarios con ELA por eye-gaze ([arXiv 2312.01532](https://arxiv.org/html/2312.01532v1), [Google blog](https://research.google/blog/speakfaster-revolutionizing-communication-for-people-with-severe-motor-impairments/)). Conclusion: el contexto de la conversacion ya aporta mucho sin perfil.
+- **Valencia et al., CHI 2023, "The less I type, the better".** 12 usuarios de AAC probaron sugerencias de un LLM en tres escenarios: extender respuestas cortas, responder preguntas biograficas y pedir ayuda. Las valoraron por ahorro de tiempo y esfuerzo, pero pidieron que reflejen su propio estilo y preferencias y que se puedan personalizar, editar y borrar ([PDF UCL](https://discovery.ucl.ac.uk/10185220/1/3544548.3581560.pdf)).
+- **"I, Robot?" (autoetnografia, 2025).** Un usuario de AAC registro 7 meses de su propia comunicacion cara a cara: 19.764 mensajes en 247 hilos por dia. Con eso hizo fine-tuning de GPT-4.1-mini (unos USD 120) y lo uso 3 meses. Acepto 153 sugerencias sobre 6.564 mensajes, en su mayoria cortas. Hubo autocensura durante el logueo (dejo de lado puteadas, chismes y humor negro) y el modelo saco detalles intimos y religiosos en contextos ajenos ([arXiv 2509.13671](https://arxiv.org/html/2509.13671v2)).
+- **SocializeChat, SPICA, Digital Persona.** Son sistemas que recuperan memorias personales y la persona del interlocutor para sugerir frases (RAG sobre una base personal) **[secundaria: solo vi resumenes]** ([SocializeChat review](https://www.themoonlight.io/review/socializechat-a-gpt-based-aac-tool-grounded-in-personal-memories-to-support-social-communication), [UB tech report](https://cse.buffalo.edu/tech-reports/2026-27.pdf), [ICIS 2025](https://aisel.aisnet.org/icis2025/is_health/ishealthcare/9)).
+
+### Quien lo llena y cuanto tarda (sintesis)
+
+| Metodo | Quien | Esfuerzo | Fuente |
+|---|---|---|---|
+| Message banking | Usuario, guiado por SLP; la familia ayuda a elegir frases | 150 a 4.000+ mensajes, a lo largo de meses | [BCH](https://bchcmg.tch.harvard.edu/services/als-augmentative-communication-program/protocol-assessment-considerations/voice-0/bch) |
+| Voz sintetica (Personal Voice) | Usuario | ~15 min | [9to5mac](https://9to5mac.com/2023/05/16/apple-personal-voice-creation-feature-ios-17/) |
+| Reconocedor personal (Relate) | Usuario | 500 frases | [Relate](https://sites.research.google/relate/) |
+| Clon desde archivo | Familia u organizacion, con grabaciones existentes | Bajo para el usuario | [ElevenLabs](https://elevenlabs.io/blog/impact-program-announcement) |
+| Vocabulario y tableros | SLP y familia | Variable | [Tobii](https://us.tobiidynavox.com/blogs/live-training/explore-customize-td-snap-core-first-2026-07-20) |
+| Log propio + fine-tune | Usuario | 7 meses | [I, Robot?](https://arxiv.org/html/2509.13671v2) |
+
+No encontre un estudio que use emails o WhatsApp de pacientes con ELA para construir el perfil de un LLM. Es un hueco: la idea es plausible pero no esta validada.
+
+---
+
+## 2. Aprender durante el uso: que es "esencial" y como consolidar
+
+- **Generative Agents (Park et al. 2023).** Todo se guarda como lenguaje natural con timestamp de creacion y de ultimo acceso. Al escribir, el LLM puntua la importancia de 1 a 10 (1 = mundano como lavarse los dientes, 10 = conmovedor como una ruptura). Para recuperar se suma recencia (decaimiento 0,995 por hora), importancia y relevancia (coseno), cada una normalizada y con peso 1. La reflexion se dispara cuando la suma de importancias recientes supera 150: toma los 100 registros mas recientes, genera 3 preguntas salientes y con eso sintetiza insights de mas alto nivel ([arXiv 2304.03442](https://arxiv.org/html/2304.03442v2)).
+- **Mem0 (Chhikara et al. 2025).** Hay una fase de extraccion: con el resumen global mas los ultimos 10 mensajes, el LLM saca hechos candidatos de cada intercambio. Despues viene la actualizacion: por cada hecho busca las 10 memorias mas similares y el LLM elige, via tool call, ADD, UPDATE (solo si aporta mas informacion), DELETE (si queda contradicha) o NOOP. En la variante con grafo (Mem0g), lo contradicho se marca invalido en vez de borrarse, para conservar historia. Reportan mas de 90% de ahorro de tokens y 91% menos de latencia p95 contra full-context ([arXiv 2504.19413](https://arxiv.org/html/2504.19413), [abs](https://arxiv.org/abs/2504.19413)).
+- **MemGPT / Letta.** MemGPT modela la memoria como un sistema operativo: contexto principal (RAM) con "core memory" editable por tools, recall storage para el historial y archival storage para busqueda de largo plazo **[secundaria para los detalles; paper arXiv 2310.08560]** ([emergentmind](https://www.emergentmind.com/topics/memgpt)). En Letta, un memory block tiene `label`, `description` (le dice al agente para que sirve), `value` y `limit` en caracteres, y puede ser `read_only`. Los bloques tipicos son `persona` y `human` ([Letta memory blocks](https://docs.letta.com/guides/agents/memory-blocks)).
+- **Sleep-time compute (Letta).** Un agente en segundo plano comparte bloques con el principal y los reescribe de forma asincronica, por defecto cada 5 pasos. Es experimental. La version nueva lo llama "dreaming": subagentes revisan conversaciones recientes y escriben lecciones en la memoria ([Letta sleep-time](https://docs.letta.com/guides/agents/sleep-time-agents), [Letta memory](https://docs.letta.com/letta-agent/memory/index.md)). Es exactamente el patron de consolidar entre conversaciones, fuera del camino critico.
+- **Zep / Graphiti.** Grafo temporal bi-temporal: separa cuando ocurrio un hecho de cuando se ingirio, lo que permite invalidar hechos viejos sin perder historia ([arXiv 2501.13956](https://arxiv.org/html/2501.13956)). No verifique el procedimiento exacto de invalidacion.
+- **ChatGPT.** Separa "saved memories" (lo que pediste recordar) de "reference chat history". Borrar un chat no borra la memoria que salio de el. Los chats temporales no leen ni crean memoria ([OpenAI Memory FAQ](https://help.openai.com/en/articles/8590148)).
+- **Claude (app).** Guarda memoria como temas individuales mientras chateas, no como resumen post-conversacion. La experiencia legacy hacia un resumen que se actualizaba cada 24 h. El usuario ve, edita y borra cada tema en Settings; cada proyecto tiene memoria propia; el modo incognito no guarda nada ([Claude support](https://support.claude.com/en/articles/11817273)).
+- **Gemini.** "Personal context" usa los chats pasados y vino activado por defecto, lo que genero criticas; despues paso a llamarse "Memory" e incorporo importacion desde otras apps **[secundaria]** ([Android Central](https://www.androidcentral.com/apps-software/ai/gemini-app-personal-context-uses-old-chats-future-personalized-answers-update), [Android Authority](https://www.androidauthority.com/new-gemini-features-remember-forget-conversations-3587288/)).
+- **Multi-Session Chat (Xu et al., ACL 2022).** Al final de cada sesion se resumen los "puntos personales importantes" y en la sesion siguiente se recupera ese resumen. Resumir y recuperar le gana a meter todo el historial ([arXiv 2107.07567](https://arxiv.org/pdf/2107.07567)).
+
+### Contradicciones y drift: patrones observados
+
+1. **Comparar contra lo existente antes de escribir** (Mem0: top-10 similares y decision explicita) en vez de solo agregar ([Mem0](https://arxiv.org/html/2504.19413)).
+2. **Invalidar en vez de borrar** y guardar fechas, para poder auditar y revertir ([Mem0g](https://arxiv.org/html/2504.19413), [Zep](https://arxiv.org/html/2501.13956)).
+3. **Limite duro de tamano por bloque** (Letta `limit`; Claude Code carga solo las primeras 200 lineas o 25KB de MEMORY.md y le pide al modelo compactar al acercarse) para que la memoria no crezca sin control ([Letta](https://docs.letta.com/guides/agents/memory-blocks), [Claude Code memory](https://code.claude.com/docs/en/memory)).
+4. **Bloques de solo lectura** para lo que no debe derivar, como la identidad base cargada en el onboarding ([Letta read_only](https://docs.letta.com/guides/agents/memory-blocks)).
+5. **Revision humana**: Claude, ChatGPT y Claude Code exponen la memoria como algo editable por el usuario ([Claude](https://support.claude.com/en/articles/11817273), [Claude Code](https://code.claude.com/docs/en/memory)).
+
+Ningun sistema de estos resuelve el drift de estilo, es decir, que el perfil se vaya volviendo "mas LLM" porque aprende de opciones que el LLM mismo propuso. Para Parpadeo esto es central: lo que el usuario elige entre 4 opciones generadas es una senal sesgada, no su voz libre. Lo deletreado letra por letra si es voz libre y vale mas. Esto es inferencia propia, no tiene fuente.
+
+---
+
+## 3. Segmentacion automatica de conversaciones
+
+- **Gap de tiempo.** Es la heuristica industrial estandar. GA4 cierra la sesion tras 30 minutos de inactividad, configurable entre 5 min y unas 8 h ([Google support](https://support.google.com/firebase/answer/9191807)). El rango configurable es **[secundaria]** ([accs-net](https://accs-net.com/glossary/session/)).
+- **Grid 3** usa lugar y hora como contexto para sugerir frases, una senal parecida a "cambio de situacion" ([Smartbox](https://thinksmartbox.com/?p=10742)).
+- **Topic segmentation de dialogo.** TextTiling (Hearst 1997) y sus extensiones siguen siendo la base no supervisada porque escasean los datos etiquetados. Despues vinieron el coherence scoring por pares de enunciados ([Xing & Carenini, arXiv 2106.06719](https://arxiv.org/pdf/2106.06719)) y DialSTART, con representaciones topic-aware contrastivas ([arXiv 2305.02747](https://arxiv.org/pdf/2305.02747.pdf)).
+- **Con LLM.** Def-DTS hace prompting en tres pasos por enunciado: contexto bidireccional, intencion y deteccion deductiva de cambio de tema. Reporta SOTA en TIAGE y Dialseg711 **[resultados vistos solo en review secundaria]** ([arXiv 2505.21033](https://www.arxiv.org/pdf/2505.21033)).
+- **Practica en productos.** ChatGPT y Claude no infieren limites: la conversacion la define la UI y la memoria se actualiza de forma asincronica ([Claude support](https://support.claude.com/en/articles/11817273)). Parpadeo no tiene esa UI, asi que necesita una heuristica propia.
+
+Sintesis para un prototipo: combinar (a) un gap de inactividad, por ejemplo 10-30 min; (b) cambio de interlocutor si se conoce; y (c) opcionalmente una pregunta barata al LLM ("este turno sigue la conversacion anterior? si/no") solo cuando el gap es ambiguo, por ejemplo entre 3 y 30 min. Los valores son una propuesta y no estan validados con usuarios.
+
+---
+
+## 4. Formato de almacenamiento
+
+| Sistema | Formato | Fuente |
+|---|---|---|
+| Claude Code | Markdown plano: `CLAUDE.md` (escrito por humanos) y `MEMORY.md` como indice de una linea por memoria, mas archivos por tema leidos a demanda. Se cargan 200 lineas o 25KB | [docs](https://code.claude.com/docs/en/memory) |
+| Letta | Bloques de texto con label, descripcion y limite de caracteres, editados por tools | [docs](https://docs.letta.com/guides/agents/memory-blocks) |
+| Mem0 | Hechos atomicos en lenguaje natural + embeddings en vector DB; grafo opcional | [paper](https://arxiv.org/html/2504.19413) |
+| Generative Agents | Stream de objetos {descripcion en lenguaje natural, created_at, last_accessed, importancia} | [paper](https://arxiv.org/html/2304.03442v2) |
+| Zep | Grafo temporal con episodios, entidades y comunidades | [paper](https://arxiv.org/html/2501.13956) |
+| Claude app | Temas individuales editables | [support](https://support.claude.com/en/articles/11817273) |
+
+**Markdown vs JSON para un prototipo local de 5 horas:**
+- *Markdown:* entra directo en el prompt, una persona (usuario, familia, jurado) lo lee y edita sin herramientas, y es el formato de Claude Code y de los bloques de Letta. Contra: hacer upserts y deduplicar es fragil si el LLM reescribe todo el archivo.
+- *JSON:* permite operaciones ADD/UPDATE/DELETE tipadas al estilo Mem0, metadatos (fecha, fuente, confianza, invalidado) y validacion. Contra: hay que serializarlo a texto para el prompt y es menos legible.
+- *Hibrido recomendado:* guardar hechos como JSON (`{id, texto, tipo, fuente: onboarding|deletreo|eleccion, creado, ultimo_uso, estado: activo|invalidado}`) y **renderizar** la huella a markdown cuando se arma el prompt y para la pantalla de revision. La huella base del onboarding puede ser un bloque markdown de solo lectura. No hace falta un vector DB: con decenas o pocos cientos de hechos entra todo en contexto. Esto es inferencia propia: lo que aporta Mem0 es ahorro de tokens a escala, no algo necesario en una demo.
+
+---
+
+## 5. Riesgos y etica (onboarding y aprendizaje en ELA/AAC)
+
+- **Autoria y autenticidad.** Griffiths et al. (2025) ven una similitud con la comunicacion facilitada, una tecnica desacreditada: el riesgo es que el mensaje no sea de la persona. Recomiendan una vision co-construida de la comunicacion y piden no meter LLMs en VOCAs sin critica ([J. Enabling Technologies, AAM](https://eprints.whiterose.ac.uk/id/eprint/226916/1/AI-AAC-Risk-Rewards_AAM.pdf)).
+- **Estilo propio y control.** Los usuarios piden que las sugerencias reflejen su estilo y que puedan editarlas y borrarlas ([Valencia et al. 2023](https://discovery.ucl.ac.uk/10185220/1/3544548.3581560.pdf)).
+- **Privacidad y colapso de contexto.** El modelo personalizado saco detalles intimos y religiosos en contextos ajenos, mezclo registros de distintas relaciones y provoco autocensura mientras se logueaba. Los autores recomiendan modelos modulares segun contexto y que el usuario controle que se muestra ([I, Robot?](https://arxiv.org/html/2509.13671v2)). El "AI Ghostwriter Effect" (el interlocutor atribuye al usuario texto generado por IA) sale del mismo paper.
+- **Consentimiento y defaults.** Grid 3 graba el chat history solo con permiso ([Smartbox](https://thinksmartbox.com/?p=10742)). Gemini activo la memoria por defecto y recibio criticas **[secundaria]** ([Android Central](https://www.androidcentral.com/apps-software/ai/gemini-app-personal-context-uses-old-chats-future-personalized-answers-update)). ChatGPT advierte que borrar un chat no borra lo memorizado ([OpenAI](https://help.openai.com/en/articles/8590148)).
+- **Quien edita.** En AAC tradicional la SLP y la familia configuran el vocabulario ([Tobii training](https://us.tobiidynavox.com/blogs/live-training/explore-customize-td-snap-core-first-2026-07-20)). Con LLM hay un riesgo nuevo: que un tercero cambie "quien es" la persona. No encontre estudios sobre familiares editando perfiles de IA de usuarios de AAC: es un hueco de la literatura. Como analogo existe trabajo sobre delegar consentimiento en LLMs en contexto medico ([Sassi et al.](https://cris.fau.de/publications/316169964?lang=en_GB)).
+- **Revision por el usuario con capacidad motora limitada.** Que el usuario revise lo aprendido es una buena practica (Claude, ChatGPT), pero en ELA cada confirmacion cuesta parpadeos. Ninguna fuente resuelve como hacer revisable la memoria con un solo canal de entrada: es una decision de diseno propia.
+- **Declive.** El onboarding tiene que pasar temprano o hacerlo la familia ([ALS.org](https://ALS.org/navigating-als/resources/fyi-guide-voice-banking-services), [Team Gleason](https://teamgleason.org/pals-resource/voice-message-banking/)). Lo que aporte la familia es sobre el usuario, no del usuario, y conviene marcarlo asi (inferencia propia, apoyada en BCH: la familia ayuda a identificar las frases, no las inventa).
+
+---
+
+## Implicancias para Parpadeo (hackathon de 5 horas)
+
+1. **Onboarding en dos carriles y corto.** (a) Un cuestionario que llena un familiar o la propia persona mientras todavia tipea: nombre, como le dicen, personas cercanas con su vinculo, temas, muletillas y frases de cabecera ("legacy messages" al estilo BCH), groserias si/no, humor y tono. (b) Opcional: pegar texto propio (un chat exportado o un par de mensajes) para que el LLM extraiga estilo. Apuntar a menos de 10 minutos, siguiendo el modelo Personal Voice / Relate de "esfuerzo acotado y fraccionable".
+2. **Huella = bloque base de solo lectura + hechos aprendidos.** El bloque base sale del onboarding (estilo letta `persona`/`human`, con un limite de caracteres, por ejemplo unos 2.000). Los hechos aprendidos van en una lista JSON aparte. El LLM nunca reescribe el bloque base, y eso frena el drift.
+3. **Extraccion al cierre de cada conversacion, no en cada turno.** Al detectar el fin (ver punto 5), un llamado al LLM con la transcripcion y los hechos actuales devuelve operaciones `ADD/UPDATE/INVALIDAR/NOOP` al estilo Mem0. Se invalida en lugar de borrar. Queda fuera del camino critico de latencia, como el sleep-time de Letta.
+4. **Ponderar por fuente.** Lo deletreado letra por letra es voz libre del usuario y vale mas. Una opcion elegida entre 4 es una senal debil y sesgada por el propio LLM. Lo cargado por la familia queda marcado `fuente: familia`. Guardar `fuente` en cada hecho y no aprender "estilo" de las opciones elegidas, solo hechos.
+5. **Segmentacion por gap de inactividad + chequeo LLM opcional.** Nueva conversacion si pasaron 15 o mas minutos sin turnos. Entre 3 y 15 min, una pregunta barata al LLM sobre si el nuevo turno continua la conversacion anterior. Menos de 3 min, misma conversacion. Hacer los umbrales configurables y mostrarlos en la demo.
+6. **Memoria corta vs larga.** Corta: los ultimos N turnos de la conversacion actual en el prompt, sin procesar. Larga: la huella renderizada a markdown, mas un resumen de 1-2 lineas por cada conversacion pasada (estilo Multi-Session Chat), con tope de las ultimas 5-10. Sin vector DB: todo entra en contexto.
+7. **Formato: JSON en disco y markdown en el prompt.** Un solo archivo local, por ejemplo `perfil.json`, con `{base, hechos[], resumenes[]}`, y una funcion `renderHuella()` que lo convierte a markdown para el prompt y para una pantalla "Lo que Parpadeo aprendio de vos".
+8. **Control y consentimiento minimos, demostrables.** Mostrar en la pantalla de revision cada hecho con su fuente y fecha, con un boton para invalidar (en la demo lo usa el familiar o el usuario con barrido). No aprender nada en modo "privado". Nunca usar hechos marcados sensibles (salud, religion, intimidad) fuera de contextos explicitos, en linea con lo que encontro "I, Robot?". Explicar en el pitch que la memoria es del usuario y que lo que carga la familia queda etiquetado como tal.
