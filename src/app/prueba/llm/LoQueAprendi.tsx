@@ -25,6 +25,14 @@ const ORIGEN: Record<Hecho['origen'], string> = {
   familia: 'lo cargó la familia',
 }
 
+// La respuesta cruda de /api/memoria; tira con el error de la ruta si no salio bien.
+async function leerMemoria(init?: RequestInit) {
+  const r = await fetch('/api/memoria', init)
+  const datos = await r.json()
+  if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
+  return datos
+}
+
 // "el jueves 12/11, en 2 dias": la fecha del evento, si el hecho la tiene.
 function fechaDelEvento(h: Hecho) {
   return h.fechaEvento ? describirFecha(h.fechaEvento, new Date()) : null
@@ -80,15 +88,17 @@ export function LoQueAprendi({
   const [aviso, setAviso] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const pedir = useCallback(async (init?: RequestInit) => {
-    const r = await fetch('/api/memoria', init)
-    const datos = await r.json()
-    if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
+  const mostrar = useCallback((datos: Awaited<ReturnType<typeof leerMemoria>>) => {
     setHechos({ activos: datos.activos, vencidos: datos.vencidos, invalidados: datos.invalidados })
     if (datos.niveles) setNiveles(datos.niveles)
     if (datos.huella) setHuella(datos.huella)
-    return datos
   }, [])
+
+  const pedir = useCallback(async (init?: RequestInit) => {
+    const datos = await leerMemoria(init)
+    mostrar(datos)
+    return datos
+  }, [mostrar])
 
   const recargar = useCallback(async () => {
     setError(null)
@@ -99,9 +109,14 @@ export function LoQueAprendi({
     }
   }, [pedir])
 
+  // Al montar: el estado se toca solo cuando llega la respuesta, nunca sincronico dentro del efecto.
   useEffect(() => {
-    recargar()
-  }, [recargar])
+    let vigente = true
+    leerMemoria()
+      .then((datos) => { if (vigente) mostrar(datos) })
+      .catch((e) => { if (vigente) setError(e instanceof Error ? e.message : String(e)) })
+    return () => { vigente = false }
+  }, [mostrar])
 
   async function enviar(accion: string, cuerpo: object) {
     setOcupado(accion)
