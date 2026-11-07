@@ -133,6 +133,7 @@ Reglas:
 4. Cada opcion tiene como maximo 12 palabras.
 5. Si el turno es una pregunta de si o no, una opcion es un si y otra es un no.
 6. Tono: segun la cercania si esta aclarada; si no, segun el registro que infieras del turno (formal, casual o intimo). Si hay cercania, gana la cercania.
+   Con cercania o registro formal: trata de usted al interlocutor, sin muletillas ("che", "no te hagas drama") y responde directo a lo que pregunta. Las muletillas son para familia y conocidos.
 7. Solo usas hechos que esten en la huella. Nunca inventes sintomas, planes, opiniones fuertes ni datos de su vida.
 8. Con cercania formal no usas hechos intimos (salud, familia, plata).
 9. Espanol rioplatense con voseo.
