@@ -1,9 +1,9 @@
 {
-  "0": "GLOSSARY.md (Parpadeo)",
+  "0": "Research: path llm",
   "1": "voz/index.ts",
   "2": "reductor.ts",
   "3": "package.json",
-  "4": "completado.ts",
+  "4": "proveedores.ts",
   "5": "app/page.tsx",
   "6": "eventos.ts",
   "7": "Research: path voz",
@@ -14,7 +14,7 @@
   "12": "compilerOptions",
   "13": "CLAUDE.md",
   "14": "opciones.test.ts",
-  "15": "crearDisparadorMemoria",
+  "15": "completado.ts",
   "16": "llm/tipos.ts",
   "17": "urgencia/route.ts",
   "18": "deletrear/index.ts",
@@ -22,5 +22,10 @@
   "20": "correr.ts",
   "21": "eslint.config.mjs",
   "22": "ref_node_assert",
-  "23": "ref_node_fs"
+  "23": "ref_node_fs",
+  "24": "Huella",
+  "25": "GLOSSARY.md (Parpadeo)",
+  "26": "Research: path nucleo-interfaz",
+  "27": "ADR 0001 Memoria por usuario",
+  "28": "Agente de memoria"
 }
