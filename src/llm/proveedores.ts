@@ -16,9 +16,10 @@ export function nombreProveedor(env: Entorno = process.env): NombreProveedor {
   if (pedido === 'falso') return 'falso'
   if (pedido === 'gateway') return hayGateway ? 'gateway' : 'falso'
   if (pedido === 'anthropic') return hayAnthropic ? 'anthropic' : 'falso'
-  // Sin LLM_PROVEEDOR: el primero que tenga key.
-  if (hayGateway) return 'gateway'
+  // Sin LLM_PROVEEDOR: el primero que tenga key. Anthropic va primero: es el proveedor
+  // elegido (la key del AI Gateway es de plan gratis y no tiene acceso a Haiku).
   if (hayAnthropic) return 'anthropic'
+  if (hayGateway) return 'gateway'
   return 'falso'
 }
 
