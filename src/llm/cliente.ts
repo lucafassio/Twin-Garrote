@@ -1,4 +1,4 @@
-import type { Opcion, PedidoOpciones } from '@/eventos'
+import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 
 // Cliente del navegador del path llm. Las firmas de pedirOpciones y completarFrase no cambian:
 // los usan nucleo-interfaz y deletrear.
@@ -83,5 +83,30 @@ async function pedirCompletado(prefijo: string, pedido: PedidoOpciones, signal: 
     return datos.frase
   } catch {
     return prefijo
+  }
+}
+
+// Cierre explicito de la conversacion (#25): el nucleo lo llama al detenerse, para que lo hablado
+// antes de apagar llegue a la memoria. Manda el historial por si trae lineas que el servidor todavia
+// no guardo (la ultima respuesta). El agente de memoria corre en el servidor, no se lo espera.
+// Nunca tira: devuelve true si habia una conversacion con lineas y se cerro.
+// keepalive: el pedido sigue aunque la pagina se este cerrando. El navegador lo limita a 64 KB de
+// cuerpo: con un historial mas largo se manda sin keepalive (si no, el fetch fallaria entero).
+const LIMITE_KEEPALIVE = 60_000
+
+export async function cerrarConversacion(historial: LineaHistorial[] = []): Promise<boolean> {
+  try {
+    const cuerpo = JSON.stringify({ accion: 'cerrar', historial, esperar: false })
+    const respuesta = await fetch('/api/memoria', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: cuerpo,
+      keepalive: new Blob([cuerpo]).size < LIMITE_KEEPALIVE,
+      signal: AbortSignal.timeout(10_000),
+    })
+    const datos = await respuesta.json().catch(() => null)
+    return respuesta.ok && datos?.cerrada === true
+  } catch {
+    return false
   }
 }

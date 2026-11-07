@@ -7,7 +7,8 @@
 //   4. pasa las frases del usuario a los ejemplos de estilo, lo deletreado por encima de lo elegido.
 // Todo en una sola llamada al proveedor. Nunca toca el perfil: el almacen no tiene como escribirlo.
 import type { LineaHistorial } from '@/eventos'
-import { crearOpciones } from './opciones.ts'
+import { enFila } from './fila.ts'
+import { crearCierre, crearOpciones } from './opciones.ts'
 import { DIAS_SEMANA, describirDia, describirFecha, estaVencido, finDelDia, resolverFecha } from './fechas.ts'
 import type { TiempoEstructurado } from './fechas.ts'
 import type {
@@ -124,7 +125,9 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
     memoria.hechos = reconciliar(memoria.hechos, respuesta.hechos, conversacion)
     if (respuesta.resumen) {
       const resumen: ResumenConversacion = { inicio: conversacion.inicio, fin: conversacion.fin, resumen: respuesta.resumen }
-      memoria.resumenes = [...memoria.resumenes, resumen].slice(-MAX_RESUMENES_GUARDADOS)
+      // La cola de una conversacion cerrada por tiempo trae el resumen de toda la conversacion: reemplaza al de antes.
+      const otros = memoria.resumenes.filter((r) => r.inicio !== conversacion.inicio)
+      memoria.resumenes = [...otros, resumen].slice(-MAX_RESUMENES_GUARDADOS)
     }
     return memoria
   }
@@ -154,10 +157,14 @@ export function crearDisparadorMemoria(deps: {
       if (!parcial) return
       nueva = parcial
     }
-    // Releer antes de guardar: mientras el modelo pensaba, opciones pudo mover la conversacion actual.
-    const fresca = await deps.almacen.leerMemoria()
-    const guardar: Memoria = { ...fresca, hechos: nueva.hechos, resumenes: nueva.resumenes, ejemplosEstilo: nueva.ejemplosEstilo }
-    await deps.almacen.guardarMemoria(guardar)
+    // Releer antes de guardar (en fila): mientras el modelo pensaba, opciones o un cierre pudieron
+    // mover la conversacion actual. Desde aca solo se escriben hechos, resumenes y ejemplos.
+    const guardar = await enFila(deps.almacen, async () => {
+      const fresca = await deps.almacen.leerMemoria()
+      const m: Memoria = { ...fresca, hechos: nueva.hechos, resumenes: nueva.resumenes, ejemplosEstilo: nueva.ejemplosEstilo }
+      await deps.almacen.guardarMemoria(m)
+      return m
+    })
     deps.alTerminar?.(guardar)
   }
 
@@ -174,7 +181,9 @@ export function crearDisparadorMemoria(deps: {
 // Solo frases del usuario elegidas o deletreadas: las opciones fijas no son su voz.
 // Lo deletreado queda primero y es lo ultimo que se recorta.
 function sumarEjemplos(actuales: EjemploEstilo[], conversacion: ConversacionCerrada): EjemploEstilo[] {
+  // En la cola de una conversacion cerrada por tiempo, las ya aprendidas ya sumaron sus ejemplos.
   const nuevos: EjemploEstilo[] = conversacion.lineas
+    .slice(conversacion.yaAprendidas ?? 0)
     .filter((l) => l.quien === 'usuario' && (l.origen === 'deletreo' || l.origen === 'opcion'))
     .map((l) => ({ texto: l.texto.trim(), origen: l.origen as 'deletreo' | 'opcion', fecha: conversacion.fin }))
     .filter((e) => e.texto !== '')
@@ -271,6 +280,12 @@ function promptUsuario(conversacion: ConversacionCerrada, activos: Hecho[], perf
     `# Conversacion\nDesde ${conversacion.inicio} hasta ${conversacion.fin}. Cercania: ${conversacion.cercania ?? 'no aclarada'}. Interlocutor: ${conversacion.interlocutor || 'no aclarado'}.\n\n` +
       conversacion.lineas.map(renderLinea).join('\n'),
   )
+  const n = conversacion.yaAprendidas ?? 0
+  if (n > 0) {
+    partes.push(
+      `# Ya aprendido\nLas lineas 1 a ${n} ya se aprendieron antes: usalas solo como contexto. Extrae hechos solo de la linea ${n + 1} en adelante. El resumen es de toda la conversacion.`,
+    )
+  }
   return partes.join('\n\n')
 }
 
@@ -433,10 +448,16 @@ function reconciliar(hechos: Hecho[], candidatos: Candidato[], conversacion: Con
 
 // --- Cableado ------------------------------------------------------------------
 
-// crearOpciones con el agente de memoria enganchado: cuando opciones detecta que la conversacion
-// anterior cerro, el agente corre en segundo plano. Es lo que usan las rutas.
-export function crearOpcionesConMemoria(deps: { proveedor: Proveedor; almacen: Almacen }) {
+// crearOpciones y el cierre con el agente de memoria enganchado: cuando opciones detecta que la
+// conversacion anterior cerro, o se la cierra por tiempo o a mano, el agente corre en segundo plano.
+// Es lo que usa el servidor (servidor.ts).
+export function crearOpcionesConMemoria(deps: {
+  proveedor: Proveedor
+  almacen: Almacen
+  alFallar?: (error: unknown) => void
+}) {
   const memoria = crearDisparadorMemoria(deps)
   const generarOpciones = crearOpciones({ ...deps, alCerrarConversacion: memoria.disparar })
-  return { generarOpciones, memoria }
+  const cierre = crearCierre({ almacen: deps.almacen, alCerrarConversacion: memoria.disparar })
+  return { generarOpciones, cierre, memoria }
 }

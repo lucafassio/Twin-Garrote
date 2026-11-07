@@ -90,6 +90,9 @@ export type ConversacionActual = {
   interlocutor?: string | null
   // Las lineas de esta conversacion guardadas en el servidor: una recarga del cliente no las pierde.
   lineas?: LineaHistorial[]
+  // El ultimo turno del interlocutor (ultimoTurno del ultimo pedido): entra al historial recien con
+  // el pedido siguiente. Si la conversacion se cierra antes (por tiempo), se suma al cerrarla.
+  turnoPendiente?: string | null
 }
 
 export type Memoria = {
@@ -97,6 +100,9 @@ export type Memoria = {
   resumenes: ResumenConversacion[]
   ejemplosEstilo: EjemploEstilo[]
   conversacion: ConversacionActual | null
+  // La ultima conversacion cerrada por tiempo, con las lineas que se aprendieron. Su cola (la
+  // respuesta al ultimo turno) llega recien con el pedido siguiente: ese pedido la completa y la borra.
+  cerradaPorTiempo?: ConversacionActual
 }
 
 // Donde viven el perfil y la memoria. En la app: archivos. En tests: en memoria.
@@ -123,4 +129,7 @@ export type ConversacionCerrada = {
   lineas: LineaHistorial[]
   cercania: Cercania | null
   interlocutor?: string | null // quien hablaba, si la interfaz lo aclaro
+  // Si es la cola de una conversacion cerrada por tiempo: las primeras yaAprendidas lineas ya se
+  // aprendieron y van solo como contexto.
+  yaAprendidas?: number
 }

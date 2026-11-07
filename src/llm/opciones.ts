@@ -15,7 +15,15 @@ import type {
   ResumenConversacion,
 } from './tipos.ts'
 import { hechosVigentes, textoConFecha } from './fechas.ts'
-import { abrirConversacion, armarCerrada, lineasDeConversacion, seguirConversacion } from './conversacion.ts'
+import {
+  abrirConversacion,
+  armarCerrada,
+  completarCerrada,
+  lineasDeConversacion,
+  seguirConversacion,
+  sumarLineas,
+} from './conversacion.ts'
+import { enFila } from './fila.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
 
@@ -46,7 +54,8 @@ export type GenerarOpciones = (pedido: PedidoOpciones, ahora?: Date) => Promise<
 
 export function crearOpciones(deps: DependenciasOpciones): GenerarOpciones {
   return async function generarOpciones(pedido, ahora = new Date()) {
-    const [perfil, memoria] = await Promise.all([deps.almacen.leerPerfil(), deps.almacen.leerMemoria()])
+    const perfil = await deps.almacen.leerPerfil()
+    const memoria = await guardarLineasDelPedido(deps, pedido)
 
     const deteccion = detectarConversacion(memoria.conversacion, pedido.historial, ahora)
     const sistema = promptSistema()
@@ -70,46 +79,124 @@ type Deteccion =
   | { tipo: 'misma'; lineas: LineaHistorial[] } // menos de 3 min
   | { tipo: 'dudosa'; minutos: number; lineas: LineaHistorial[] } // entre medio: decide el modelo
 
+// Mas de 15 min sin pedidos de opciones: la conversacion termino.
+function silencioLargo(conversacion: ConversacionActual, ahora: Date): boolean {
+  return ahora.getTime() - Date.parse(conversacion.ultimaActividad) > NUEVA_CONVERSACION_MS
+}
+
 function detectarConversacion(
   conversacion: ConversacionActual | null,
   historial: LineaHistorial[],
   ahora: Date,
 ): Deteccion {
-  if (!conversacion) return { tipo: 'nueva' }
+  if (!conversacion || silencioLargo(conversacion, ahora)) return { tipo: 'nueva' }
   const silencio = ahora.getTime() - Date.parse(conversacion.ultimaActividad)
-  if (silencio > NUEVA_CONVERSACION_MS) return { tipo: 'nueva' }
   const lineas = lineasDeConversacion(conversacion, historial)
   if (silencio < MISMA_CONVERSACION_MS) return { tipo: 'misma', lineas }
   return { tipo: 'dudosa', minutos: Math.round(silencio / MINUTO), lineas }
 }
 
+// Apenas llega el pedido, antes de esperar al modelo: las lineas nuevas del historial quedan en la
+// conversacion actual guardada. Asi un cierre que caiga mientras el modelo piensa no las pierde.
+// Si la anterior se cerro por tiempo, este pedido trae su cola (la respuesta al ultimo turno): se
+// manda al agente como complemento y la cerrada se borra.
+function guardarLineasDelPedido(deps: DependenciasOpciones, pedido: PedidoOpciones): Promise<Memoria> {
+  const almacen = deps.almacen
+  return enFila(almacen, async () => {
+    const memoria = await almacen.leerMemoria()
+    if (!memoria.conversacion && memoria.cerradaPorTiempo) {
+      const cola = completarCerrada(memoria.cerradaPorTiempo, pedido.historial)
+      if (cola) dispararCierre(deps, cola)
+      delete memoria.cerradaPorTiempo
+      await almacen.guardarMemoria(memoria)
+      return memoria
+    }
+    if (!memoria.conversacion) return memoria
+    const conLineas = sumarLineas(memoria.conversacion, pedido.historial)
+    const cambio =
+      conLineas.desdeLinea !== memoria.conversacion.desdeLinea ||
+      conLineas.lineas?.length !== (memoria.conversacion.lineas ?? []).length
+    if (!cambio) return memoria
+    const guardada = { ...memoria, conversacion: conLineas }
+    await almacen.guardarMemoria(guardada)
+    return guardada
+  })
+}
+
+// Despues del modelo, sobre la memoria recien leida (en fila): mientras el modelo pensaba, el agente
+// pudo guardar hechos y un cierre pudo cerrar la conversacion que se leyo al principio.
 async function actualizarConversacion(
   deps: DependenciasOpciones,
-  memoria: Memoria,
+  leida: Memoria,
   pedido: PedidoOpciones,
   ahora: Date,
   nueva: boolean,
 ) {
-  const anterior = memoria.conversacion
-  if (nueva) {
-    // La cerrada lleva sus lineas guardadas y su contexto, nunca el del pedido que abre la siguiente.
-    const cerrada = anterior ? armarCerrada(anterior, pedido.historial) : null
-    if (cerrada && deps.alCerrarConversacion) {
-      // Segundo plano: no se espera ni se deja que un error rompa el turno.
-      queueMicrotask(() => {
-        try {
-          deps.alCerrarConversacion!(cerrada)
-        } catch {}
-      })
+  await enFila(deps.almacen, async () => {
+    const memoria = await deps.almacen.leerMemoria()
+    const actual = memoria.conversacion
+    // Si ya no es la que se leyo, otro cierre se la llevo (con las lineas de este pedido): no se
+    // vuelve a cerrar ni se resucita.
+    const sigue = actual !== null && actual.inicio === leida.conversacion?.inicio
+    if (nueva) {
+      // La cerrada lleva sus lineas guardadas y su contexto, nunca el del pedido que abre la siguiente.
+      const cerrada = sigue ? armarCerrada(actual, pedido.historial) : null
+      if (cerrada) dispararCierre(deps, cerrada)
+      memoria.conversacion = abrirConversacion(pedido, ahora)
+    } else {
+      memoria.conversacion = sigue ? seguirConversacion(actual, pedido, ahora) : abrirConversacion(pedido, ahora)
     }
-    memoria.conversacion = abrirConversacion(pedido, ahora)
-  } else if (anterior) {
-    memoria.conversacion = seguirConversacion(anterior, pedido, ahora)
+    // Si un cierre por tiempo cayo mientras el modelo pensaba, las lineas de este pedido ya estaban
+    // guardadas y se aprendieron: no hay cola que esperar.
+    delete memoria.cerradaPorTiempo
+    await deps.almacen.guardarMemoria(memoria)
+  })
+}
+
+// Segundo plano: no se espera ni se deja que un error rompa el turno ni el cierre.
+function dispararCierre(deps: Pick<DependenciasOpciones, 'alCerrarConversacion'>, cerrada: ConversacionCerrada) {
+  if (!deps.alCerrarConversacion) return
+  queueMicrotask(() => {
+    try {
+      deps.alCerrarConversacion!(cerrada)
+    } catch {}
+  })
+}
+
+// --- Cierre ------------------------------------------------------------------
+
+export type DependenciasCierre = Pick<DependenciasOpciones, 'almacen' | 'alCerrarConversacion'>
+
+export type CierreConversacion = {
+  // Cierra la conversacion actual: si tiene lineas (las guardadas mas las nuevas del historial),
+  // dispara el agente de memoria en segundo plano y la devuelve. Deja la conversacion actual vacia.
+  // Sin conversacion actual no hace nada y devuelve null.
+  cerrar(historial?: LineaHistorial[]): Promise<ConversacionCerrada | null>
+  // El cierre por tiempo: igual que cerrar, solo si pasaron mas de 15 min desde la ultima actividad.
+  // Lo llama el servidor periodicamente; el reloj se inyecta para los tests.
+  cerrarSiInactiva(ahora?: Date): Promise<ConversacionCerrada | null>
+}
+
+export function crearCierre(deps: DependenciasCierre): CierreConversacion {
+  // porTiempo: sin historial del cliente, la cola llega con el pedido siguiente (ver cerradaPorTiempo).
+  function cerrarSi(debeCerrar: (actual: ConversacionActual) => boolean, historial: LineaHistorial[], porTiempo: boolean) {
+    return enFila(deps.almacen, async () => {
+      const memoria = await deps.almacen.leerMemoria()
+      const actual = memoria.conversacion
+      if (!actual || !debeCerrar(actual)) return null
+      const cerrada = armarCerrada(actual, historial)
+      memoria.conversacion = null
+      if (porTiempo && cerrada) memoria.cerradaPorTiempo = { ...actual, lineas: cerrada.lineas }
+      else delete memoria.cerradaPorTiempo
+      await deps.almacen.guardarMemoria(memoria)
+      if (cerrada) dispararCierre(deps, cerrada)
+      return cerrada
+    })
   }
-  // Releer antes de guardar: mientras el modelo pensaba, el agente de memoria pudo guardar hechos.
-  // Desde aca solo se escribe la conversacion actual.
-  const fresca = await deps.almacen.leerMemoria()
-  await deps.almacen.guardarMemoria({ ...fresca, conversacion: memoria.conversacion })
+  return {
+    cerrar: (historial = []) => cerrarSi(() => true, historial, false),
+    cerrarSiInactiva: (ahora = new Date()) => cerrarSi((actual) => silencioLargo(actual, ahora), [], true),
+  }
 }
 
 // --- Prompt ------------------------------------------------------------------
