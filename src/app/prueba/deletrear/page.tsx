@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { bus, type LineaHistorial, type PedidoOpciones } from '@/eventos'
 import Simulador from '@/dev/Simulador'
 import SimuladorOjos from '@/interfaz/SimuladorOjos'
@@ -13,27 +13,32 @@ export default function Prueba() {
   const [historial, setHistorial] = useState<LineaHistorial[]>([])
   const [ultimoTurno, setUltimoTurno] = useState<string | null>('¿Cómo estás, Roberto? ¿Necesitás algo?')
   const [montado, setMontado] = useState(true)
-  const [inicio, setInicio] = useState(() => Date.now())
+  const inicio = useRef<number | null>(null) // desde el primer parpadeo largo de cada frase
   const [registro, setRegistro] = useState<string[]>([])
 
-  useEffect(
-    () =>
-      bus.on('turno', ({ texto }) => {
-        setUltimoTurno(texto)
-        setHistorial((h) => [...h, { quien: 'interlocutor', texto }])
-      }),
-    [],
-  )
+  useEffect(() => {
+    const offTurno = bus.on('turno', ({ texto }) => {
+      setUltimoTurno(texto)
+      setHistorial((h) => [...h, { quien: 'interlocutor', texto }])
+    })
+    const offParpadeo = bus.on('parpadeoLargo', () => {
+      inicio.current ??= performance.now()
+    })
+    return () => {
+      offTurno()
+      offParpadeo()
+    }
+  }, [])
 
   const pedido: PedidoOpciones = useMemo(() => ({ historial, ultimoTurno, yaMostradas: [] }), [historial, ultimoTurno])
 
   const terminar = (texto: string) => {
-    const segundos = ((Date.now() - inicio) / 1000).toFixed(1)
+    const segundos = ((performance.now() - (inicio.current ?? performance.now())) / 1000).toFixed(1)
+    inicio.current = null
     bus.emit('decir', { texto })
     setHistorial((h) => [...h, { quien: 'usuario', texto, origen: 'deletreo' }])
     setUltimoTurno(null)
     setRegistro((r) => [`${segundos} s: ${texto}`, ...r])
-    setInicio(Date.now())
   }
 
   return (
@@ -47,10 +52,7 @@ export default function Prueba() {
           {!montado && (
             <button
               className="rounded bg-zinc-800 px-3"
-              onClick={() => {
-                setMontado(true)
-                setInicio(Date.now())
-              }}
+              onClick={() => setMontado(true)}
             >
               Volver a deletrear
             </button>

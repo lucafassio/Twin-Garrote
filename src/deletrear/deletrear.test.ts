@@ -2,6 +2,7 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { buscar, clave, crearDiccionario } from './diccionario.ts'
+import { validarFrases, validarPalabras } from './llm.ts'
 import {
   agregarLetra,
   armarFilas,
@@ -83,6 +84,25 @@ describe('barrido', () => {
     const r = elegir(b, filas)
     assert.equal(r.item, null)
     assert.deepEqual(r.barrido, BARRIDO_INICIAL)
+  })
+})
+
+describe('validacion de lo que devuelve el LLM', () => {
+  test('frases: deben usar la palabra a medias, sin repetidas, maximo 4', () => {
+    const json = JSON.stringify({
+      frases: ['El lunes tengo franco.', 'El lunes tengo frío.', 'Hola, ¿cómo andás?', 'el lunes tengo franco', 'Tengo francos', 'Fresco', ''],
+    })
+    assert.deepEqual(validarFrases(json, 'el lunes tengo fr'), ['El lunes tengo franco.', 'El lunes tengo frío.', 'Tengo francos', 'Fresco'])
+  })
+
+  test('palabras: una sola palabra que empieza con la palabra a medias', () => {
+    const json = JSON.stringify({ palabras: ['franco', 'Frío', 'fresco', 'mañana', 'fr io', 'franco'] })
+    assert.deepEqual(validarPalabras(json, 'el lunes tengo fr'), ['franco', 'Frío', 'fresco'])
+  })
+
+  test('JSON invalido no rompe', () => {
+    assert.deepEqual(validarFrases('no es json', 'fr'), [])
+    assert.deepEqual(validarPalabras('{"otra":1}', 'fr'), [])
   })
 })
 
