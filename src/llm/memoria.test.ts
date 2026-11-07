@@ -8,6 +8,7 @@ import type { LineaHistorial } from '@/eventos'
 import { crearAgenteMemoria, crearDisparadorMemoria, crearOpcionesConMemoria, ErrorMemoria } from './memoria.ts'
 import { crearAlmacenEnMemoria, memoriaVacia } from './almacen.ts'
 import { crearAlmacenEnArchivos } from './almacen-archivos.ts'
+import { crearProveedorFalso } from './proveedor-falso.ts'
 import { PERFIL_ROBERTO } from './perfil-roberto.ts'
 import type { ConversacionCerrada, Hecho, Memoria, Proveedor } from './tipos.ts'
 
@@ -186,6 +187,26 @@ describe('agente de memoria', () => {
     await generarOpciones({ historial: [], ultimoTurno: '¿Todo bien?', yaMostradas: [] }, T0)
     const u = prompts[0].usuario
     assert.ok(u.indexOf('Mandale un beso grande') < u.indexOf('Che, que lindo dia.'))
+  })
+
+  test('pide al proveedor la salida estructurada de memoria, no la de opciones', async () => {
+    const recibidos: unknown[] = []
+    const proveedor: Proveedor = {
+      nombre: 'espia',
+      async generar(p) {
+        recibidos.push(p.salida?.nombre)
+        return respuesta([])
+      },
+    }
+    await crearAgenteMemoria({ proveedor })(cerrada(), memoria(), PERFIL_ROBERTO)
+    assert.deepEqual(recibidos, ['memoria'])
+  })
+
+  test('con el proveedor falso no aprende hechos pero tampoco falla', async () => {
+    const r = await crearAgenteMemoria({ proveedor: crearProveedorFalso() })(cerrada(), memoria(), PERFIL_ROBERTO)
+    assert.deepEqual(r.hechos, [])
+    assert.deepEqual(r.resumenes, [])
+    assert.equal(r.ejemplosEstilo.length, 2)
   })
 
   test('con JSON roto reintenta una vez; si falla, igual guarda los ejemplos de estilo y da error', async () => {

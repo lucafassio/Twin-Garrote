@@ -6,16 +6,17 @@ import type { Proveedor } from './tipos.ts'
 export const MODELO_GATEWAY = 'anthropic/claude-haiku-5.5'
 
 export function crearProveedorGateway(modelo = MODELO_GATEWAY): Proveedor {
-  const esquema = jsonSchema<unknown>(ESQUEMA_RESPUESTA as never)
+  const esquemaOpciones = jsonSchema<unknown>(ESQUEMA_RESPUESTA as never)
   return {
     nombre: `gateway:${modelo}`,
-    async generar({ sistema, usuario }) {
+    async generar({ sistema, usuario, salida }) {
+      const esquema = salida ? jsonSchema<unknown>(salida.esquema as never) : esquemaOpciones
       try {
         const { output } = await generateText({
           model: modelo,
           system: sistema,
           prompt: usuario,
-          maxOutputTokens: MAX_TOKENS,
+          maxOutputTokens: salida?.maxTokens ?? MAX_TOKENS,
           output: Output.object({ schema: esquema }),
         })
         return JSON.stringify(output)

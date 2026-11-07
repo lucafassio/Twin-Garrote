@@ -6,7 +6,21 @@ import type { Cercania, LineaHistorial, Opcion } from '@/eventos'
 // Un modelo de lenguaje inyectable: recibe el prompt de sistema y el contenido, devuelve texto.
 export type Proveedor = {
   nombre: string
-  generar(prompt: { sistema: string; usuario: string }): Promise<string>
+  generar(prompt: PromptProveedor): Promise<string>
+}
+
+export type PromptProveedor = {
+  sistema: string
+  usuario: string
+  // Opcional: otra forma de salida que la de opciones (la usa el agente de memoria).
+  // Sin esto, los proveedores reales piden el esquema de opciones.
+  salida?: SalidaProveedor
+}
+
+export type SalidaProveedor = {
+  nombre: string // 'opciones' | 'memoria'
+  esquema: Record<string, unknown> // JSON Schema para la salida estructurada
+  maxTokens: number
 }
 
 // --- Huella y memoria --------------------------------------------------------

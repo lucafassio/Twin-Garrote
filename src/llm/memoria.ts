@@ -18,10 +18,42 @@ import type {
   PerfilHuella,
   Proveedor,
   ResumenConversacion,
+  SalidaProveedor,
 } from './tipos.ts'
 
 const MAX_EJEMPLOS_GUARDADOS = 40
 const MAX_RESUMENES_GUARDADOS = 50
+
+// Salida estructurada del agente para los proveedores reales. Tiene que coincidir con interpretar().
+export const SALIDA_MEMORIA: SalidaProveedor = {
+  nombre: 'memoria',
+  maxTokens: 1500,
+  esquema: {
+    type: 'object',
+    properties: {
+      hechos: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            accion: { type: 'string', enum: ['agregar', 'actualizar', 'invalidar', 'nada'] },
+            id: { type: 'string' }, // '' si es nuevo
+            texto: { type: 'string' },
+            linea: { type: 'integer' }, // 0 si no sale de una linea
+            interlocutor: { type: 'string' }, // '' si no se sabe
+            importancia: { type: 'integer' },
+            intimo: { type: 'boolean' },
+          },
+          required: ['accion', 'id', 'texto', 'linea', 'interlocutor', 'importancia', 'intimo'],
+          additionalProperties: false,
+        },
+      },
+      resumen: { type: 'string' },
+    },
+    required: ['hechos', 'resumen'],
+    additionalProperties: false,
+  },
+}
 
 export class ErrorMemoria extends Error {
   // Lo que se pudo hacer sin el modelo (los ejemplos de estilo), para guardarlo igual.
@@ -151,11 +183,11 @@ Reglas:
 - importancia de 1 a 10: 9-10 salud o eventos familiares grandes; 5-7 planes y personas; 1-3 detalles menores.
 - intimo es true si es salud, familia, plata o algo privado.
 - linea es el numero de la linea de la transcripcion de donde sale el hecho.
-- interlocutor es el nombre de quien hablaba con el usuario si aparece en la conversacion; si no, null.
+- interlocutor es el nombre de quien hablaba con el usuario si aparece en la conversacion; si no, vacio.
 - La huella la cargo la familia: no repitas hechos que ya esten ahi.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
-{"hechos":[{"accion":"agregar|actualizar|invalidar","id":"solo para actualizar o invalidar","texto":"...","linea":1,"interlocutor":null,"importancia":5,"intimo":false}],"resumen":"..."}`
+{"hechos":[{"accion":"agregar|actualizar|invalidar","id":"el id existente para actualizar o invalidar; vacio si es nuevo","texto":"...","linea":1,"interlocutor":"","importancia":5,"intimo":false}],"resumen":"..."}`
 }
 
 function renderLinea(l: LineaHistorial, i: number) {
@@ -193,10 +225,10 @@ type Candidato = {
 type RespuestaModelo = { hechos: Candidato[]; resumen: string }
 
 async function pedirConReintento(proveedor: Proveedor, sistema: string, usuario: string) {
-  const primera = interpretar(await proveedor.generar({ sistema, usuario }))
+  const primera = interpretar(await proveedor.generar({ sistema, usuario, salida: SALIDA_MEMORIA }))
   if (primera) return primera
   const aviso = '\n\nTu respuesta anterior no era el JSON pedido. Responde solo el JSON con "hechos" y "resumen".'
-  return interpretar(await proveedor.generar({ sistema, usuario: usuario + aviso }))
+  return interpretar(await proveedor.generar({ sistema, usuario: usuario + aviso, salida: SALIDA_MEMORIA }))
 }
 
 const ACCIONES: Accion[] = ['agregar', 'actualizar', 'invalidar', 'nada']
@@ -225,7 +257,7 @@ function interpretar(texto: string): RespuestaModelo | null {
       accion: c.accion as Accion,
       id: typeof c.id === 'string' && c.id !== '' ? c.id : null,
       texto: typeof c.texto === 'string' ? c.texto.trim() : '',
-      linea: Number.isInteger(c.linea) ? (c.linea as number) : null,
+      linea: Number.isInteger(c.linea) && (c.linea as number) > 0 ? (c.linea as number) : null,
       interlocutor: typeof c.interlocutor === 'string' && c.interlocutor.trim() !== '' ? c.interlocutor.trim() : null,
       importancia: Number.isFinite(importancia) ? Math.min(10, Math.max(1, importancia)) : 5,
       intimo: c.intimo === true,

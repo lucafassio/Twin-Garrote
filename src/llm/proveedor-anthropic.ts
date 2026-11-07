@@ -9,13 +9,13 @@ export function crearProveedorAnthropic(modelo = MODELO_ANTHROPIC): Proveedor {
   const cliente = new Anthropic()
   return {
     nombre: `anthropic:${modelo}`,
-    async generar({ sistema, usuario }) {
+    async generar({ sistema, usuario, salida }) {
       const mensaje = await cliente.messages.create({
         model: modelo,
-        max_tokens: MAX_TOKENS,
+        max_tokens: salida?.maxTokens ?? MAX_TOKENS,
         system: sistema,
         messages: [{ role: 'user', content: usuario }],
-        output_config: { format: { type: 'json_schema', schema: ESQUEMA_RESPUESTA as never } },
+        output_config: { format: { type: 'json_schema', schema: (salida?.esquema ?? ESQUEMA_RESPUESTA) as never } },
       })
       return mensaje.content.map((b) => (b.type === 'text' ? b.text : '')).join('')
     },

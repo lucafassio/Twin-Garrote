@@ -27,7 +27,9 @@ export function crearProveedorFalso(): Proveedor {
   let vuelta = 0
   return {
     nombre: 'falso',
-    async generar({ usuario }) {
+    async generar({ usuario, salida }) {
+      // El agente de memoria: sin modelo no aprende nada, pero tampoco falla.
+      if (salida?.nombre === 'memoria') return JSON.stringify({ hechos: [], resumen: '' })
       const sinTurno = usuario.includes('SIN_TURNO')
       const opciones = sinTurno ? SIN_TURNO : CON_TURNO[vuelta++ % CON_TURNO.length]
       return JSON.stringify({ opciones, registro: 'casual', nuevaConversacion: false })
