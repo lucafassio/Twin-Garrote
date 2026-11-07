@@ -35,6 +35,7 @@ export default function Prueba() {
   const [turno, setTurno] = useState(TURNOS_DE_PRUEBA[0].turno)
   const [sinTurno, setSinTurno] = useState(false)
   const [cercania, setCercania] = useState<Cercania | ''>(TURNOS_DE_PRUEBA[0].cercania ?? '')
+  const [interlocutor, setInterlocutor] = useState('')
   const [historial, setHistorial] = useState<LineaHistorial[]>([])
   const [yaMostradas, setYaMostradas] = useState<string[]>([])
   const [respuesta, setRespuesta] = useState<Respuesta | null>(null)
@@ -50,6 +51,7 @@ export default function Prueba() {
       ultimoTurno: sinTurno ? null : turno,
       yaMostradas: mostradas,
       ...(cercania ? { cercania } : {}),
+      ...(interlocutor.trim() ? { interlocutor: interlocutor.trim() } : {}),
     }
     setCargando(true)
     setError(null)
@@ -121,6 +123,15 @@ export default function Prueba() {
               <option value="conocido">conocido</option>
               <option value="formal">formal</option>
             </select>
+          </label>
+          <label className="flex items-center gap-2">
+            Quién habla
+            <input
+              className="w-36 rounded border bg-transparent p-1"
+              placeholder="sin aclarar"
+              value={interlocutor}
+              onChange={(e) => setInterlocutor(e.target.value)}
+            />
           </label>
           <button
             className="rounded bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
@@ -207,7 +218,13 @@ export default function Prueba() {
       )}
 
       <PruebaCompletado
-        pedido={{ historial, ultimoTurno: sinTurno ? null : turno, yaMostradas: [], ...(cercania ? { cercania } : {}) }}
+        pedido={{
+          historial,
+          ultimoTurno: sinTurno ? null : turno,
+          yaMostradas: [],
+          ...(cercania ? { cercania } : {}),
+          ...(interlocutor.trim() ? { interlocutor: interlocutor.trim() } : {}),
+        }}
       />
 
       <LoQueAprendi
