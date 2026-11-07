@@ -28,7 +28,19 @@ export type SalidaProveedor = {
 // De donde salio un hecho. 'familia' = lo cargo un familiar: dicho *sobre* el usuario.
 export type OrigenHecho = 'deletreo' | 'opcion' | 'fija' | 'interlocutor' | 'familia'
 
+// estable: "Roberto es hincha de River", nunca vence. estado: "Laura esta de viaje", puede tener fin.
+// evento: "Laura se opera el jueves", pasa en una fecha.
+export type TipoHecho = 'estable' | 'estado' | 'evento'
+
+// Los campos de tiempo son opcionales: una memoria vieja sin ellos se lee como siempre,
+// y un hecho sin tipo se trata como estable. Vencer no es invalidar: un hecho vencido sigue
+// 'activo'; el vencimiento se deriva de validoHasta y la hora (ver fechas.ts).
 export type Hecho = {
+  tipo?: TipoHecho
+  expresionOriginal?: string // la expresion temporal tal como se dijo ("el jueves")
+  fechaEvento?: string // YYYY-MM-DD, el dia del evento en Argentina; la calcula el codigo
+  validoDesde?: string // ISO, desde cuando es cierto, si se sabe
+  validoHasta?: string // ISO; para un evento, el final del dia del evento en Argentina
   id: string
   texto: string
   origen: OrigenHecho

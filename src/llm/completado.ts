@@ -6,6 +6,7 @@
 import type { Cercania, LineaHistorial, PedidoOpciones } from '@/eventos'
 import type { Almacen, ConversacionActual, Hecho, Proveedor, SalidaProveedor } from './tipos.ts'
 import { lineasDeConversacion } from './conversacion.ts'
+import { hechosVigentes, textoConFecha } from './fechas.ts'
 import { NUEVA_CONVERSACION_MS, VENTANA_RESUMENES_MS } from './opciones.ts'
 
 const MAX_HECHOS = 10
@@ -39,8 +40,10 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
       const [perfil, memoria] = await Promise.all([deps.almacen.leerPerfil(), deps.almacen.leerMemoria()])
       const partes: string[] = [`# Huella\n\n${perfil.markdown.trim()}`]
 
-      const hechos = hechosParaCompletado(memoria.hechos, pedido.cercania)
-      if (hechos.length > 0) partes.push(`## Hechos que sabes\n${hechos.map((h) => `- ${h.texto}`).join('\n')}`)
+      const hechos = hechosParaCompletado(memoria.hechos, pedido.cercania, ahora)
+      if (hechos.length > 0) {
+        partes.push(`## Hechos que sabes\n${hechos.map((h) => `- ${textoConFecha(h, ahora)}`).join('\n')}`)
+      }
 
       const ejemplos = [...memoria.ejemplosEstilo]
         .sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha))
@@ -106,9 +109,9 @@ Reglas:
 Respondes solo JSON, sin texto alrededor: {"frase":"..."}`
 }
 
-function hechosParaCompletado(hechos: Hecho[], cercania: Cercania | undefined): Hecho[] {
-  return hechos
-    .filter((h) => h.estado === 'activo')
+// Fuera los invalidados y los vencidos, con el mismo filtro que las opciones.
+function hechosParaCompletado(hechos: Hecho[], cercania: Cercania | undefined, ahora: Date): Hecho[] {
+  return hechosVigentes(hechos, ahora)
     .filter((h) => !(cercania === 'formal' && h.intimo))
     .sort((a, b) => b.importancia - a.importancia || Date.parse(b.fecha) - Date.parse(a.fecha))
     .slice(0, MAX_HECHOS)

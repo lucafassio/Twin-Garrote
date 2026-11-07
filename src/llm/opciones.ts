@@ -13,6 +13,7 @@ import type {
   Registro,
   ResultadoOpciones,
 } from './tipos.ts'
+import { hechosVigentes, textoConFecha } from './fechas.ts'
 import { abrirConversacion, armarCerrada, lineasDeConversacion, seguirConversacion } from './conversacion.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
@@ -135,7 +136,8 @@ Respondes solo JSON, sin texto alrededor, con esta forma:
 {"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"..."}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
 }
 
-function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno: string | null): Hecho[] {
+// Fuera los invalidados y los vencidos a la hora del pedido (vencido no es invalidado: sigue en la memoria).
+function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno: string | null, ahora: Date): Hecho[] {
   const palabras = new Set(
     (turno ?? '')
       .toLowerCase()
@@ -147,8 +149,7 @@ function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno
       .toLowerCase()
       .split(/[^\p{L}\p{N}]+/u)
       .filter((p) => palabras.has(p)).length
-  return hechos
-    .filter((h) => h.estado === 'activo')
+  return hechosVigentes(hechos, ahora)
     .filter((h) => !(cercania === 'formal' && h.intimo))
     .map((h) => ({ h, puntaje: h.importancia + 3 * coincidencias(h) }))
     .sort((a, b) => b.puntaje - a.puntaje || Date.parse(b.h.fecha) - Date.parse(a.h.fecha))
@@ -172,9 +173,9 @@ function promptUsuario(p: {
 
   partes.push(`# Huella\n\n${perfil.markdown.trim()}`)
 
-  const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno)
+  const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno, ahora)
   if (hechos.length > 0) {
-    partes.push(`## Hechos que sabes\n${hechos.map((h) => `- ${h.texto}`).join('\n')}`)
+    partes.push(`## Hechos que sabes\n${hechos.map((h) => `- ${textoConFecha(h, ahora)}`).join('\n')}`)
   }
 
   const ejemplos = [...memoria.ejemplosEstilo]
