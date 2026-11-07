@@ -13,7 +13,12 @@ export type RegistroEleccion = PedidoEleccion & { hora: string }
 export type AlmacenElecciones = {
   agregar(registro: RegistroEleccion): Promise<void>
   leer(): Promise<RegistroEleccion[]>
+  // Saca los registros con hora anterior al limite (privacidad, #20).
+  quitarAnteriores(limite: Date): Promise<void>
 }
+
+// Cada registro vence a los 30 dias (#20). Se purga al leer el resumen (y registrar lo lee): sin cron.
+export const VENCIMIENTO_ELECCIONES_MS = 30 * 24 * 60 * 60 * 1000
 
 export type ResumenElecciones = {
   total: number
@@ -23,7 +28,8 @@ export type ResumenElecciones = {
   posicionMedia: number | null
 }
 
-export async function resumirElecciones(almacen: AlmacenElecciones): Promise<ResumenElecciones> {
+export async function resumirElecciones(almacen: AlmacenElecciones, ahora = new Date()): Promise<ResumenElecciones> {
+  await almacen.quitarAnteriores(new Date(ahora.getTime() - VENCIMIENTO_ELECCIONES_MS))
   const registros = await almacen.leer()
   const posiciones: ResumenElecciones['posiciones'] = [0, 0, 0, 0]
   let otras = 0
@@ -47,10 +53,11 @@ export async function resumirElecciones(almacen: AlmacenElecciones): Promise<Res
 }
 
 export function crearAlmacenEleccionesEnMemoria(): AlmacenElecciones {
-  const registros: RegistroEleccion[] = []
+  let registros: RegistroEleccion[] = []
   return {
     async agregar(registro) { registros.push(structuredClone(registro)) },
     async leer() { return structuredClone(registros) },
+    async quitarAnteriores(limite) { registros = registros.filter((r) => Date.parse(r.hora) >= limite.getTime()) },
   }
 }
 
@@ -84,5 +91,5 @@ export async function registrarEleccion(almacen: AlmacenElecciones, pedido: unkn
     ...(interlocutor !== undefined ? { interlocutor } : {}),
     ...(tipoTurno !== undefined ? { tipoTurno } : {}), hora: ahora.toISOString(),
   })
-  return resumirElecciones(almacen)
+  return resumirElecciones(almacen, ahora)
 }
