@@ -1,4 +1,21 @@
 import type { Opcion, PedidoOpciones } from '@/eventos'
+import type { PedidoEleccion, ResumenElecciones } from './elecciones.ts'
+
+// Opcional: llamar al elegir, sin esperar para avanzar el turno. Nunca rechaza.
+export async function registrarEleccion(pedido: PedidoEleccion): Promise<ResumenElecciones | null> {
+  try {
+    const respuesta = await fetch('/api/elecciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pedido),
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!respuesta.ok) return null
+    return await respuesta.json() as ResumenElecciones
+  } catch {
+    return null
+  }
+}
 
 // Cliente del navegador del path llm. Las firmas de pedirOpciones y completarFrase no cambian:
 // los usan nucleo-interfaz y deletrear.

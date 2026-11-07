@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { registrarEleccion } from '@/llm/cliente'
+import type { Eleccion, ResumenElecciones } from '@/llm/elecciones'
 import type { Cercania, LineaHistorial, Opcion, PedidoOpciones, TipoTurno } from '@/eventos'
 import PruebaCompletado from './PruebaCompletado'
 import PruebaCorte from './PruebaCorte'
@@ -25,6 +27,7 @@ const TURNOS_DE_PRUEBA: { turno: string; cercania?: Cercania }[] = [
 type Medicion = { turno: string; cercania: string; msTotal: number; msServidor: number; proveedor: string }
 
 type Respuesta = {
+  pedido: PedidoOpciones
   opciones: Opcion[]
   registro: string
   nuevaConversacion: boolean
@@ -45,10 +48,39 @@ export default function Prueba() {
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
   const [mediciones, setMediciones] = useState<Medicion[]>([])
+  const [resumen, setResumen] = useState<ResumenElecciones | null>(null)
+  const [errorRegistro, setErrorRegistro] = useState(false)
+
+  function mostrarResumen(nuevo: ResumenElecciones) {
+    setResumen((previo) => !previo || nuevo.total >= previo.total ? nuevo : previo)
+  }
+
+  useEffect(() => {
+    let vigente = true
+    fetch('/api/elecciones').then(async (r) => {
+      if (!r.ok) throw new Error('No se pudo leer el resumen')
+      const datos: ResumenElecciones = await r.json()
+      if (vigente) mostrarResumen(datos)
+    }).catch(() => { if (vigente) setErrorRegistro(true) })
+    return () => { vigente = false }
+  }, [])
+
+  function registrar(eleccion: Eleccion) {
+    if (!respuesta) return
+    const { pedido, opciones } = respuesta
+    void registrarEleccion({
+      opciones, eleccion, turno: pedido.ultimoTurno, cercania: pedido.cercania ?? null,
+      interlocutor: pedido.interlocutor, tipoTurno: pedido.tipoTurno,
+    }).then((nuevo) => {
+      setErrorRegistro(!nuevo)
+      if (nuevo) mostrarResumen(nuevo)
+    })
+  }
 
   async function pedir(otra: boolean) {
+    if (otra) registrar('otra')
     const mostradas = otra && respuesta ? [...yaMostradas, ...respuesta.opciones.map((o) => o.texto)] : []
-    const pedido: PedidoOpciones = {
+    const pedido: PedidoOpciones = otra && respuesta ? { ...respuesta.pedido, yaMostradas: mostradas } : {
       historial,
       ultimoTurno: sinTurno ? null : turno,
       yaMostradas: mostradas,
@@ -68,7 +100,7 @@ export default function Prueba() {
       const datos = await r.json()
       const total = Math.round(performance.now() - inicio)
       if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
-      setRespuesta(datos)
+      setRespuesta({ ...datos, pedido })
       setMsTotal(total)
       setYaMostradas(mostradas)
       setMediciones((m) => [
@@ -82,9 +114,11 @@ export default function Prueba() {
     }
   }
 
-  function elegir(o: Opcion) {
+  function elegir(o: Opcion, posicion: number) {
+    if (!respuesta || cargando) return
+    registrar(posicion as Eleccion)
     const nuevas: LineaHistorial[] = []
-    if (!sinTurno) nuevas.push({ quien: 'interlocutor', texto: turno })
+    if (respuesta.pedido.ultimoTurno !== null) nuevas.push({ quien: 'interlocutor', texto: respuesta.pedido.ultimoTurno })
     nuevas.push({ quien: 'usuario', texto: o.texto, origen: 'opcion' })
     setHistorial((h) => [...h, ...nuevas])
     setRespuesta(null)
@@ -203,6 +237,17 @@ export default function Prueba() {
 
       {error && <p className="rounded bg-red-100 p-3 text-red-800">Error: {error}</p>}
 
+      <section className="space-y-2 rounded border p-4" aria-live="polite">
+        <h2 className="font-semibold">Resumen de elecciones</h2>
+        {resumen && <>
+          <p>{resumen.total} elecciones registradas</p>
+          <p>{resumen.posiciones.map((cantidad, i) => `Posicion ${i + 1}: ${cantidad}`).join(' / ')}</p>
+          <p>Otra: {(resumen.tasaOtra * 100).toFixed(1)}% · Fijas: {(resumen.tasaFijas * 100).toFixed(1)}% · Posicion media: {resumen.posicionMedia?.toFixed(2) ?? 'sin datos'}</p>
+          <p className="text-sm">Tasas sobre todas las elecciones. Media solo sobre opciones 1 a 4.</p>
+        </>}
+        {errorRegistro && <p role="status">No se pudo actualizar el registro. Podes seguir con el turno.</p>}
+      </section>
+
       {respuesta && (
         <section className="space-y-2">
           <p className="text-sm">
@@ -214,7 +259,8 @@ export default function Prueba() {
               <li key={i}>
                 <button
                   className="w-full rounded border p-3 text-left text-xl hover:bg-gray-100 hover:text-black"
-                  onClick={() => elegir(o)}
+                  disabled={cargando}
+                  onClick={() => elegir(o, i + 1)}
                   title="Elegir esta opción: pasa al historial"
                 >
                   <span className="mr-2 text-sm text-gray-500">
