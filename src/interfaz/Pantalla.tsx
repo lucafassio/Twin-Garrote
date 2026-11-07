@@ -62,9 +62,10 @@ type Props = {
   estado: Estado
   onCortarUrgencia: () => void
   onRepetir: () => void
+  operador?: ReactNode // herramientas de quien opera la demo (CampoTurno, debug), debajo de la franja
 }
 
-export default function Pantalla({ estado, onCortarUrgencia, onRepetir }: Props) {
+export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador }: Props) {
   const elementos = elementosBarrido(estado)
   const iluminado = estado.pausado ? undefined : elementos[estado.iluminado]
   const progreso = estado.ojosCerrados ? estado.progreso : 0
@@ -156,6 +157,8 @@ export default function Pantalla({ estado, onCortarUrgencia, onRepetir }: Props)
           )
         })}
       </footer>
+
+      {operador}
     </div>
   )
 }

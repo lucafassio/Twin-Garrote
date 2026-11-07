@@ -5,7 +5,9 @@ import type { Nucleo } from '@/nucleo/motor'
 import type { Estado } from '@/nucleo/tipos'
 
 // Panel chico para la demo: velocidad del barrido (teclas + y -) y estado del nucleo.
-export default function DebugNucleo({ nucleo, estado }: { nucleo: Nucleo; estado: Estado }) {
+type Props = { nucleo: Nucleo; estado: Estado; flotante?: boolean }
+
+export default function DebugNucleo({ nucleo, estado, flotante = true }: Props) {
   const [velocidad, setVelocidad] = useState(() => nucleo.velocidad())
 
   useEffect(() => {
@@ -21,7 +23,9 @@ export default function DebugNucleo({ nucleo, estado }: { nucleo: Nucleo; estado
   }, [nucleo])
 
   return (
-    <div className="fixed right-2 bottom-2 z-50 w-72 rounded border border-sky-500 bg-black/90 p-2 font-mono text-xs text-sky-200">
+    <div
+      className={`${flotante ? 'fixed right-2 bottom-2 z-50' : 'ml-auto'} w-72 rounded border border-sky-500 bg-black/90 p-2 font-mono text-xs text-sky-200`}
+    >
       <div className="font-bold">Nucleo (+ / - velocidad)</div>
       <div>barrido: {velocidad} ms por elemento</div>
       <div>conversacion: {estado.conversacion}</div>
