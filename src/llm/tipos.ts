@@ -28,7 +28,19 @@ export type SalidaProveedor = {
 // De donde salio un hecho. 'familia' = lo cargo un familiar: dicho *sobre* el usuario.
 export type OrigenHecho = 'deletreo' | 'opcion' | 'fija' | 'interlocutor' | 'familia'
 
+// estable: "Roberto es hincha de River", nunca vence. estado: "Laura esta de viaje", puede tener fin.
+// evento: "Laura se opera el jueves", pasa en una fecha.
+export type TipoHecho = 'estable' | 'estado' | 'evento'
+
+// Los campos de tiempo son opcionales: una memoria vieja sin ellos se lee como siempre,
+// y un hecho sin tipo se trata como estable. Vencer no es invalidar: un hecho vencido sigue
+// 'activo'; el vencimiento se deriva de validoHasta y la hora (ver fechas.ts).
 export type Hecho = {
+  tipo?: TipoHecho
+  expresionOriginal?: string // la expresion temporal tal como se dijo ("el jueves")
+  fechaEvento?: string // YYYY-MM-DD, el dia del evento en Argentina; la calcula el codigo
+  validoDesde?: string // ISO, desde cuando es cierto, si se sabe
+  validoHasta?: string // ISO; el final del dia del evento, o del dia del "hasta" de un estado, en Argentina
   id: string
   texto: string
   origen: OrigenHecho
@@ -78,6 +90,9 @@ export type ConversacionActual = {
   interlocutor?: string | null
   // Las lineas de esta conversacion guardadas en el servidor: una recarga del cliente no las pierde.
   lineas?: LineaHistorial[]
+  // El ultimo turno del interlocutor (ultimoTurno del ultimo pedido): entra al historial recien con
+  // el pedido siguiente. Si la conversacion se cierra antes (por tiempo), se suma al cerrarla.
+  turnoPendiente?: string | null
 }
 
 export type Memoria = {
@@ -85,6 +100,9 @@ export type Memoria = {
   resumenes: ResumenConversacion[]
   ejemplosEstilo: EjemploEstilo[]
   conversacion: ConversacionActual | null
+  // La ultima conversacion cerrada por tiempo, con las lineas que se aprendieron. Su cola (la
+  // respuesta al ultimo turno) llega recien con el pedido siguiente: ese pedido la completa y la borra.
+  cerradaPorTiempo?: ConversacionActual
 }
 
 // Donde viven el perfil y la memoria. En la app: archivos. En tests: en memoria.
@@ -111,4 +129,7 @@ export type ConversacionCerrada = {
   lineas: LineaHistorial[]
   cercania: Cercania | null
   interlocutor?: string | null // quien hablaba, si la interfaz lo aclaro
+  // Si es la cola de una conversacion cerrada por tiempo: las primeras yaAprendidas lineas ya se
+  // aprendieron y van solo como contexto.
+  yaAprendidas?: number
 }

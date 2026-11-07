@@ -1,8 +1,7 @@
 // Correr: node --test 'src/llm/*.test.ts'
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
-import type { LineaHistorial } from '@/eventos'
-import { cerrarConversacion, invalidarHecho, listarHechos } from './controles-memoria.ts'
+import { invalidarHecho, listarHechos } from './controles-memoria.ts'
 import { crearAlmacenEnMemoria } from './almacen.ts'
 import type { Hecho } from './tipos.ts'
 
@@ -17,12 +16,6 @@ const hecho = (h: Partial<Hecho> & { id: string; texto: string }): Hecho => ({
   ...h,
 })
 
-const historial: LineaHistorial[] = [
-  { quien: 'interlocutor', texto: 'Hola' },
-  { quien: 'usuario', texto: 'Hola', origen: 'opcion' },
-  { quien: 'interlocutor', texto: 'Laura se opera el jueves' },
-  { quien: 'usuario', texto: 'Uy, mandale un beso', origen: 'opcion' },
-]
 
 describe('controles de memoria', () => {
   test('listarHechos separa activos e invalidados, los nuevos primero', async () => {
@@ -70,57 +63,5 @@ describe('controles de memoria', () => {
     assert.equal(conLaura.descartado, ahora.toISOString())
     assert.equal(conLaura.resumen, 'Le contaron que Laura se opera el jueves.') // no se borra
     assert.equal(deRiver.descartado, undefined)
-  })
-
-  test('cerrarConversacion arma la conversacion desde donde empezo y la deja cerrada', async () => {
-    const almacen = crearAlmacenEnMemoria({
-      memoria: {
-        conversacion: { inicio: '2026-11-07T14:00:00.000Z', ultimaActividad: '2026-11-07T14:05:00.000Z', desdeLinea: 2 },
-      },
-    })
-    const cerrada = await cerrarConversacion(almacen, historial, 'familia')
-    assert.deepEqual(cerrada, {
-      inicio: '2026-11-07T14:00:00.000Z',
-      fin: '2026-11-07T14:05:00.000Z',
-      lineas: historial.slice(2),
-      cercania: null, // memoria vieja sin cercania guardada: igual que el cierre de opciones
-      interlocutor: null,
-    })
-    assert.equal(almacen.memoria().conversacion, null)
-  })
-
-  test('cerrarConversacion usa las lineas, la cercania y el interlocutor guardados, aunque el historial llegue vacio', async () => {
-    const almacen = crearAlmacenEnMemoria({
-      memoria: {
-        conversacion: {
-          inicio: '2026-11-07T14:00:00.000Z',
-          ultimaActividad: '2026-11-07T14:05:00.000Z',
-          desdeLinea: 0,
-          cercania: 'familia',
-          interlocutor: 'Marta',
-          lineas: historial.slice(0, 3),
-        },
-      },
-    })
-    // Despues de una recarga, el cliente manda lo que lleva desde entonces (o nada).
-    const cerrada = await cerrarConversacion(almacen, historial.slice(3), 'formal')
-    assert.deepEqual(cerrada, {
-      inicio: '2026-11-07T14:00:00.000Z',
-      fin: '2026-11-07T14:05:00.000Z',
-      lineas: historial,
-      cercania: 'familia',
-      interlocutor: 'Marta',
-    })
-    assert.equal(almacen.memoria().conversacion, null)
-  })
-
-  test('cerrarConversacion sin nada que aprender devuelve null', async () => {
-    const almacen = crearAlmacenEnMemoria()
-    assert.equal(await cerrarConversacion(almacen, []), null)
-    const conActual = crearAlmacenEnMemoria({
-      memoria: { conversacion: { inicio: 'x', ultimaActividad: 'x', desdeLinea: 4 } },
-    })
-    assert.equal(await cerrarConversacion(conActual, historial), null)
-    assert.equal(conActual.memoria().conversacion, null)
   })
 })

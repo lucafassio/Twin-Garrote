@@ -10,7 +10,7 @@ export type LecturaTurno = {
   fuente?: 'modelo' | 'local' // de donde salio (lo completa el motor, para el debug)
 }
 
-export type ElementoFijo = 'urgencia' | 'si' | 'no' | 'espera' | 'otra' | 'repetir'
+export type ElementoFijo = 'urgencia' | 'si' | 'no' | 'espera' | 'otra' | 'deletrear' | 'repetir'
 export type Elemento = { tipo: 'opcion'; indice: number } | { tipo: ElementoFijo }
 
 // Que muestran los cuadrantes.
@@ -48,6 +48,7 @@ export type Estado = {
   // Mirada: zona estable que mira el usuario ('opcion0'..'opcion3' o 'franja'), o null.
   // Filtra el barrido: un cuadrante queda solo; la franja se recorre sola.
   zonaMirada: string | null
+  deletreando: boolean // Deletrear esta montado y maneja su propio barrido
 }
 
 export type Accion =
@@ -69,6 +70,8 @@ export type Accion =
   | { tipo: 'cortarUrgencia' } // la corta el cuidador (Escape o click)
   | { tipo: 'finConfirmacion' } // vencio el tiempo para confirmar la falsa alarma
   | { tipo: 'repetir' } // click de la sala en Repetir
+  | { tipo: 'terminarDeletreo'; texto: string } // Deletrear devolvio la frase escrita
+  | { tipo: 'cancelarDeletreo' } // vuelve al barrido principal; el borrador lo guarda Deletrear
 
 // Lo que el motor tiene que hacer afuera del reductor.
 export type Efecto =

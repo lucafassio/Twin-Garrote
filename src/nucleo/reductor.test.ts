@@ -2,7 +2,7 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Opcion } from '@/eventos'
-import { elementosBarrido, estadoInicial, reducir } from './reductor'
+import { elementosBarrido, estadoInicial, pedidoActual, reducir } from './reductor'
 import type { Accion, Efecto, Estado, LecturaTurno } from './tipos'
 
 const OPCIONES: Opcion[] = [
@@ -54,24 +54,24 @@ const nombres = (e: Estado) =>
 
 describe('barrido', () => {
   test('antes del primer turno recorre solo urgencia y opciones fijas', () => {
-    assert.deepEqual(nombres(estadoInicial), ['urgencia', 'si', 'no', 'espera', 'otra'])
+    assert.deepEqual(nombres(estadoInicial), ['urgencia', 'si', 'no', 'espera', 'otra', 'deletrear'])
   })
 
   test('con opciones recorre opciones primero y despues la franja', () => {
     assert.deepEqual(nombres(conOpciones()), [
-      'opcion0', 'opcion1', 'opcion2', 'opcion3', 'urgencia', 'si', 'no', 'espera', 'otra',
+      'opcion0', 'opcion1', 'opcion2', 'opcion3', 'urgencia', 'si', 'no', 'espera', 'otra', 'deletrear',
     ])
   })
 
   test('mientras piensa el LLM, Otra se saltea', () => {
     const e = aplicar(estadoInicial, { tipo: 'turno', texto: 'Hola' }).estado
     assert.equal(e.conversacion, 'pensando')
-    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera'])
+    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'deletrear'])
   })
 
   test('el tick avanza y vuelve a empezar al final', () => {
     let e = estadoInicial
-    for (let i = 0; i < 5; i++) e = reducir(e, { tipo: 'tick' }).estado
+    for (let i = 0; i < 6; i++) e = reducir(e, { tipo: 'tick' }).estado
     assert.equal(e.iluminado, 0)
     assert.equal(e.vueltas, 1)
   })
@@ -90,7 +90,7 @@ describe('barrido', () => {
 
   test('tras 3 vueltas sin eleccion se pausa', () => {
     let e = estadoInicial
-    for (let i = 0; i < 15; i++) e = reducir(e, { tipo: 'tick' }).estado
+    for (let i = 0; i < 18; i++) e = reducir(e, { tipo: 'tick' }).estado
     assert.equal(e.pausado, true)
     const despues = reducir(e, { tipo: 'tick' }).estado
     assert.equal(despues.iluminado, e.iluminado)
@@ -98,7 +98,7 @@ describe('barrido', () => {
 
   test('en pausa, un parpadeo largo reanuda sin elegir nada', () => {
     let e = estadoInicial
-    for (let i = 0; i < 15; i++) e = reducir(e, { tipo: 'tick' }).estado
+    for (let i = 0; i < 18; i++) e = reducir(e, { tipo: 'tick' }).estado
     const r = reducir(e, { tipo: 'parpadeoLargo' })
     assert.equal(r.estado.pausado, false)
     assert.equal(r.estado.vueltas, 0)
@@ -169,22 +169,23 @@ describe('mirada por zonas', () => {
 
   test('mirar la franja deja el barrido solo en la franja', () => {
     const e = mirar(conOpciones(), 'franja')
-    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'otra'])
+    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'otra', 'deletrear'])
   })
 
   test('sin zona vuelve el barrido completo', () => {
     const e = mirar(mirar(conOpciones(), 'opcion1'), null)
-    assert.equal(nombres(e).length, 9)
+    assert.deepEqual(nombres(e), nombres(conOpciones()))
   })
 
   test('mirar un cuadrante vacio no filtra nada', () => {
     const e = mirar(estadoInicial, 'opcion0') // todavia no hay opciones
-    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'otra'])
+    assert.deepEqual(nombres(e), nombres(estadoInicial))
   })
 
   test('cambiar de zona reinicia el barrido y saca la pausa', () => {
     let e = conOpciones()
-    for (let i = 0; i < 27; i++) e = reducir(e, { tipo: 'tick' }).estado
+    const vueltas3 = nombres(e).length * 3
+    for (let i = 0; i < vueltas3; i++) e = reducir(e, { tipo: 'tick' }).estado
     assert.equal(e.pausado, true)
     e = mirar(e, 'franja')
     assert.equal(e.pausado, false)
@@ -623,5 +624,83 @@ describe('urgencia', () => {
     assert.ok(pedido && pedido.tipo === 'pedirOpciones')
     assert.equal(pedido.pedido.ultimoTurno, '¿Que te pasa?')
     assert.equal(r2.estado.conversacion, 'pensando')
+  })
+})
+
+describe('deletrear', () => {
+  // Elige Deletrear con 4 opciones en pantalla.
+  function deletreando() {
+    return reducir(iluminar(conOpciones(), 'deletrear'), { tipo: 'parpadeoLargo' }).estado
+  }
+
+  test('elegir Deletrear lo abre sin decir nada', () => {
+    const antes = iluminar(conOpciones(), 'deletrear')
+    const r = reducir(antes, { tipo: 'parpadeoLargo' })
+    assert.equal(r.estado.deletreando, true)
+    assert.equal(decires(r.efectos).length, 0)
+    assert.deepEqual(r.estado.historial, antes.historial)
+  })
+
+  test('mientras deletrea, tick y parpadeo largo no mueven el barrido del nucleo', () => {
+    const e = deletreando()
+    const r = aplicar(e, { tipo: 'tick' }, { tipo: 'tick' }, { tipo: 'parpadeoLargo' })
+    assert.equal(r.estado.iluminado, e.iluminado)
+    assert.equal(r.estado.deletreando, true)
+    assert.equal(decires(r.efectos).length, 0)
+  })
+
+  test('terminar el deletreo lo dice y entra al historial como deletreo', () => {
+    const r = reducir(deletreando(), { tipo: 'terminarDeletreo', texto: 'Quiero ver a mi nieta.' })
+    assert.deepEqual(decires(r.efectos).map((d) => d.texto), ['Quiero ver a mi nieta.'])
+    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'Quiero ver a mi nieta.', origen: 'deletreo' })
+    assert.equal(r.estado.deletreando, false)
+    assert.deepEqual(r.estado.opciones, [])
+    assert.equal(r.estado.ultimoTurno, null)
+  })
+
+  test('cancelar vuelve al barrido principal sin decir nada', () => {
+    const e = deletreando()
+    const r = reducir(e, { tipo: 'cancelarDeletreo' })
+    assert.equal(r.estado.deletreando, false)
+    assert.equal(r.estado.iluminado, 0)
+    assert.equal(decires(r.efectos).length, 0)
+    assert.deepEqual(r.estado.opciones, e.opciones)
+  })
+
+  test('terminar o cancelar sin estar deletreando no hace nada', () => {
+    const e = conOpciones()
+    assert.deepEqual(reducir(e, { tipo: 'terminarDeletreo', texto: 'Hola' }), { estado: e, efectos: [] })
+    assert.deepEqual(reducir(e, { tipo: 'cancelarDeletreo' }).efectos, [])
+  })
+
+  test('el gesto de urgencia anda mientras deletrea y al cortarla sigue deletreando', () => {
+    const e = aplicar(deletreando(), { tipo: 'ojos', cerrados: true, progreso: 1 }, { tipo: 'gestoUrgencia' }).estado
+    assert.equal(e.urgencia, true)
+    const r = aplicar(e, { tipo: 'ojos', cerrados: false, progreso: 0 }, { tipo: 'cortarUrgencia' })
+    assert.equal(r.estado.urgencia, false)
+    assert.equal(r.estado.deletreando, true)
+  })
+
+  test('"Fue sin querer" sigue andando con dos parpadeos largos mientras deletrea', () => {
+    const e = aplicar(deletreando(), { tipo: 'ojos', cerrados: true, progreso: 1 }, { tipo: 'gestoUrgencia' }).estado
+    const r = aplicar(e, { tipo: 'ojos', cerrados: false, progreso: 0 }, { tipo: 'parpadeoLargo' }, { tipo: 'parpadeoLargo' })
+    assert.equal(r.estado.urgencia, false)
+    assert.ok(r.efectos.some((x) => x.tipo === 'detenerUrgencia' && x.falsaAlarma))
+  })
+
+  test('un turno nuevo mientras deletrea pide opciones sin sacarlo de deletrear', () => {
+    const r = reducir(deletreando(), { tipo: 'turno', texto: '¿Y de postre?' })
+    assert.equal(r.estado.deletreando, true)
+    assert.ok(tipos(r.efectos).includes('pedirOpciones'))
+    assert.equal(pedidoActual(r.estado).ultimoTurno, '¿Y de postre?')
+  })
+
+  test('el pedido para Deletrear es el del turno actual, sin las opciones ya mostradas', () => {
+    const e = reducir(iluminar(conOpciones(), 'otra'), { tipo: 'parpadeoLargo' }).estado
+    assert.ok(e.yaMostradas.length > 0)
+    const pedido = pedidoActual(e)
+    assert.equal(pedido.ultimoTurno, '¿Queres empanadas?')
+    assert.deepEqual(pedido.historial, [])
+    assert.deepEqual(pedido.yaMostradas, [])
   })
 })

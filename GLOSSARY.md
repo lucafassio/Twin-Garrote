@@ -37,15 +37,19 @@ Lo que el sistema sabe del usuario y entra en cada pedido de opciones: el perfil
 _Avoid_: fingerprint, persona, contexto
 
 **Hecho**:
-Dato sobre el usuario o su entorno extraido de una conversacion ("Laura se opera el jueves"), con fecha, origen, interlocutor e importancia de 1 a 10. Cuando otro hecho lo contradice se invalida, no se borra.
+Dato sobre el usuario o su entorno extraido de una conversacion ("Laura se opera el jueves"), con fecha, origen, interlocutor e importancia de 1 a 10. Cuando otro hecho lo contradice se invalida, no se borra. Tiene un tipo: estable (nunca vence), estado (puede tener fin) o evento (pasa en una fecha). Sin tipo, es estable.
 _Avoid_: recuerdo, dato, memoria
+
+**Vencido**:
+Hecho cuya fecha ya paso: un evento despues del fin del dia del evento, o un estado despues de su fin, en la hora de Argentina. Deja de entrar a las opciones y al completado, pero no se invalida ni se borra: sigue activo en la memoria y el agente de memoria lo ve marcado. Se deriva de la hora, no se guarda.
+_Avoid_: expirado, caducado, viejo
 
 **Memoria corta**:
 La conversacion actual literal y un resumen de 2 o 3 lineas de cada conversacion de las ultimas ~12 horas.
 _Avoid_: contexto, ventana
 
 **Memoria larga**:
-La huella: el perfil y los hechos activos. No vence por tiempo.
+La huella: el perfil y los hechos activos. No vence por tiempo como bloque; solo cada hecho con fecha puede quedar vencido.
 _Avoid_: historial, base de datos
 
 **Agente de memoria**:
@@ -99,7 +103,7 @@ Sonido corto que suena siempre antes de que el sistema diga algo en voz alta, pa
 _Avoid_: chime, campana, alerta
 
 **Opciones fijas**:
-Si, No, Espera, Otra y Repetir: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial. "Repetir" vuelve a decir la ultima respuesta sin que entre de nuevo al historial; tambien la puede pedir cualquiera de la sala.
+Si, No, Espera, Otra, Deletrear y Repetir: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial. "Repetir" vuelve a decir la ultima respuesta sin que entre de nuevo al historial; tambien la puede pedir cualquiera de la sala. "Deletrear" abre el **deletreo** cuando ni "Otra" sirve.
 _Avoid_: botones rapidos, atajos
 
 **Urgencia**:

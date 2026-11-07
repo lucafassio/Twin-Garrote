@@ -19,6 +19,7 @@ export function abrirConversacion(pedido: PedidoOpciones, ahora: Date): Conversa
     cercania: pedido.cercania ?? null,
     interlocutor: interlocutorDe(pedido) ?? null,
     lineas: [],
+    turnoPendiente: pedido.ultimoTurno,
   }
 }
 
@@ -31,13 +32,23 @@ export function seguirConversacion(
 ): ConversacionActual {
   const interlocutor = interlocutorDe(pedido)
   return {
-    ...actual,
+    ...sumarLineas(actual, pedido.historial),
     ultimaActividad: ahora.toISOString(),
-    lineas: lineasDeConversacion(actual, pedido.historial),
-    // Si el historial se achico (recarga), lo que trajo ya quedo en lineas: lo que siga se toma desde aca.
-    desdeLinea: Math.min(actual.desdeLinea, pedido.historial.length),
+    turnoPendiente: pedido.ultimoTurno,
     ...(pedido.cercania ? { cercania: pedido.cercania } : {}),
     ...(interlocutor ? { interlocutor } : {}),
+  }
+}
+
+// La misma conversacion con las lineas nuevas del historial guardadas, sin tocar su actividad.
+// Opciones la usa apenas llega el pedido, antes de esperar al modelo: si mientras tanto la cierra
+// el chequeo periodico, la cerrada ya tiene las lineas de este pedido.
+export function sumarLineas(actual: ConversacionActual, historial: LineaHistorial[]): ConversacionActual {
+  return {
+    ...actual,
+    lineas: lineasDeConversacion(actual, historial),
+    // Si el historial se achico (recarga), lo que trajo ya quedo en lineas: lo que siga se toma desde aca.
+    desdeLinea: Math.min(actual.desdeLinea, historial.length),
   }
 }
 
@@ -45,7 +56,7 @@ export function seguirConversacion(
 // de la propia conversacion (una memoria vieja sin cercania ni interlocutor cierra con null).
 // null si no hay lineas: no hay nada que aprender.
 export function armarCerrada(actual: ConversacionActual, historial: LineaHistorial[]): ConversacionCerrada | null {
-  const lineas = lineasDeConversacion(actual, historial)
+  const lineas = conTurnoPendiente(lineasDeConversacion(actual, historial), actual.turnoPendiente)
   if (lineas.length === 0) return null
   return {
     inicio: actual.inicio,
@@ -54,6 +65,31 @@ export function armarCerrada(actual: ConversacionActual, historial: LineaHistori
     cercania: actual.cercania ?? null,
     interlocutor: actual.interlocutor ?? null,
   }
+}
+
+// La cola de una conversacion cerrada por tiempo: la cerrada con las lineas que trae ahora el historial.
+// null si no trae nada nuevo. Las ya aprendidas van primero, como contexto.
+export function completarCerrada(cerrada: ConversacionActual, historial: LineaHistorial[]): ConversacionCerrada | null {
+  const aprendidas = cerrada.lineas ?? []
+  const lineas = lineasDeConversacion(cerrada, historial)
+  if (lineas.length <= aprendidas.length) return null
+  return {
+    inicio: cerrada.inicio,
+    fin: cerrada.ultimaActividad,
+    lineas,
+    cercania: cerrada.cercania ?? null,
+    interlocutor: cerrada.interlocutor ?? null,
+    yaAprendidas: aprendidas.length,
+  }
+}
+
+// El ultimo turno del interlocutor se suma si el historial todavia no lo trajo: si la ultima linea
+// del interlocutor ya es ese turno, ya esta.
+function conTurnoPendiente(lineas: LineaHistorial[], turno: string | null | undefined): LineaHistorial[] {
+  if (!turno?.trim()) return lineas
+  const ultimaDelInterlocutor = lineas.findLast((l) => l.quien === 'interlocutor')
+  if (ultimaDelInterlocutor?.texto === turno) return lineas
+  return [...lineas, { quien: 'interlocutor', texto: turno }]
 }
 
 // Las lineas de la conversacion: las guardadas en el servidor, mas las nuevas que trae el historial

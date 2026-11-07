@@ -84,6 +84,9 @@ function Conversacion() {
         estado={estado}
         onCortarUrgencia={nucleo.cortarUrgencia}
         onRepetir={nucleo.repetir}
+        onTerminarDeletreo={nucleo.terminarDeletreo}
+        onCancelarDeletreo={nucleo.cancelarDeletreo}
+        velocidadMs={nucleo.velocidad()}
         operador={
           // Se oculta sin desmontar: la camara de vision tiene que seguir andando.
           <div className={herramientas ? 'flex items-start gap-4' : 'h-0 overflow-hidden opacity-0'}>

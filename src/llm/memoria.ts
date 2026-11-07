@@ -7,13 +7,17 @@
 //   4. pasa las frases del usuario a los ejemplos de estilo, lo deletreado por encima de lo elegido.
 // Todo en una sola llamada al proveedor. Nunca toca el perfil: el almacen no tiene como escribirlo.
 import type { LineaHistorial } from '@/eventos'
-import { crearOpciones } from './opciones.ts'
+import { enFila } from './fila.ts'
+import { crearCierre, crearOpciones } from './opciones.ts'
+import { DIAS_SEMANA, describirDia, describirFecha, estaVencido, finDelDia, resolverFecha } from './fechas.ts'
+import type { TiempoEstructurado } from './fechas.ts'
 import type {
   Almacen,
   ConversacionCerrada,
   EjemploEstilo,
   Hecho,
   Memoria,
+  TipoHecho,
   OrigenHecho,
   PerfilHuella,
   Proveedor,
@@ -27,7 +31,7 @@ const MAX_RESUMENES_GUARDADOS = 50
 // Salida estructurada del agente para los proveedores reales. Tiene que coincidir con interpretar().
 export const SALIDA_MEMORIA: SalidaProveedor = {
   nombre: 'memoria',
-  maxTokens: 1500,
+  maxTokens: 2000,
   esquema: {
     type: 'object',
     properties: {
@@ -43,8 +47,26 @@ export const SALIDA_MEMORIA: SalidaProveedor = {
             interlocutor: { type: 'string' }, // '' si no se sabe
             importancia: { type: 'integer' },
             intimo: { type: 'boolean' },
+            tipo: { type: 'string', enum: ['estable', 'estado', 'evento'] },
+            // La expresion temporal tal como se dijo y su forma estructurada; la fecha la calcula el codigo.
+            // Plano y con todo requerido (vacios en 0 o ''): lo aceptan los dos proveedores.
+            tiempo: {
+              type: 'object',
+              properties: {
+                expresion: { type: 'string' }, // '' si el hecho no menciona un momento
+                forma: { type: 'string', enum: ['ninguna', 'diaSemana', 'relativo', 'calendario'] },
+                diaSemana: { type: 'string', enum: ['', ...DIAS_SEMANA] },
+                dias: { type: 'integer' }, // relativo: mañana 1, ayer -1
+                dia: { type: 'integer' }, // calendario
+                mes: { type: 'integer' },
+                anio: { type: 'integer' }, // 0 si no se dijo
+                hasta: { type: 'boolean' }, // "hasta el domingo": el fin de un estado
+              },
+              required: ['expresion', 'forma', 'diaSemana', 'dias', 'dia', 'mes', 'anio', 'hasta'],
+              additionalProperties: false,
+            },
           },
-          required: ['accion', 'id', 'texto', 'linea', 'interlocutor', 'importancia', 'intimo'],
+          required: ['accion', 'id', 'texto', 'linea', 'interlocutor', 'importancia', 'intimo', 'tipo', 'tiempo'],
           additionalProperties: false,
         },
       },
@@ -83,6 +105,7 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
     const memoria = structuredClone(memoriaActual)
     memoria.ejemplosEstilo = sumarEjemplos(memoria.ejemplosEstilo, conversacion)
 
+    // Los vencidos siguen activos: el agente los ve, marcados, para registrar lo que paso despues.
     const activos = memoria.hechos.filter((h) => h.estado === 'activo')
     const nombre = nombreUsuario(perfil)
     const sistema = promptSistema(nombre)
@@ -102,7 +125,9 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
     memoria.hechos = reconciliar(memoria.hechos, respuesta.hechos, conversacion)
     if (respuesta.resumen) {
       const resumen: ResumenConversacion = { inicio: conversacion.inicio, fin: conversacion.fin, resumen: respuesta.resumen }
-      memoria.resumenes = [...memoria.resumenes, resumen].slice(-MAX_RESUMENES_GUARDADOS)
+      // La cola de una conversacion cerrada por tiempo trae el resumen de toda la conversacion: reemplaza al de antes.
+      const otros = memoria.resumenes.filter((r) => r.inicio !== conversacion.inicio)
+      memoria.resumenes = [...otros, resumen].slice(-MAX_RESUMENES_GUARDADOS)
     }
     return memoria
   }
@@ -132,10 +157,14 @@ export function crearDisparadorMemoria(deps: {
       if (!parcial) return
       nueva = parcial
     }
-    // Releer antes de guardar: mientras el modelo pensaba, opciones pudo mover la conversacion actual.
-    const fresca = await deps.almacen.leerMemoria()
-    const guardar: Memoria = { ...fresca, hechos: nueva.hechos, resumenes: nueva.resumenes, ejemplosEstilo: nueva.ejemplosEstilo }
-    await deps.almacen.guardarMemoria(guardar)
+    // Releer antes de guardar (en fila): mientras el modelo pensaba, opciones o un cierre pudieron
+    // mover la conversacion actual. Desde aca solo se escriben hechos, resumenes y ejemplos.
+    const guardar = await enFila(deps.almacen, async () => {
+      const fresca = await deps.almacen.leerMemoria()
+      const m: Memoria = { ...fresca, hechos: nueva.hechos, resumenes: nueva.resumenes, ejemplosEstilo: nueva.ejemplosEstilo }
+      await deps.almacen.guardarMemoria(m)
+      return m
+    })
     deps.alTerminar?.(guardar)
   }
 
@@ -152,7 +181,9 @@ export function crearDisparadorMemoria(deps: {
 // Solo frases del usuario elegidas o deletreadas: las opciones fijas no son su voz.
 // Lo deletreado queda primero y es lo ultimo que se recorta.
 function sumarEjemplos(actuales: EjemploEstilo[], conversacion: ConversacionCerrada): EjemploEstilo[] {
+  // En la cola de una conversacion cerrada por tiempo, las ya aprendidas ya sumaron sus ejemplos.
   const nuevos: EjemploEstilo[] = conversacion.lineas
+    .slice(conversacion.yaAprendidas ?? 0)
     .filter((l) => l.quien === 'usuario' && (l.origen === 'deletreo' || l.origen === 'opcion'))
     .map((l) => ({ texto: l.texto.trim(), origen: l.origen as 'deletreo' | 'opcion', fecha: conversacion.fin }))
     .filter((e) => e.texto !== '')
@@ -188,13 +219,13 @@ function promptSistema(nombre: string | null): string {
   return `Sos el agente de memoria de un sistema de comunicacion aumentativa para una persona con ELA (${usuario}). Al terminar una conversacion, lees la transcripcion cruda y actualizas lo que el sistema sabe de su vida. No hablas con nadie.
 
 Tareas:
-1. Extrae hechos nuevos o cambiados sobre la vida del usuario y su entorno: planes con fecha, personas, gustos, novedades. Un hecho por item, corto, en tercera persona y autocontenido (que se entienda sin la conversacion; con fechas concretas si las hay).
+1. Extrae hechos nuevos o cambiados sobre la vida del usuario y su entorno: planes con fecha, personas, gustos, novedades. Un hecho por item, corto, en tercera persona y autocontenido (que se entienda sin la conversacion). Si menciona un momento, dejalo como se dijo ("el jueves"): la fecha concreta la calcula el sistema con el campo tiempo, no la escribas vos.
 2. Compara cada hecho con los hechos existentes (cada uno con su id) y elegi una accion:
    - "agregar": es nuevo.
    - "actualizar": cambia o completa uno existente (pone el id); el texto nuevo reemplaza al viejo.
    - "invalidar": la conversacion muestra que uno existente ya no es cierto (pone el id) y no hay nada nuevo que guardar.
    - "nada": ya se sabia igual. No hace falta listarlo.
-3. Escribi un resumen de 2 o 3 lineas de la conversacion, para recordar de que se hablo.
+3. Escribi un resumen de 2 o 3 lineas de la conversacion, para recordar de que se hablo. Separa las lineas con salto de linea y pone lo mas importante en la primera: con el paso de las horas solo se recuerda esa.
 
 Reglas:
 - Solo lo que la conversacion dice. Nunca inventes ni deduzcas de mas.
@@ -205,9 +236,18 @@ Reglas:
 - interlocutor es quien le hablaba al usuario, solo si se sabe: porque se presenta ("soy Laura"), porque el usuario lo nombra al responderle, o por su rol ("doctor"). Si no, vacio.
 - El nombre del usuario${nombre ? ` (${nombre})` : ''} nunca es el interlocutor. Cuando el interlocutor dice un nombre al hablar ("Che, ${nombre ?? 'Roberto'}..."), casi siempre es el del usuario. Las personas de la huella tampoco son el interlocutor salvo que la conversacion lo muestre.
 - La huella la cargo la familia: no repitas hechos que ya esten ahi.
+- tipo: "estable" si no cambia con el tiempo (de que equipo es, a quien quiere); "estado" si es cierto por un tiempo (esta de viaje, esta enferma); "evento" si pasa en un momento (se opera el jueves, viene el domingo).
+- tiempo: si el hecho menciona un momento, pone en expresion las palabras tal como se dijeron ("el jueves", "mañana", "el 20 de noviembre") y elegi la forma. No hagas cuentas de fechas: las hace el sistema a partir del dia del cierre.
+  - "diaSemana": un dia de la semana ("el jueves"). diaSemana sin tildes: domingo, lunes, martes, miercoles, jueves, viernes, sabado.
+  - "relativo": dias desde hoy en dias (mañana 1, pasado mañana 2, en una semana 7, ayer -1, hoy 0).
+  - "calendario": una fecha del calendario en dia y mes; anio solo si se dijo, si no 0.
+  - "ninguna": no menciona un momento, o es vago ("pronto", "algun dia"). expresion vacia.
+  - hasta es true si el momento es el fin de algo ("esta de viaje hasta el domingo"): la forma es la del dia en que termina.
+  Los campos que no usa la forma van en 0 o vacios.
+- Los hechos existentes marcados como vencidos ya pasaron su fecha: siguen siendo historia. Si la conversacion cuenta como salio, agrega o actualiza.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
-{"hechos":[{"accion":"agregar|actualizar|invalidar","id":"el id existente para actualizar o invalidar; vacio si es nuevo","texto":"...","linea":1,"interlocutor":"","importancia":5,"intimo":false}],"resumen":"..."}`
+{"hechos":[{"accion":"agregar|actualizar|invalidar","id":"el id existente para actualizar o invalidar; vacio si es nuevo","texto":"...","linea":1,"interlocutor":"","importancia":5,"intimo":false,"tipo":"evento","tiempo":{"expresion":"el jueves","forma":"diaSemana","diaSemana":"jueves","dias":0,"dia":0,"mes":0,"anio":0,"hasta":false}}],"resumen":"..."}`
 }
 
 function renderLinea(l: LineaHistorial, i: number) {
@@ -215,18 +255,37 @@ function renderLinea(l: LineaHistorial, i: number) {
   return `${i + 1}. ${quien}: ${l.texto}`
 }
 
+// "- [id] (2026-11-10) Laura se opera (evento, el jueves 12/11, ayer, vencido)"
+function renderHechoExistente(h: Hecho, ahora: Date) {
+  const tiempo = [
+    h.tipo,
+    h.fechaEvento ? describirFecha(h.fechaEvento, ahora) : null,
+    estaVencido(h, ahora) ? 'vencido' : null,
+  ].filter(Boolean)
+  const detalle = tiempo.length > 0 ? ` (${tiempo.join(', ')})` : ''
+  return `- [${h.id}] (${h.fecha.slice(0, 10)}) ${h.texto}${detalle}`
+}
+
 function promptUsuario(conversacion: ConversacionCerrada, activos: Hecho[], perfil: PerfilHuella): string {
+  const cierre = new Date(conversacion.fin)
   const partes: string[] = []
+  partes.push(`# Hoy\nLa conversacion cerro el ${describirDia(cierre)} (hora de Argentina).`)
   partes.push(`# Huella (solo lectura)\n\n${perfil.markdown.trim()}`)
   partes.push(
     activos.length > 0
-      ? `# Hechos existentes\n${activos.map((h) => `- [${h.id}] (${h.fecha.slice(0, 10)}) ${h.texto}`).join('\n')}`
+      ? `# Hechos existentes\n${activos.map((h) => renderHechoExistente(h, cierre)).join('\n')}`
       : '# Hechos existentes\nNinguno todavia.',
   )
   partes.push(
     `# Conversacion\nDesde ${conversacion.inicio} hasta ${conversacion.fin}. Cercania: ${conversacion.cercania ?? 'no aclarada'}. Interlocutor: ${conversacion.interlocutor || 'no aclarado'}.\n\n` +
       conversacion.lineas.map(renderLinea).join('\n'),
   )
+  const n = conversacion.yaAprendidas ?? 0
+  if (n > 0) {
+    partes.push(
+      `# Ya aprendido\nLas lineas 1 a ${n} ya se aprendieron antes: usalas solo como contexto. Extrae hechos solo de la linea ${n + 1} en adelante. El resumen es de toda la conversacion.`,
+    )
+  }
   return partes.join('\n\n')
 }
 
@@ -241,6 +300,10 @@ type Candidato = {
   interlocutor: string | null
   importancia: number
   intimo: boolean
+  tipo: TipoHecho | null
+  expresion: string | null
+  tiempo: TiempoEstructurado
+  hasta: boolean
 }
 type RespuestaModelo = { hechos: Candidato[]; resumen: string }
 
@@ -252,6 +315,22 @@ async function pedirConReintento(proveedor: Proveedor, sistema: string, usuario:
 }
 
 const ACCIONES: Accion[] = ['agregar', 'actualizar', 'invalidar', 'nada']
+const TIPOS: TipoHecho[] = ['estable', 'estado', 'evento']
+
+// Tolerante: una respuesta sin tiempo (o con algo raro) queda sin fecha, nunca rompe el hecho.
+function interpretarTiempo(valor: unknown): { expresion: string | null; tiempo: TiempoEstructurado; hasta: boolean } {
+  if (typeof valor !== 'object' || valor === null) return { expresion: null, tiempo: { forma: 'ninguna' }, hasta: false }
+  const t = valor as Record<string, unknown>
+  const expresion = typeof t.expresion === 'string' && t.expresion.trim() !== '' ? t.expresion.trim() : null
+  const entero = (v: unknown) => (Number.isInteger(v) ? (v as number) : NaN)
+  let tiempo: TiempoEstructurado = { forma: 'ninguna' }
+  if (t.forma === 'diaSemana' && typeof t.diaSemana === 'string') tiempo = { forma: 'diaSemana', diaSemana: t.diaSemana }
+  else if (t.forma === 'relativo') tiempo = { forma: 'relativo', dias: entero(t.dias) }
+  else if (t.forma === 'calendario') {
+    tiempo = { forma: 'calendario', dia: entero(t.dia), mes: entero(t.mes), anio: entero(t.anio) || null }
+  }
+  return { expresion, tiempo, hasta: t.hasta === true }
+}
 
 function interpretar(texto: string): RespuestaModelo | null {
   const limpio = texto
@@ -281,6 +360,8 @@ function interpretar(texto: string): RespuestaModelo | null {
       interlocutor: typeof c.interlocutor === 'string' && c.interlocutor.trim() !== '' ? c.interlocutor.trim() : null,
       importancia: Number.isFinite(importancia) ? Math.min(10, Math.max(1, importancia)) : 5,
       intimo: c.intimo === true,
+      tipo: TIPOS.includes(c.tipo as TipoHecho) ? (c.tipo as TipoHecho) : null,
+      ...interpretarTiempo(c.tiempo),
     })
   }
   return { hechos, resumen: d.resumen.trim() }
@@ -299,6 +380,26 @@ function nuevoId(fecha: string) {
   return `h-${Date.parse(fecha).toString(36)}-${(secuencia++).toString(36)}-${Math.random().toString(36).slice(2, 6)}`
 }
 
+// Los campos de tiempo de un hecho nuevo. La fecha se calcula contra el fin de la conversacion;
+// si no se puede (imposible, a mas de un año), el hecho se guarda igual, sin fecha ni vencimiento.
+function camposDeTiempo(c: Candidato, referencia: Date): Partial<Hecho> {
+  const campos: Partial<Hecho> = {}
+  if (c.tipo) campos.tipo = c.tipo
+  if (c.expresion) campos.expresionOriginal = c.expresion
+  // Solo vencen un evento y lo que tiene un "hasta". Un estable nunca. Un estado sin "hasta" tampoco:
+  // el momento no es su fin, sigue hasta que una conversacion lo contradiga o la familia lo invalide.
+  const vence = c.tipo === 'evento' || (c.tipo === 'estado' && c.hasta)
+  if (!vence) return campos
+  const fecha = resolverFecha(c.tiempo, referencia)
+  const fin = fecha ? finDelDia(fecha) : null
+  if (!fecha || !fin) return campos
+  // Un "hasta" marca el fin de algo: vence ese dia, pero no es el dia de un evento. Si el agente lo llamo
+  // evento ("esta de viaje hasta el domingo"), queda como evento sin fechaEvento, con validoHasta.
+  if (!c.hasta) campos.fechaEvento = fecha
+  campos.validoHasta = fin
+  return campos
+}
+
 function reconciliar(hechos: Hecho[], candidatos: Candidato[], conversacion: ConversacionCerrada): Hecho[] {
   const resultado = hechos.map((h) => ({ ...h }))
   const fecha = conversacion.fin
@@ -308,6 +409,7 @@ function reconciliar(hechos: Hecho[], candidatos: Candidato[], conversacion: Con
     h.fechaInvalidacion = fecha
   }
   const crear = (c: Candidato, reemplazaA?: string): Hecho => ({
+    ...camposDeTiempo(c, new Date(fecha)),
     id: nuevoId(fecha),
     texto: c.texto,
     origen: origenDe(conversacion, c.linea),
@@ -346,10 +448,16 @@ function reconciliar(hechos: Hecho[], candidatos: Candidato[], conversacion: Con
 
 // --- Cableado ------------------------------------------------------------------
 
-// crearOpciones con el agente de memoria enganchado: cuando opciones detecta que la conversacion
-// anterior cerro, el agente corre en segundo plano. Es lo que usan las rutas.
-export function crearOpcionesConMemoria(deps: { proveedor: Proveedor; almacen: Almacen }) {
+// crearOpciones y el cierre con el agente de memoria enganchado: cuando opciones detecta que la
+// conversacion anterior cerro, o se la cierra por tiempo o a mano, el agente corre en segundo plano.
+// Es lo que usa el servidor (servidor.ts).
+export function crearOpcionesConMemoria(deps: {
+  proveedor: Proveedor
+  almacen: Almacen
+  alFallar?: (error: unknown) => void
+}) {
   const memoria = crearDisparadorMemoria(deps)
   const generarOpciones = crearOpciones({ ...deps, alCerrarConversacion: memoria.disparar })
-  return { generarOpciones, memoria }
+  const cierre = crearCierre({ almacen: deps.almacen, alCerrarConversacion: memoria.disparar })
+  return { generarOpciones, cierre, memoria }
 }

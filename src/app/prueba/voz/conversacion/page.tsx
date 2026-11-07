@@ -30,7 +30,13 @@ export default function Conversacion() {
 
   return (
     <>
-      <Pantalla estado={estado} onCortarUrgencia={nucleo.cortarUrgencia} onRepetir={nucleo.repetir} />
+      <Pantalla
+        estado={estado}
+        onCortarUrgencia={nucleo.cortarUrgencia}
+        onRepetir={nucleo.repetir}
+        onTerminarDeletreo={nucleo.terminarDeletreo}
+        onCancelarDeletreo={nucleo.cancelarDeletreo}
+      />
       <Simulador />
     </>
   )
