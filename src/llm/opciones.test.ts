@@ -2,7 +2,7 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { PedidoOpciones } from '@/eventos'
-import { crearOpciones, ErrorOpciones } from './opciones.ts'
+import { crearCierre, crearOpciones, ErrorOpciones } from './opciones.ts'
 import { crearAlmacenEnMemoria } from './almacen.ts'
 import { crearProveedorFalso } from './proveedor-falso.ts'
 import type { ConversacionCerrada, Hecho, Memoria, Proveedor } from './tipos.ts'
@@ -21,18 +21,29 @@ const respuesta = (extra: Record<string, unknown> = {}) =>
   JSON.stringify({ opciones: CUATRO, registro: 'casual', nuevaConversacion: false, ...extra })
 
 // Proveedor guionado: devuelve las respuestas en orden y guarda los prompts que recibio.
+// trabarProximo: el proximo pedido espera hasta soltar(), para meter un cierre mientras el modelo piensa.
 function guionado(respuestas: string[]) {
   const prompts: { sistema: string; usuario: string }[] = []
+  let trabado: Promise<void> | null = null
+  let soltar = () => {}
   const proveedor: Proveedor = {
     nombre: 'guionado',
     async generar(p) {
       prompts.push(p)
+      if (trabado) {
+        const espera = trabado
+        trabado = null
+        await espera
+      }
       const r = respuestas.shift()
       if (r === undefined) throw new Error('el guion se quedo sin respuestas')
       return r
     },
   }
-  return { proveedor, prompts }
+  const trabarProximo = () => {
+    trabado = new Promise((r) => (soltar = r))
+  }
+  return { proveedor, prompts, trabarProximo, soltar: () => soltar() }
 }
 
 const pedido = (p: Partial<PedidoOpciones> = {}): PedidoOpciones => ({
@@ -55,11 +66,13 @@ const hecho = (h: Partial<Hecho> & { texto: string }): Hecho => ({
 })
 
 function armar(respuestas: string[], memoria?: Partial<Memoria>) {
-  const { proveedor, prompts } = guionado(respuestas)
+  const { proveedor, prompts, trabarProximo, soltar } = guionado(respuestas)
   const almacen = crearAlmacenEnMemoria({ memoria })
   const cerradas: ConversacionCerrada[] = []
-  const generar = crearOpciones({ proveedor, almacen, alCerrarConversacion: (c) => cerradas.push(c) })
-  return { generar, prompts, almacen, cerradas }
+  const alCerrarConversacion = (c: ConversacionCerrada) => cerradas.push(c)
+  const generar = crearOpciones({ proveedor, almacen, alCerrarConversacion })
+  const cierre = crearCierre({ almacen, alCerrarConversacion })
+  return { generar, cierre, prompts, almacen, cerradas, trabarProximo, soltar }
 }
 
 const vaciarPromesas = () => new Promise((r) => setImmediate(r))
@@ -292,6 +305,8 @@ describe('conversacion actual con su contexto y sus lineas', () => {
     { quien: 'interlocutor' as const, texto: '¿Como dormiste?' },
     { quien: 'usuario' as const, texto: 'Bien, che.' },
   ]
+  // El turno por defecto de pedido(): si nadie lo responde, queda pendiente y entra al cerrar.
+  const asado = { quien: 'interlocutor' as const, texto: '¿Queres asado el domingo?' }
 
   test('la cerrada usa la cercania y el interlocutor con que se abrio, no los del pedido siguiente', async () => {
     const { generar, cerradas } = armar([respuesta(), respuesta()])
@@ -334,7 +349,7 @@ describe('conversacion actual con su contexto y sus lineas', () => {
     await generar(pedido({ historial: [] }), despues(20 * MIN)) // recargo la pagina
     await vaciarPromesas()
     assert.equal(cerradas.length, 1)
-    assert.deepEqual(cerradas[0].lineas, historial)
+    assert.deepEqual(cerradas[0].lineas, [...historial, asado])
     assert.equal(cerradas[0].cercania, 'familia')
   })
 
@@ -374,10 +389,153 @@ describe('conversacion actual con su contexto y sus lineas', () => {
     assert.match(prompts[0].usuario, /¿Como dormiste\?/)
     await generar(pedido({ historial, cercania: 'formal' }), despues(20 * MIN))
     await vaciarPromesas()
-    assert.deepEqual(cerradas[0].lineas, historial)
+    assert.deepEqual(cerradas[0].lineas, [...historial, asado])
     assert.equal(cerradas[0].cercania, null)
     assert.equal(cerradas[0].interlocutor, null)
     assert.equal(almacen.memoria().conversacion?.cercania, 'formal')
+  })
+})
+
+describe('cierre de la conversacion', () => {
+  const historial = [
+    { quien: 'interlocutor' as const, texto: '¿Como dormiste?' },
+    { quien: 'usuario' as const, texto: 'Bien, che.' },
+  ]
+  const respuestaFinal = { quien: 'usuario' as const, texto: 'Me voy a dormir.', origen: 'opcion' as const }
+  // pedido() pregunta por el asado: el historial que manda el cliente despues trae el turno y la respuesta.
+  const asado = { quien: 'interlocutor' as const, texto: '¿Queres asado el domingo?' }
+  const conRespuesta = [...historial, asado, respuestaFinal]
+
+  test('cerrar dispara al agente con las lineas guardadas y las del historial, y deja la conversacion vacia', async () => {
+    const { generar, cierre, cerradas, almacen } = armar([respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?', cercania: 'familia', interlocutor: 'Marta' }), T0)
+    await generar(pedido({ historial }), despues(1 * MIN))
+    const cerrada = await cierre.cerrar(conRespuesta)
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.deepEqual(cerradas[0], cerrada)
+    assert.deepEqual(cerradas[0].lineas, conRespuesta)
+    assert.equal(cerradas[0].cercania, 'familia')
+    assert.equal(cerradas[0].interlocutor, 'Marta')
+    assert.equal(almacen.memoria().conversacion, null)
+    // Llamada de nuevo, no hace nada.
+    assert.equal(await cierre.cerrar(conRespuesta), null)
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+  })
+
+  test('una memoria vieja sin lineas ni contexto guardados cierra con el historial desde donde empezo', async () => {
+    const vieja = { inicio: T0.toISOString(), ultimaActividad: despues(5 * MIN).toISOString(), desdeLinea: 1 }
+    const { cierre, cerradas, almacen } = armar([], { conversacion: vieja })
+    const previa = { quien: 'usuario' as const, texto: 'De otra charla.' }
+    const cerrada = await cierre.cerrar([previa, ...historial])
+    assert.deepEqual(cerrada, { inicio: T0.toISOString(), fin: despues(5 * MIN).toISOString(), lineas: historial, cercania: null, interlocutor: null })
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.equal(almacen.memoria().conversacion, null)
+  })
+
+  test('una conversacion sin lineas se deja vacia sin disparar al agente', async () => {
+    const { generar, cierre, cerradas, almacen } = armar([respuesta()])
+    await generar(pedido({ ultimoTurno: null }), T0) // el usuario quiso arrancar charla y nadie respondio
+    assert.equal(await cierre.cerrar([]), null)
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 0)
+    assert.equal(almacen.memoria().conversacion, null)
+  })
+
+  test('el cierre por tiempo cierra despues de 15 minutos sin actividad, una sola vez', async () => {
+    const { generar, cierre, cerradas, almacen } = armar([respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?' }), T0)
+    await generar(pedido({ historial }), despues(1 * MIN))
+    assert.equal(await cierre.cerrarSiInactiva(despues(15 * MIN)), null) // 14 min desde la ultima actividad
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 0)
+    assert.notEqual(almacen.memoria().conversacion, null)
+
+    const cerrada = await cierre.cerrarSiInactiva(despues(17 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.deepEqual(cerrada?.lineas, [...historial, asado]) // el asado quedo sin responder
+    assert.equal(almacen.memoria().conversacion, null)
+
+    assert.equal(await cierre.cerrarSiInactiva(despues(18 * MIN)), null)
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+  })
+
+  test('el cierre por tiempo suma la ultima pregunta del interlocutor, que todavia no llego en el historial', async () => {
+    const { generar, cierre, cerradas } = armar([respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Queres agua?', interlocutor: 'Marta' }), T0)
+    await cierre.cerrarSiInactiva(despues(16 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.deepEqual(cerradas[0].lineas, [{ quien: 'interlocutor', texto: '¿Queres agua?' }])
+  })
+
+  test('despues de un cierre por tiempo, el pedido siguiente completa la conversacion con la respuesta que faltaba', async () => {
+    const { generar, cierre, cerradas, almacen } = armar([respuesta(), respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Queres agua?', interlocutor: 'Marta' }), T0)
+    await cierre.cerrarSiInactiva(despues(16 * MIN))
+    const agua = { quien: 'interlocutor' as const, texto: '¿Queres agua?' }
+    const si = { quien: 'usuario' as const, texto: 'Si, gracias.', origen: 'opcion' as const }
+    // Media hora despues, otra charla: el historial trae la respuesta de la conversacion cerrada.
+    const r = await generar(pedido({ historial: [agua, si], ultimoTurno: '¿Vemos el partido?' }), despues(30 * MIN))
+    await vaciarPromesas()
+    assert.equal(r.nuevaConversacion, true)
+    assert.equal(cerradas.length, 2)
+    assert.deepEqual(cerradas[1], {
+      inicio: T0.toISOString(),
+      fin: T0.toISOString(),
+      lineas: [agua, si],
+      cercania: null,
+      interlocutor: 'Marta',
+      yaAprendidas: 1,
+    })
+    // La conversacion nueva no arrastra lineas de la cerrada, y no se completa dos veces.
+    assert.deepEqual(almacen.memoria().conversacion?.lineas, [])
+    await generar(pedido({ historial: [agua, si, { quien: 'interlocutor', texto: '¿Vemos el partido?' }] }), despues(31 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 2)
+  })
+
+  test('un cierre por tiempo mientras opciones espera al modelo no cierra dos veces ni pierde lineas', async () => {
+    const { generar, cierre, cerradas, almacen, trabarProximo, soltar } = armar([respuesta(), respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?' }), T0)
+    await generar(pedido({ historial }), despues(1 * MIN))
+    // 16 min despues llega un turno con la ultima respuesta del usuario, y el modelo tarda.
+    trabarProximo()
+    const turno = generar(pedido({ historial: conRespuesta, ultimoTurno: 'Hola' }), despues(17 * MIN))
+    await vaciarPromesas()
+    await cierre.cerrarSiInactiva(despues(17.5 * MIN)) // el chequeo periodico cae en el medio
+    soltar()
+    const r = await turno
+    await vaciarPromesas()
+    assert.equal(r.nuevaConversacion, true)
+    assert.equal(cerradas.length, 1)
+    assert.deepEqual(cerradas[0].lineas, conRespuesta)
+    // La conversacion que queda es la nueva, no la cerrada resucitada.
+    assert.equal(almacen.memoria().conversacion?.inicio, despues(17 * MIN).toISOString())
+    // Cerrar ahora cierra la nueva (solo su turno pendiente), nunca otra vez las lineas de la anterior.
+    assert.deepEqual((await cierre.cerrar([]))?.lineas, [{ quien: 'interlocutor', texto: 'Hola' }])
+  })
+
+  test('un cierre explicito mientras un pedido de la misma conversacion espera al modelo no la resucita', async () => {
+    const { generar, cierre, cerradas, almacen, trabarProximo, soltar } = armar([respuesta(), respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?' }), T0)
+    await generar(pedido({ historial }), despues(1 * MIN))
+    trabarProximo()
+    const turno = generar(pedido({ historial: conRespuesta, ultimoTurno: '¿Y hoy?' }), despues(2 * MIN))
+    await vaciarPromesas()
+    await cierre.cerrar(conRespuesta) // el nucleo se apaga en el medio
+    soltar()
+    const r = await turno
+    await vaciarPromesas()
+    assert.equal(r.opciones.length, 4) // el turno igual sale
+    assert.equal(cerradas.length, 1)
+    assert.deepEqual(cerradas[0].lineas, conRespuesta)
+    assert.equal(almacen.memoria().conversacion?.inicio, despues(2 * MIN).toISOString())
+    assert.deepEqual(almacen.memoria().conversacion?.lineas, [])
   })
 })
 

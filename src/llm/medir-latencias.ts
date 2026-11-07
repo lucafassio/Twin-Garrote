@@ -16,8 +16,8 @@ import { join } from 'node:path'
 import type { Cercania, LineaHistorial, PedidoOpciones } from '@/eventos'
 import { crearAlmacenEnArchivos } from './almacen-archivos.ts'
 import { crearCompletado } from './completado.ts'
-import { cerrarConversacion, listarHechos } from './controles-memoria.ts'
-import { crearDisparadorMemoria, crearOpcionesConMemoria } from './memoria.ts'
+import { listarHechos } from './controles-memoria.ts'
+import { crearOpcionesConMemoria } from './memoria.ts'
 import { elegirProveedor } from './proveedores.ts'
 
 const BASE = process.argv[2]
@@ -64,10 +64,13 @@ function porHttp(base: string): Llamar {
 async function directo(): Promise<Llamar> {
   const proveedor = elegirProveedor()
   const almacen = crearAlmacenEnArchivos(await mkdtemp(join(tmpdir(), 'parpadeo-medir-')))
-  const { generarOpciones } = crearOpcionesConMemoria({ proveedor, almacen })
-  const completar = crearCompletado({ proveedor, almacen })
   let errorMemoria: unknown = null
-  const memoria = crearDisparadorMemoria({ proveedor, almacen, alFallar: (e) => (errorMemoria = e) })
+  const { generarOpciones, cierre, memoria } = crearOpcionesConMemoria({
+    proveedor,
+    almacen,
+    alFallar: (e) => (errorMemoria = e),
+  })
+  const completar = crearCompletado({ proveedor, almacen })
   return (ruta, cuerpo) =>
     medir(async () => {
       if (ruta === '/api/opciones') {
@@ -78,9 +81,9 @@ async function directo(): Promise<Llamar> {
         const frase = await completar(String(cuerpo.prefijo), cuerpo.pedido as PedidoOpciones)
         return { frase, proveedor: proveedor.nombre }
       }
-      const cerrada = await cerrarConversacion(almacen, cuerpo.historial as LineaHistorial[], cuerpo.cercania as Cercania)
+      const cerrada = await cierre.cerrar(cuerpo.historial as LineaHistorial[])
       if (cerrada) {
-        memoria.disparar(cerrada)
+        await new Promise((r) => setImmediate(r)) // el cierre dispara al agente en segundo plano
         await memoria.listo()
         if (errorMemoria) throw errorMemoria
       }

@@ -40,6 +40,10 @@ _Avoid_: fingerprint, persona, contexto
 Dato sobre el usuario o su entorno extraido de una conversacion ("Laura se opera el jueves"), con fecha, origen, interlocutor e importancia de 1 a 10. Cuando otro hecho lo contradice se invalida, no se borra. Tiene un tipo: estable (nunca vence), estado (puede tener fin) o evento (pasa en una fecha). Sin tipo, es estable.
 _Avoid_: recuerdo, dato, memoria
 
+**Saliencia**:
+Peso de un hecho por haberse usado en opciones que el usuario eligio. Arranca en 1 y sube hasta un tope cada vez que se elige una opcion que lo uso; "Otra" y las opciones fijas no la tocan. Ordena los hechos del prompt junto con la importancia y la coincidencia con el turno.
+_Avoid_: relevancia, popularidad
+
 **Vencido**:
 Hecho cuya fecha ya paso: un evento despues del fin del dia del evento, o un estado despues de su fin, en la hora de Argentina. Deja de entrar a las opciones y al completado, pero no se invalida ni se borra: sigue activo en la memoria y el agente de memoria lo ve marcado. Se deriva de la hora, no se guarda.
 _Avoid_: expirado, caducado, viejo

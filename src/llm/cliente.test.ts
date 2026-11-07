@@ -3,7 +3,7 @@
 import { after, beforeEach, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { PedidoOpciones } from '@/eventos'
-import { completarFrase, esPedidoCancelado, pedirOpciones } from './cliente.ts'
+import { cerrarConversacion, completarFrase, esPedidoCancelado, pedirOpciones } from './cliente.ts'
 
 type Llamada = {
   url: string
@@ -121,5 +121,37 @@ describe('completarFrase', () => {
     llamadas[1].responder(200, { frase: 'Tengo frio.' })
     assert.deepEqual(await o, [{ intencion: 'otra', texto: 'Bien' }])
     assert.equal(await c, 'Tengo frio.')
+  })
+})
+
+describe('cerrarConversacion', () => {
+  const historial = [
+    { quien: 'interlocutor' as const, texto: '¿Como dormiste?' },
+    { quien: 'usuario' as const, texto: 'Bien, che.', origen: 'opcion' as const },
+  ]
+
+  test('pide el cierre a la ruta de memoria con el historial, sin esperar al agente', async () => {
+    const cerrada = cerrarConversacion(historial)
+    assert.equal(llamadas.length, 1)
+    assert.equal(llamadas[0].url, '/api/memoria')
+    assert.deepEqual(llamadas[0].cuerpo, { accion: 'cerrar', historial, esperar: false })
+    llamadas[0].responder(200, { cerrada: true, lineas: 2 })
+    assert.equal(await cerrada, true)
+  })
+
+  test('sin conversacion para cerrar devuelve false', async () => {
+    const cerrada = cerrarConversacion()
+    assert.deepEqual(llamadas[0].cuerpo, { accion: 'cerrar', historial: [], esperar: false })
+    llamadas[0].responder(200, { cerrada: false, lineas: 0 })
+    assert.equal(await cerrada, false)
+  })
+
+  test('nunca tira: si falla la ruta o la red, devuelve false', async () => {
+    const conError = cerrarConversacion(historial)
+    llamadas[0].responder(500, { error: 'se rompio' })
+    assert.equal(await conError, false)
+    const sinRed = cerrarConversacion(historial)
+    llamadas[1].fallar(new TypeError('Failed to fetch'))
+    assert.equal(await sinRed, false)
   })
 })

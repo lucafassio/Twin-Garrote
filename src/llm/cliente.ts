@@ -1,4 +1,6 @@
-import type { Opcion, PedidoOpciones } from '@/eventos'
+import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
+import type { Eleccion } from './saliencia.ts'
+export type { Eleccion } from './saliencia.ts'
 import type { PedidoEleccion, ResumenElecciones } from './elecciones.ts'
 
 // Opcional: llamar al elegir, sin esperar para avanzar el turno. Nunca rechaza.
@@ -101,4 +103,40 @@ async function pedirCompletado(prefijo: string, pedido: PedidoOpciones, signal: 
   } catch {
     return prefijo
   }
+}
+
+// Cierre explicito de la conversacion (#25): el nucleo lo llama al detenerse, para que lo hablado
+// antes de apagar llegue a la memoria. Manda el historial por si trae lineas que el servidor todavia
+// no guardo (la ultima respuesta). El agente de memoria corre en el servidor, no se lo espera.
+// Nunca tira: devuelve true si habia una conversacion con lineas y se cerro.
+// keepalive: el pedido sigue aunque la pagina se este cerrando. El navegador lo limita a 64 KB de
+// cuerpo: con un historial mas largo se manda sin keepalive (si no, el fetch fallaria entero).
+const LIMITE_KEEPALIVE = 60_000
+
+export async function cerrarConversacion(historial: LineaHistorial[] = []): Promise<boolean> {
+  try {
+    const cuerpo = JSON.stringify({ accion: 'cerrar', historial, esperar: false })
+    const respuesta = await fetch('/api/memoria', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: cuerpo,
+      keepalive: new Blob([cuerpo]).size < LIMITE_KEEPALIVE,
+      signal: AbortSignal.timeout(10_000),
+    })
+    const datos = await respuesta.json().catch(() => null)
+    return respuesta.ok && datos?.cerrada === true
+  } catch {
+    return false
+  }
+}
+
+// Avisa lo que eligio el usuario (#36): con una opcion del LLM, los hechos que uso ganan peso para las
+// proximas. "Otra" y las fijas se pueden mandar igual: no tocan nada, y el registro de elecciones de
+// #19 las va a usar. Opcional para el nucleo. Nunca tira ni hace esperar: es de segundo plano.
+export function reportarEleccion(eleccion: Eleccion): void {
+  fetch('/api/memoria', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accion: 'elegir', eleccion }),
+  }).catch(() => {})
 }

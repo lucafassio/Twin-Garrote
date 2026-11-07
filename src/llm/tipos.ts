@@ -40,7 +40,7 @@ export type Hecho = {
   expresionOriginal?: string // la expresion temporal tal como se dijo ("el jueves")
   fechaEvento?: string // YYYY-MM-DD, el dia del evento en Argentina; la calcula el codigo
   validoDesde?: string // ISO, desde cuando es cierto, si se sabe
-  validoHasta?: string // ISO; para un evento, el final del dia del evento en Argentina
+  validoHasta?: string // ISO; el final del dia del evento, o del dia del "hasta" de un estado, en Argentina
   id: string
   texto: string
   origen: OrigenHecho
@@ -51,6 +51,10 @@ export type Hecho = {
   fechaInvalidacion: string | null // ISO; un hecho invalidado no se borra
   intimo: boolean // salud, familia, plata...: nunca con cercania formal
   reemplazaA?: string // id del hecho que este actualizo (el viejo queda invalidado, con su historia)
+  // Saliencia (#36): cuanto pesa por haberse usado en opciones elegidas. Arranca en 1 y sube hasta un
+  // tope; una memoria vieja sin estos campos se lee como saliencia 1 y sin uso.
+  saliencia?: number
+  ultimoUso?: string // ISO de la ultima vez que se eligio una opcion que lo usaba
 }
 
 // El perfil que carga la familia en el onboarding. El aprendizaje nunca lo reescribe.
@@ -90,13 +94,25 @@ export type ConversacionActual = {
   interlocutor?: string | null
   // Las lineas de esta conversacion guardadas en el servidor: una recarga del cliente no las pierde.
   lineas?: LineaHistorial[]
+  // El ultimo turno del interlocutor (ultimoTurno del ultimo pedido): entra al historial recien con
+  // el pedido siguiente. Si la conversacion se cierra antes (por tiempo), se suma al cerrarla.
+  turnoPendiente?: string | null
+  // Las ultimas opciones mostradas, la mas nueva primero, con los ids de los hechos que uso cada una:
+  // al elegir una, se buscan sus hechos aca. Se guardan varias vueltas: un pedido cancelado que termina
+  // tarde en el servidor no borra las que estan en pantalla.
+  mostradas?: OpcionMostrada[]
 }
+
+export type OpcionMostrada = { texto: string; hechos: string[] }
 
 export type Memoria = {
   hechos: Hecho[]
   resumenes: ResumenConversacion[]
   ejemplosEstilo: EjemploEstilo[]
   conversacion: ConversacionActual | null
+  // La ultima conversacion cerrada por tiempo, con las lineas que se aprendieron. Su cola (la
+  // respuesta al ultimo turno) llega recien con el pedido siguiente: ese pedido la completa y la borra.
+  cerradaPorTiempo?: ConversacionActual
 }
 
 // Donde viven el perfil y la memoria. En la app: archivos. En tests: en memoria.
@@ -123,4 +139,7 @@ export type ConversacionCerrada = {
   lineas: LineaHistorial[]
   cercania: Cercania | null
   interlocutor?: string | null // quien hablaba, si la interfaz lo aclaro
+  // Si es la cola de una conversacion cerrada por tiempo: las primeras yaAprendidas lineas ya se
+  // aprendieron y van solo como contexto.
+  yaAprendidas?: number
 }

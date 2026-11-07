@@ -10,8 +10,10 @@ export const ESQUEMA_RESPUESTA = {
         properties: {
           intencion: { type: 'string', enum: ['aceptar', 'rechazar', 'preguntar', 'otra'] },
           texto: { type: 'string' },
+          // Ids cortos (h1, h2...) de los hechos del prompt que uso la opcion; vacia si ninguno.
+          hechos: { type: 'array', items: { type: 'string' } },
         },
-        required: ['intencion', 'texto'],
+        required: ['intencion', 'texto', 'hechos'],
         additionalProperties: false,
       },
     },

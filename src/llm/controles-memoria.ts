@@ -1,19 +1,24 @@
 // Controles de la memoria para la ruta /api/memoria y la demo de "Lo que aprendi de vos".
-// Listar hechos, invalidar uno a mano y forzar el cierre de la conversacion actual.
+// Listar hechos e invalidar uno a mano. El cierre de la conversacion esta en opciones (crearCierre).
 // Un hecho invalidado nunca se borra: queda con su fecha de invalidacion.
-import type { Cercania, LineaHistorial } from '@/eventos'
-import type { Almacen, ConversacionCerrada, Hecho } from './tipos.ts'
-import { armarCerrada } from './conversacion.ts'
+import type { Almacen, Hecho } from './tipos.ts'
+import { estaVencido } from './fechas.ts'
+import { enFila } from './fila.ts'
 
-export type HechosListados = { activos: Hecho[]; invalidados: Hecho[] }
+// Cada hecho trae su fecha de evento (si tiene, en el propio hecho) y si esta vencido a la hora del pedido.
+export type HechoListado = Hecho & { vencido: boolean }
+// Los vencidos van aparte: siguen activos en la memoria, pero ya no entran a las opciones.
+export type HechosListados = { activos: HechoListado[]; vencidos: HechoListado[]; invalidados: HechoListado[] }
 
-// Los mas nuevos primero.
-export async function listarHechos(almacen: Almacen): Promise<HechosListados> {
+// Los mas nuevos primero. Vencido = paso su validoHasta a la hora `ahora` (un invalidado nunca cuenta como vencido).
+export async function listarHechos(almacen: Almacen, ahora: Date = new Date()): Promise<HechosListados> {
   const { hechos } = await almacen.leerMemoria()
   const porFecha = (a: Hecho, b: Hecho) => Date.parse(b.fecha) - Date.parse(a.fecha)
+  const marcados = hechos.map((h): HechoListado => ({ ...h, vencido: h.estado === 'activo' && estaVencido(h, ahora) }))
   return {
-    activos: hechos.filter((h) => h.estado === 'activo').sort(porFecha),
-    invalidados: hechos
+    activos: marcados.filter((h) => h.estado === 'activo' && !h.vencido).sort(porFecha),
+    vencidos: marcados.filter((h) => h.vencido).sort(porFecha),
+    invalidados: marcados
       .filter((h) => h.estado === 'invalidado')
       .sort((a, b) => Date.parse(b.fechaInvalidacion ?? b.fecha) - Date.parse(a.fechaInvalidacion ?? a.fecha)),
   }
@@ -21,7 +26,12 @@ export async function listarHechos(almacen: Almacen): Promise<HechosListados> {
 
 // Invalidar a mano: el hecho deja de usarse en las opciones, y tambien el resumen de su conversacion.
 // Devuelve el hecho invalidado, o null si no hay un hecho activo con ese id.
-export async function invalidarHecho(almacen: Almacen, id: string, ahora: Date = new Date()): Promise<Hecho | null> {
+// En fila: guarda la memoria entera, no tiene que pisar una conversacion que se cerro en el medio.
+export function invalidarHecho(almacen: Almacen, id: string, ahora: Date = new Date()): Promise<Hecho | null> {
+  return enFila(almacen, () => invalidar(almacen, id, ahora))
+}
+
+async function invalidar(almacen: Almacen, id: string, ahora: Date): Promise<Hecho | null> {
   const memoria = await almacen.leerMemoria()
   const hecho = memoria.hechos.find((h) => h.id === id && h.estado === 'activo')
   if (!hecho) return null
@@ -34,25 +44,4 @@ export async function invalidarHecho(almacen: Almacen, id: string, ahora: Date =
   }
   await almacen.guardarMemoria(memoria)
   return hecho
-}
-
-// Cierra la conversacion actual como si hubiera pasado el silencio largo: arma la
-// ConversacionCerrada con las lineas guardadas en el servidor mas las nuevas del historial y con
-// el contexto de la conversacion (la misma regla que opciones), y deja la memoria sin
-// conversacion actual, asi el proximo pedido de opciones arranca una nueva (sin volver a cerrar).
-// La cercania del pedido solo vale si el servidor no tenia conversacion actual.
-// Devuelve null si no habia conversacion o no tenia lineas (no hay nada que aprender).
-export async function cerrarConversacion(
-  almacen: Almacen,
-  historial: LineaHistorial[],
-  cercania: Cercania | null = null,
-  ahora: Date = new Date(),
-): Promise<ConversacionCerrada | null> {
-  const memoria = await almacen.leerMemoria()
-  const actual = memoria.conversacion
-  if (!actual && historial.length === 0) return null
-  await almacen.guardarMemoria({ ...memoria, conversacion: null })
-  if (actual) return armarCerrada(actual, historial)
-  const iso = ahora.toISOString()
-  return { inicio: iso, fin: iso, lineas: historial, cercania, interlocutor: null }
 }

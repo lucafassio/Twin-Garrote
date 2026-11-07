@@ -8,6 +8,7 @@ import type {
   ConversacionCerrada,
   Hecho,
   Memoria,
+  OpcionMostrada,
   PerfilHuella,
   Proveedor,
   Registro,
@@ -15,7 +16,16 @@ import type {
   ResumenConversacion,
 } from './tipos.ts'
 import { hechosVigentes, textoConFecha } from './fechas.ts'
-import { abrirConversacion, armarCerrada, lineasDeConversacion, seguirConversacion } from './conversacion.ts'
+import {
+  abrirConversacion,
+  armarCerrada,
+  completarCerrada,
+  lineasDeConversacion,
+  seguirConversacion,
+  sumarLineas,
+} from './conversacion.ts'
+import { enFila } from './fila.ts'
+import { MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
 
@@ -46,20 +56,26 @@ export type GenerarOpciones = (pedido: PedidoOpciones, ahora?: Date) => Promise<
 
 export function crearOpciones(deps: DependenciasOpciones): GenerarOpciones {
   return async function generarOpciones(pedido, ahora = new Date()) {
-    const [perfil, memoria] = await Promise.all([deps.almacen.leerPerfil(), deps.almacen.leerMemoria()])
+    const perfil = await deps.almacen.leerPerfil()
+    const memoria = await guardarLineasDelPedido(deps, pedido)
 
     const deteccion = detectarConversacion(memoria.conversacion, pedido.historial, ahora)
+    const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno, ahora)
     const sistema = promptSistema(pedido.tipoTurno)
-    const usuario = promptUsuario({ pedido, perfil, memoria, deteccion, ahora })
+    const usuario = promptUsuario({ pedido, perfil, memoria, hechos, deteccion, ahora })
 
-    const respuesta = await pedirConReintento(deps.proveedor, sistema, usuario)
+    // El modelo ve cada hecho con un id corto (h1, h2...): devuelve esos y se traducen a los reales.
+    const idsPorAlias = new Map(hechos.map((h, i) => [aliasHecho(i), h.id]))
+    const respuesta = await pedirConReintento(deps.proveedor, sistema, usuario, idsPorAlias)
 
     const nuevaConversacion =
       deteccion.tipo === 'nueva' ? true : deteccion.tipo === 'misma' ? false : respuesta.nuevaConversacion
 
-    await actualizarConversacion(deps, memoria, pedido, ahora, nuevaConversacion)
+    const mostradas = respuesta.opciones.map((o) => ({ texto: o.texto, hechos: o.hechos }))
+    await actualizarConversacion(deps, memoria, pedido, ahora, nuevaConversacion, mostradas)
 
-    return { opciones: respuesta.opciones, registro: respuesta.registro, nuevaConversacion }
+    const opciones = respuesta.opciones.map((o) => ({ intencion: o.intencion, texto: o.texto }))
+    return { opciones, registro: respuesta.registro, nuevaConversacion }
   }
 }
 
@@ -70,46 +86,128 @@ type Deteccion =
   | { tipo: 'misma'; lineas: LineaHistorial[] } // menos de 3 min
   | { tipo: 'dudosa'; minutos: number; lineas: LineaHistorial[] } // entre medio: decide el modelo
 
+// Mas de 15 min sin pedidos de opciones: la conversacion termino.
+function silencioLargo(conversacion: ConversacionActual, ahora: Date): boolean {
+  return ahora.getTime() - Date.parse(conversacion.ultimaActividad) > NUEVA_CONVERSACION_MS
+}
+
 function detectarConversacion(
   conversacion: ConversacionActual | null,
   historial: LineaHistorial[],
   ahora: Date,
 ): Deteccion {
-  if (!conversacion) return { tipo: 'nueva' }
+  if (!conversacion || silencioLargo(conversacion, ahora)) return { tipo: 'nueva' }
   const silencio = ahora.getTime() - Date.parse(conversacion.ultimaActividad)
-  if (silencio > NUEVA_CONVERSACION_MS) return { tipo: 'nueva' }
   const lineas = lineasDeConversacion(conversacion, historial)
   if (silencio < MISMA_CONVERSACION_MS) return { tipo: 'misma', lineas }
   return { tipo: 'dudosa', minutos: Math.round(silencio / MINUTO), lineas }
 }
 
+// Apenas llega el pedido, antes de esperar al modelo: las lineas nuevas del historial quedan en la
+// conversacion actual guardada. Asi un cierre que caiga mientras el modelo piensa no las pierde.
+// Si la anterior se cerro por tiempo, este pedido trae su cola (la respuesta al ultimo turno): se
+// manda al agente como complemento y la cerrada se borra.
+function guardarLineasDelPedido(deps: DependenciasOpciones, pedido: PedidoOpciones): Promise<Memoria> {
+  const almacen = deps.almacen
+  return enFila(almacen, async () => {
+    const memoria = await almacen.leerMemoria()
+    if (!memoria.conversacion && memoria.cerradaPorTiempo) {
+      const cola = completarCerrada(memoria.cerradaPorTiempo, pedido.historial)
+      if (cola) dispararCierre(deps, cola)
+      delete memoria.cerradaPorTiempo
+      await almacen.guardarMemoria(memoria)
+      return memoria
+    }
+    if (!memoria.conversacion) return memoria
+    const conLineas = sumarLineas(memoria.conversacion, pedido.historial)
+    const cambio =
+      conLineas.desdeLinea !== memoria.conversacion.desdeLinea ||
+      conLineas.lineas?.length !== (memoria.conversacion.lineas ?? []).length
+    if (!cambio) return memoria
+    const guardada = { ...memoria, conversacion: conLineas }
+    await almacen.guardarMemoria(guardada)
+    return guardada
+  })
+}
+
+// Despues del modelo, sobre la memoria recien leida (en fila): mientras el modelo pensaba, el agente
+// pudo guardar hechos y un cierre pudo cerrar la conversacion que se leyo al principio.
 async function actualizarConversacion(
   deps: DependenciasOpciones,
-  memoria: Memoria,
+  leida: Memoria,
   pedido: PedidoOpciones,
   ahora: Date,
   nueva: boolean,
+  mostradas: OpcionMostrada[],
 ) {
-  const anterior = memoria.conversacion
-  if (nueva) {
-    // La cerrada lleva sus lineas guardadas y su contexto, nunca el del pedido que abre la siguiente.
-    const cerrada = anterior ? armarCerrada(anterior, pedido.historial) : null
-    if (cerrada && deps.alCerrarConversacion) {
-      // Segundo plano: no se espera ni se deja que un error rompa el turno.
-      queueMicrotask(() => {
-        try {
-          deps.alCerrarConversacion!(cerrada)
-        } catch {}
-      })
+  await enFila(deps.almacen, async () => {
+    const memoria = await deps.almacen.leerMemoria()
+    const actual = memoria.conversacion
+    // Si ya no es la que se leyo, otro cierre se la llevo (con las lineas de este pedido): no se
+    // vuelve a cerrar ni se resucita.
+    const sigue = actual !== null && actual.inicio === leida.conversacion?.inicio
+    if (nueva) {
+      // La cerrada lleva sus lineas guardadas y su contexto, nunca el del pedido que abre la siguiente.
+      const cerrada = sigue ? armarCerrada(actual, pedido.historial) : null
+      if (cerrada) dispararCierre(deps, cerrada)
+      memoria.conversacion = abrirConversacion(pedido, ahora)
+    } else {
+      memoria.conversacion = sigue ? seguirConversacion(actual, pedido, ahora) : abrirConversacion(pedido, ahora)
     }
-    memoria.conversacion = abrirConversacion(pedido, ahora)
-  } else if (anterior) {
-    memoria.conversacion = seguirConversacion(anterior, pedido, ahora)
+    // Las de esta vuelta van primero; las anteriores quedan por si este pedido ya no es el de la
+    // pantalla. Una conversacion nueva arranca sin las de la anterior.
+    memoria.conversacion.mostradas = [...mostradas, ...(memoria.conversacion.mostradas ?? [])].slice(0, MAX_MOSTRADAS)
+    // Si un cierre por tiempo cayo mientras el modelo pensaba, las lineas de este pedido ya estaban
+    // guardadas y se aprendieron: no hay cola que esperar.
+    delete memoria.cerradaPorTiempo
+    await deps.almacen.guardarMemoria(memoria)
+  })
+}
+
+// Segundo plano: no se espera ni se deja que un error rompa el turno ni el cierre.
+function dispararCierre(deps: Pick<DependenciasOpciones, 'alCerrarConversacion'>, cerrada: ConversacionCerrada) {
+  if (!deps.alCerrarConversacion) return
+  queueMicrotask(() => {
+    try {
+      deps.alCerrarConversacion!(cerrada)
+    } catch {}
+  })
+}
+
+// --- Cierre ------------------------------------------------------------------
+
+export type DependenciasCierre = Pick<DependenciasOpciones, 'almacen' | 'alCerrarConversacion'>
+
+export type CierreConversacion = {
+  // Cierra la conversacion actual: si tiene lineas (las guardadas mas las nuevas del historial),
+  // dispara el agente de memoria en segundo plano y la devuelve. Deja la conversacion actual vacia.
+  // Sin conversacion actual no hace nada y devuelve null.
+  cerrar(historial?: LineaHistorial[]): Promise<ConversacionCerrada | null>
+  // El cierre por tiempo: igual que cerrar, solo si pasaron mas de 15 min desde la ultima actividad.
+  // Lo llama el servidor periodicamente; el reloj se inyecta para los tests.
+  cerrarSiInactiva(ahora?: Date): Promise<ConversacionCerrada | null>
+}
+
+export function crearCierre(deps: DependenciasCierre): CierreConversacion {
+  // porTiempo: sin historial del cliente, la cola llega con el pedido siguiente (ver cerradaPorTiempo).
+  function cerrarSi(debeCerrar: (actual: ConversacionActual) => boolean, historial: LineaHistorial[], porTiempo: boolean) {
+    return enFila(deps.almacen, async () => {
+      const memoria = await deps.almacen.leerMemoria()
+      const actual = memoria.conversacion
+      if (!actual || !debeCerrar(actual)) return null
+      const cerrada = armarCerrada(actual, historial)
+      memoria.conversacion = null
+      if (porTiempo && cerrada) memoria.cerradaPorTiempo = { ...actual, lineas: cerrada.lineas }
+      else delete memoria.cerradaPorTiempo
+      await deps.almacen.guardarMemoria(memoria)
+      if (cerrada) dispararCierre(deps, cerrada)
+      return cerrada
+    })
   }
-  // Releer antes de guardar: mientras el modelo pensaba, el agente de memoria pudo guardar hechos.
-  // Desde aca solo se escribe la conversacion actual.
-  const fresca = await deps.almacen.leerMemoria()
-  await deps.almacen.guardarMemoria({ ...fresca, conversacion: memoria.conversacion })
+  return {
+    cerrar: (historial = []) => cerrarSi(() => true, historial, false),
+    cerrarSiInactiva: (ahora = new Date()) => cerrarSi((actual) => silencioLargo(actual, ahora), [], true),
+  }
 }
 
 // --- Prompt ------------------------------------------------------------------
@@ -135,12 +233,16 @@ Reglas:
 11. Si no hay turno (SIN_TURNO), propone 4 arranques de charla basados en la huella y los temas recientes.
 12. Si te dicen los minutos de silencio desde el ultimo turno, decidi si es una conversacion nueva (nuevaConversacion).
 13. Quien habla: si la seccion Interlocutor lo dice, podes nombrarlo y adaptar el tono a esa persona. Si no lo dice, no sabes quien es: no lo nombres ni asumas que es alguien de la huella. Las personas de la huella son de quienes se habla, no quien habla.
+14. En cada opcion, hechos lista los ids (h1, h2...) de los hechos que usaste para escribirla, como mucho 3. Si no usaste ninguno, va vacia.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
-{"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"..."}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
+{"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"...","hechos":["h1"]}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
 }
 
 // Fuera los invalidados y los vencidos a la hora del pedido (vencido no es invalidado: sigue en la memoria).
+const aliasHecho = (i: number) => `h${i + 1}`
+
+// Orden: importancia por saliencia, mas la coincidencia con el turno; con el mismo tope de cantidad.
 function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno: string | null, ahora: Date): Hecho[] {
   const palabras = new Set(
     (turno ?? '')
@@ -155,7 +257,7 @@ function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno
       .filter((p) => palabras.has(p)).length
   return hechosVigentes(hechos, ahora)
     .filter((h) => !(cercania === 'formal' && h.intimo))
-    .map((h) => ({ h, puntaje: h.importancia + 3 * coincidencias(h) }))
+    .map((h) => ({ h, puntaje: pesoDe(h) + 3 * coincidencias(h) }))
     .sort((a, b) => b.puntaje - a.puntaje || Date.parse(b.h.fecha) - Date.parse(a.h.fecha))
     .slice(0, MAX_HECHOS)
     .map((x) => x.h)
@@ -187,17 +289,18 @@ function promptUsuario(p: {
   pedido: PedidoOpciones
   perfil: PerfilHuella
   memoria: Memoria
+  hechos: Hecho[] // los que entran, ya ordenados
   deteccion: Deteccion
   ahora: Date
 }): string {
-  const { pedido, perfil, memoria, deteccion, ahora } = p
+  const { pedido, perfil, memoria, hechos, deteccion, ahora } = p
   const partes: string[] = []
 
   partes.push(`# Huella\n\n${perfil.markdown.trim()}`)
 
-  const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno, ahora)
   if (hechos.length > 0) {
-    partes.push(`## Hechos que sabes\n${hechos.map((h) => `- ${textoConFecha(h, ahora)}`).join('\n')}`)
+    const lineas = hechos.map((h, i) => `- [${aliasHecho(i)}] ${textoConFecha(h, ahora)}`)
+    partes.push(`## Hechos que sabes\n${lineas.join('\n')}`)
   }
 
   const ejemplos = [...memoria.ejemplosEstilo]
@@ -240,9 +343,18 @@ const peso = (origen: 'deletreo' | 'opcion') => (origen === 'deletreo' ? 2 : 1)
 
 // --- Respuesta del modelo ----------------------------------------------------
 
-type RespuestaModelo = { opciones: Opcion[]; registro: Registro; nuevaConversacion: boolean }
+type OpcionConHechos = Opcion & { hechos: string[] } // ids reales de los hechos que uso
+type RespuestaModelo = { opciones: OpcionConHechos[]; registro: Registro; nuevaConversacion: boolean }
 
-async function pedirConReintento(proveedor: Proveedor, sistema: string, usuario: string): Promise<RespuestaModelo> {
+const MAX_HECHOS_POR_OPCION = 3
+
+async function pedirConReintento(
+  proveedor: Proveedor,
+  sistema: string,
+  usuario: string,
+  idsPorAlias: Map<string, string>,
+): Promise<RespuestaModelo> {
+  const interpretar = (texto: string) => interpretarRespuesta(texto, idsPorAlias)
   const primera = interpretar(await proveedor.generar({ sistema, usuario }))
   if (primera) return primera
   const aviso = '\n\nTu respuesta anterior no era el JSON pedido. Responde solo el JSON, con exactamente 4 opciones.'
@@ -254,7 +366,17 @@ async function pedirConReintento(proveedor: Proveedor, sistema: string, usuario:
 const INTENCIONES: Intencion[] = ['aceptar', 'rechazar', 'preguntar', 'otra']
 const REGISTROS: Registro[] = ['formal', 'casual', 'intimo']
 
-function interpretar(texto: string): RespuestaModelo | null {
+// Los ids de hechos que no estaban entre los mandados al modelo se ignoran; sin la lista, ninguno.
+function interpretarHechos(valor: unknown, idsPorAlias: Map<string, string>): string[] {
+  if (!Array.isArray(valor)) return []
+  const ids = valor
+    .filter((v): v is string => typeof v === 'string')
+    .map((v) => idsPorAlias.get(v.trim().replace(/^\[|\]$/g, '')))
+    .filter((id): id is string => id !== undefined)
+  return [...new Set(ids)].slice(0, MAX_HECHOS_POR_OPCION)
+}
+
+function interpretarRespuesta(texto: string, idsPorAlias: Map<string, string>): RespuestaModelo | null {
   const limpio = texto
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
@@ -278,7 +400,11 @@ function interpretar(texto: string): RespuestaModelo | null {
   )
   if (opciones.length < 4) return null
   return {
-    opciones: opciones.slice(0, 4).map((o) => ({ intencion: o.intencion, texto: o.texto.trim() })),
+    opciones: opciones.slice(0, 4).map((o) => ({
+      intencion: o.intencion,
+      texto: o.texto.trim(),
+      hechos: interpretarHechos((o as { hechos?: unknown }).hechos, idsPorAlias),
+    })),
     registro: REGISTROS.includes(d.registro as Registro) ? (d.registro as Registro) : 'casual',
     nuevaConversacion: d.nuevaConversacion === true,
   }

@@ -1,13 +1,11 @@
 // Ruta de opciones del path llm: capa fina sobre el modulo de opciones.
 // POST con PedidoOpciones -> { opciones, registro, nuevaConversacion, proveedor, ms }.
 import { esPedido } from '@/llm/pedido'
-import { crearAlmacenEnArchivos, crearOpcionesConMemoria, ErrorOpciones } from '@/llm'
-import { elegirProveedor } from '@/llm/proveedores'
+import { ErrorOpciones } from '@/llm'
+import { servidorLlm } from '@/llm/servidor'
 
-// Una instancia por proceso. La huella y la memoria viven en .data/ (fuera de git).
-// Al cerrarse una conversacion, el agente de memoria (#11) aprende en segundo plano.
-const proveedor = elegirProveedor()
-const { generarOpciones } = crearOpcionesConMemoria({ proveedor, almacen: crearAlmacenEnArchivos() })
+// Una instancia por proceso, compartida con /api/memoria (servidor.ts). La huella y la memoria viven
+// en .data/ (fuera de git). Al cerrarse una conversacion, el agente de memoria aprende en segundo plano.
 
 export async function POST(request: Request) {
   let cuerpo: unknown
@@ -18,6 +16,7 @@ export async function POST(request: Request) {
   }
   if (!esPedido(cuerpo)) return Response.json({ error: 'No es un PedidoOpciones' }, { status: 400 })
 
+  const { generarOpciones, proveedor } = servidorLlm()
   const inicio = performance.now()
   try {
     const resultado = await generarOpciones(cuerpo)

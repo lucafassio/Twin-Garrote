@@ -165,6 +165,25 @@ describe('agente de memoria', () => {
     ])
   })
 
+  test('la cola de una conversacion cerrada por tiempo: aprende de las lineas nuevas y reemplaza su resumen', async () => {
+    const yaAprendido = { inicio: T0.toISOString(), fin: despues(10 * MIN).toISOString(), resumen: 'Marta conto lo de Laura.' }
+    const otro = { inicio: despues(-60 * MIN).toISOString(), fin: despues(-50 * MIN).toISOString(), resumen: 'Hablaron de River.' }
+    const { proveedor, prompts } = guionado([respuesta([], 'Marta conto lo de Laura y el asado; le mando un beso.')])
+    const cola: ConversacionCerrada = { ...cerrada(), yaAprendidas: 2 }
+    const previa = memoria({
+      resumenes: [otro, yaAprendido],
+      ejemplosEstilo: [],
+    })
+    const r = await crearAgenteMemoria({ proveedor })(cola, previa, PERFIL_ROBERTO)
+
+    // Al modelo le dice que las primeras lineas son solo contexto.
+    assert.match(prompts[0].usuario, /lineas 1 a 2 ya se aprendieron/i)
+    // Ejemplos de estilo solo de las lineas nuevas: "¿Y como esta ella?" (linea 2) ya se habia sumado.
+    assert.deepEqual(r.ejemplosEstilo.map((e) => e.texto), ['Mandale un beso grande'])
+    // El resumen de esa conversacion se reemplaza, no se duplica.
+    assert.deepEqual(r.resumenes.map((x) => x.resumen), ['Hablaron de River.', 'Marta conto lo de Laura y el asado; le mando un beso.'])
+  })
+
   test('nunca modifica el perfil', async () => {
     const almacen = crearAlmacenEnMemoria()
     const perfilAntes = await almacen.leerPerfil()

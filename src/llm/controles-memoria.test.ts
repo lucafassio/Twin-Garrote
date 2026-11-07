@@ -1,8 +1,7 @@
 // Correr: node --test 'src/llm/*.test.ts'
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
-import type { LineaHistorial } from '@/eventos'
-import { cerrarConversacion, invalidarHecho, listarHechos } from './controles-memoria.ts'
+import { invalidarHecho, listarHechos } from './controles-memoria.ts'
 import { crearAlmacenEnMemoria } from './almacen.ts'
 import type { Hecho } from './tipos.ts'
 
@@ -17,12 +16,6 @@ const hecho = (h: Partial<Hecho> & { id: string; texto: string }): Hecho => ({
   ...h,
 })
 
-const historial: LineaHistorial[] = [
-  { quien: 'interlocutor', texto: 'Hola' },
-  { quien: 'usuario', texto: 'Hola', origen: 'opcion' },
-  { quien: 'interlocutor', texto: 'Laura se opera el jueves' },
-  { quien: 'usuario', texto: 'Uy, mandale un beso', origen: 'opcion' },
-]
 
 describe('controles de memoria', () => {
   test('listarHechos separa activos e invalidados, los nuevos primero', async () => {
@@ -38,6 +31,81 @@ describe('controles de memoria', () => {
     const { activos, invalidados } = await listarHechos(almacen)
     assert.deepEqual(activos.map((h) => h.id), ['b', 'a'])
     assert.deepEqual(invalidados.map((h) => h.id), ['c'])
+  })
+
+  describe('listarHechos con fechas y vencidos', () => {
+    const OPERACION = {
+      id: 'op',
+      texto: 'Laura se opera de la rodilla',
+      tipo: 'evento' as const,
+      expresionOriginal: 'el jueves',
+      fechaEvento: '2026-11-12',
+      validoHasta: '2026-11-13T02:59:59.999Z', // fin del 12/11 en Argentina
+    }
+    const listar = (hechos: Hecho[], ahora: string) =>
+      listarHechos(crearAlmacenEnMemoria({ memoria: { hechos } }), new Date(ahora))
+
+    test('un evento trae su fecha y no esta vencido hasta el fin de ese dia', async () => {
+      const { activos, vencidos } = await listar([hecho(OPERACION)], '2026-11-12T20:00:00.000Z') // jueves 17:00
+      assert.deepEqual(vencidos, [])
+      assert.equal(activos.length, 1)
+      assert.equal(activos[0].fechaEvento, '2026-11-12')
+      assert.equal(activos[0].vencido, false)
+    })
+
+    test('pasado el fin del dia del evento va a vencidos, con su fecha, y sigue activo en la memoria', async () => {
+      const almacen = crearAlmacenEnMemoria({ memoria: { hechos: [hecho(OPERACION)] } })
+      const { activos, vencidos, invalidados } = await listarHechos(almacen, new Date('2026-11-13T03:00:00.000Z'))
+      assert.deepEqual(activos, [])
+      assert.deepEqual(invalidados, [])
+      assert.equal(vencidos.length, 1)
+      assert.equal(vencidos[0].fechaEvento, '2026-11-12')
+      assert.equal(vencidos[0].vencido, true)
+      assert.equal(almacen.memoria().hechos[0].estado, 'activo') // vencer no es invalidar
+    })
+
+    test('estable, estado sin fin y evento sin vencimiento nunca vencen', async () => {
+      const { activos, vencidos } = await listar(
+        [
+          hecho({ id: 'a', texto: 'Es de River', tipo: 'estable' }),
+          hecho({ id: 'b', texto: 'Laura esta de viaje', tipo: 'estado' }),
+          hecho({ id: 'c', texto: 'Algo pasa', tipo: 'evento', fechaEvento: '2026-11-12' }), // fecha descartada: sin validoHasta
+        ],
+        '2027-06-01T00:00:00.000Z',
+      )
+      assert.deepEqual(vencidos, [])
+      assert.deepEqual(activos.map((h) => h.vencido), [false, false, false])
+    })
+
+    test('un estado con fin vence despues de su validoHasta', async () => {
+      const viaje = hecho({ id: 'v', texto: 'Laura esta de viaje', tipo: 'estado', validoHasta: '2026-11-09T02:59:59.999Z' })
+      assert.deepEqual((await listar([viaje], '2026-11-08T12:00:00.000Z')).vencidos, [])
+      assert.deepEqual((await listar([viaje], '2026-11-10T12:00:00.000Z')).vencidos.map((h) => h.id), ['v'])
+    })
+
+    test('vencidos, activos e invalidados quedan en grupos separados; un invalidado nunca cuenta como vencido', async () => {
+      const { activos, vencidos, invalidados } = await listar(
+        [
+          hecho({ id: 'viva', texto: 'Es de River', fecha: '2026-11-05T10:00:00.000Z' }),
+          hecho({ ...OPERACION, id: 'pasada', fecha: '2026-11-08T10:00:00.000Z' }),
+          hecho({ ...OPERACION, id: 'vieja', fecha: '2026-11-06T10:00:00.000Z' }),
+          hecho({ ...OPERACION, id: 'invalidada', estado: 'invalidado', fechaInvalidacion: '2026-11-09T10:00:00.000Z' }),
+        ],
+        '2026-11-20T12:00:00.000Z',
+      )
+      assert.deepEqual(activos.map((h) => h.id), ['viva'])
+      assert.deepEqual(vencidos.map((h) => h.id), ['pasada', 'vieja']) // los nuevos primero
+      assert.deepEqual(invalidados.map((h) => h.id), ['invalidada'])
+      assert.equal(invalidados[0].vencido, false)
+    })
+
+    test('una memoria vieja, sin los campos nuevos, se lista como antes', async () => {
+      const { activos, vencidos } = await listar([hecho({ id: 'a', texto: 'viejo' })], '2030-01-01T00:00:00.000Z')
+      assert.deepEqual(vencidos, [])
+      assert.equal(activos[0].texto, 'viejo')
+      assert.equal(activos[0].fechaEvento, undefined)
+      assert.equal(activos[0].vencido, false)
+    })
   })
 
   test('invalidarHecho no borra: marca la fecha de invalidacion', async () => {
@@ -70,57 +138,5 @@ describe('controles de memoria', () => {
     assert.equal(conLaura.descartado, ahora.toISOString())
     assert.equal(conLaura.resumen, 'Le contaron que Laura se opera el jueves.') // no se borra
     assert.equal(deRiver.descartado, undefined)
-  })
-
-  test('cerrarConversacion arma la conversacion desde donde empezo y la deja cerrada', async () => {
-    const almacen = crearAlmacenEnMemoria({
-      memoria: {
-        conversacion: { inicio: '2026-11-07T14:00:00.000Z', ultimaActividad: '2026-11-07T14:05:00.000Z', desdeLinea: 2 },
-      },
-    })
-    const cerrada = await cerrarConversacion(almacen, historial, 'familia')
-    assert.deepEqual(cerrada, {
-      inicio: '2026-11-07T14:00:00.000Z',
-      fin: '2026-11-07T14:05:00.000Z',
-      lineas: historial.slice(2),
-      cercania: null, // memoria vieja sin cercania guardada: igual que el cierre de opciones
-      interlocutor: null,
-    })
-    assert.equal(almacen.memoria().conversacion, null)
-  })
-
-  test('cerrarConversacion usa las lineas, la cercania y el interlocutor guardados, aunque el historial llegue vacio', async () => {
-    const almacen = crearAlmacenEnMemoria({
-      memoria: {
-        conversacion: {
-          inicio: '2026-11-07T14:00:00.000Z',
-          ultimaActividad: '2026-11-07T14:05:00.000Z',
-          desdeLinea: 0,
-          cercania: 'familia',
-          interlocutor: 'Marta',
-          lineas: historial.slice(0, 3),
-        },
-      },
-    })
-    // Despues de una recarga, el cliente manda lo que lleva desde entonces (o nada).
-    const cerrada = await cerrarConversacion(almacen, historial.slice(3), 'formal')
-    assert.deepEqual(cerrada, {
-      inicio: '2026-11-07T14:00:00.000Z',
-      fin: '2026-11-07T14:05:00.000Z',
-      lineas: historial,
-      cercania: 'familia',
-      interlocutor: 'Marta',
-    })
-    assert.equal(almacen.memoria().conversacion, null)
-  })
-
-  test('cerrarConversacion sin nada que aprender devuelve null', async () => {
-    const almacen = crearAlmacenEnMemoria()
-    assert.equal(await cerrarConversacion(almacen, []), null)
-    const conActual = crearAlmacenEnMemoria({
-      memoria: { conversacion: { inicio: 'x', ultimaActividad: 'x', desdeLinea: 4 } },
-    })
-    assert.equal(await cerrarConversacion(conActual, historial), null)
-    assert.equal(conActual.memoria().conversacion, null)
   })
 })
