@@ -114,7 +114,10 @@ async function actualizarConversacion(
   } else if (anterior) {
     memoria.conversacion = { ...anterior, ultimaActividad: iso }
   }
-  await deps.almacen.guardarMemoria(memoria)
+  // Releer antes de guardar: mientras el modelo pensaba, el agente de memoria pudo guardar hechos.
+  // Desde aca solo se escribe la conversacion actual.
+  const fresca = await deps.almacen.leerMemoria()
+  await deps.almacen.guardarMemoria({ ...fresca, conversacion: memoria.conversacion })
 }
 
 // --- Prompt ------------------------------------------------------------------

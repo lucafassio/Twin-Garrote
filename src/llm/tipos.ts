@@ -24,6 +24,7 @@ export type Hecho = {
   estado: 'activo' | 'invalidado'
   fechaInvalidacion: string | null // ISO; un hecho invalidado no se borra
   intimo: boolean // salud, familia, plata...: nunca con cercania formal
+  reemplazaA?: string // id del hecho que este actualizo (el viejo queda invalidado, con su historia)
 }
 
 // El perfil que carga la familia en el onboarding. El aprendizaje nunca lo reescribe.
