@@ -1,16 +1,16 @@
-# Graph Report - Twin-Garrote-34  (2026-11-07)
+# Graph Report - Twin-Garrote-39  (2026-11-07)
 
 ## Corpus Check
-- 105 files · ~104,054 words
+- 110 files · ~106,670 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1794 nodes · 3576 edges · 100 communities (91 shown, 9 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 56 edges (avg confidence: 0.84)
+- 1889 nodes · 3710 edges · 111 communities (104 shown, 7 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 57 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5fd015ae`
+- Built from commit: `be263a6e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -112,10 +112,21 @@
 - [[_COMMUNITY_Community 97|Community 97]]
 - [[_COMMUNITY_Community 98|Community 98]]
 - [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
+- [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
+- [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 104|Community 104]]
+- [[_COMMUNITY_Community 105|Community 105]]
+- [[_COMMUNITY_Community 106|Community 106]]
+- [[_COMMUNITY_Community 107|Community 107]]
+- [[_COMMUNITY_Community 108|Community 108]]
+- [[_COMMUNITY_Community 109|Community 109]]
+- [[_COMMUNITY_Community 110|Community 110]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `LineaHistorial` - 49 edges
-2. `PedidoOpciones` - 49 edges
+1. `PedidoOpciones` - 50 edges
+2. `LineaHistorial` - 49 edges
 3. `llm/index.ts` - 41 edges
 4. `llm/tipos.ts` - 40 edges
 5. `voz/index.ts` - 38 edges
@@ -128,29 +139,29 @@
 ## Surprising Connections (you probably didn't know these)
 - `TD Snap QuickFires` --semantically_similar_to--> `Opciones fijas`  [EXTRACTED] [semantically similar]
   docs/research/nucleo-interfaz.md → GLOSSARY.md
+- `I, Robot? (autoetnografia AAC 2025)` --rationale_for--> `Cercania`  [INFERRED]
+  docs/research/llm.md → GLOSSARY.md
 - `SocializeChat (cercania + memoria personal)` --rationale_for--> `Cercania`  [INFERRED]
   docs/research/llm.md → GLOSSARY.md
 - `Orden de opciones por probabilidad` --rationale_for--> `Opcion`  [INFERRED]
   docs/research/nucleo-interfaz.md → GLOSSARY.md
 - `renderHuella()` --implements--> `Huella`  [INFERRED]
   docs/research/llm-onboarding-memoria.md → GLOSSARY.md
-- `Few-shot con frases reales del usuario` --rationale_for--> `Huella`  [INFERRED]
-  docs/research/llm.md → GLOSSARY.md
 
 ## Hyperedges (group relationships)
 - **Pipeline de memoria por usuario (perfil fijo + hechos + agente)** — docs_adr_0001_memoria_por_usuario_huella_md, docs_adr_0001_memoria_por_usuario_memoria_json, glossary_agente_de_memoria, docs_research_llm_onboarding_memoria_mem0, docs_research_llm_extraer_de_conversacion_cruda, glossary_huella [EXTRACTED 1.00]
 - **Ciclo half-duplex: aviso, habla, relanzar escucha** — glossary_aviso, docs_adr_0002_voz_half_duplex_half_duplex, docs_research_voz_web_speech_api, docs_research_voz_speech_synthesis, docs_research_voz_relanzar_en_onend, docs_research_voz_chrome_sin_cancelacion_eco [INFERRED 0.85]
 - **Seleccion por barrido y parpadeo** — glossary_barrido, glossary_parpadeo_largo, glossary_pausa_del_barrido, glossary_gesto_de_urgencia, docs_research_nucleo_interfaz_congelar_con_ojos_cerrados, docs_research_nucleo_interfaz_barrido_lineal [INFERRED 0.85]
 
-## Communities (100 total, 9 thin omitted)
+## Communities (111 total, 7 thin omitted)
 
 ### Community 0 - "Research: path llm"
-Cohesion: 0.10
-Nodes (24): claude -p, Gemini Flash free tier, Groq (llama-3.3-70b, structured outputs), Propuesta memoria en tres capas (perfil, estilo, hechos), Research: onboarding, aprendizaje y memoria, Generative Agents (Park et al. 2023), Grid 3 (Smartbox) chat history, MemGPT / Letta memory blocks (+16 more)
+Cohesion: 0.11
+Nodes (23): claude -p, Gemini Flash free tier, Groq (llama-3.3-70b, structured outputs), I, Robot? (autoetnografia AAC 2025), Propuesta memoria en tres capas (perfil, estilo, hechos), Research: onboarding, aprendizaje y memoria, Generative Agents (Park et al. 2023), Grid 3 (Smartbox) chat history (+15 more)
 
 ### Community 1 - "voz/index.ts"
-Cohesion: 0.06
-Nodes (65): app/page.tsx, Conversacion(), Inicio(), voz/page.tsx, Prueba(), Linea, MonitorBus(), CampoTurno() (+57 more)
+Cohesion: 0.11
+Nodes (18): app/page.tsx, Conversacion(), Inicio(), Linea, MonitorBus(), Alternativa, constructor(), crearEscucha() (+10 more)
 
 ### Community 2 - "llm/tipos.ts"
 Cohesion: 0.07
@@ -158,55 +169,55 @@ Nodes (48): Accion, agregarLetra(), armarFilas(), avanzar(), Barrido, BARRIDO_IN
 
 ### Community 3 - "package.json"
 Cohesion: 0.04
-Nodes (42): nextConfig, dependencies, ai, @anthropic-ai/sdk, @google/genai, groq-sdk, @mediapipe/tasks-vision, next (+34 more)
+Nodes (44): nextConfig, dependencies, ai, @anthropic-ai/sdk, @google/genai, groq-sdk, @mediapipe/tasks-vision, next (+36 more)
 
 ### Community 4 - "medir-latencias.ts"
-Cohesion: 0.17
-Nodes (15): ref_node_os, crearAlmacenEnArchivos(), armarPedido(), directo(), Llamar, main(), mediana(), Medido (+7 more)
+Cohesion: 0.16
+Nodes (16): ref_node_os, ref_node_path, crearAlmacenEnArchivos(), armarPedido(), directo(), Llamar, main(), mediana() (+8 more)
 
 ### Community 5 - "Pantalla.tsx"
-Cohesion: 0.23
-Nodes (13): react, deletrear/page.tsx, nucleo/page.tsx, Prueba(), vision/page.tsx, conversacion/page.tsx, Conversacion(), Simulador() (+5 more)
+Cohesion: 0.19
+Nodes (15): react, deletrear/page.tsx, nucleo/page.tsx, Prueba(), vision/page.tsx, conversacion/page.tsx, Conversacion(), Simulador() (+7 more)
 
 ### Community 6 - "vencen.test.ts"
 Cohesion: 0.21
 Nodes (12): candidato(), cerradaEl(), guardar(), guionado(), LINEAS, Objeto, OPCIONES, pedido (+4 more)
 
 ### Community 7 - "Research: path voz"
-Cohesion: 0.13
-Nodes (24): ADR 0002 Voz half-duplex, Reconocimiento de Chrome como base y fallback permanente, Half-duplex (abort() durante aviso y habla), Sin barge-in, Modelo de estados (escuchando, pensando, opciones, sinConexion, hablando...), Research: path voz, AssemblyAI streaming con speaker_labels, Azure Neural es-AR-ElenaNeural / TomasNeural (+16 more)
+Cohesion: 0.12
+Nodes (26): ADR 0002 Voz half-duplex, Reconocimiento de Chrome como base y fallback permanente, Half-duplex (abort() durante aviso y habla), Sin barge-in, Message banking (BCH, Team Gleason), Modelo de estados (escuchando, pensando, opciones, sinConexion, hablando...), Research: path voz, AssemblyAI streaming con speaker_labels (+18 more)
 
 ### Community 8 - "opciones.test.ts"
-Cohesion: 0.16
-Nodes (15): ref_node_test, CONECTORES_FINALES, ContextoLectura, esSegundaPersona(), INTERROGATIVAS, leerTurnoLocal(), limitar(), MULETILLAS (+7 more)
+Cohesion: 0.17
+Nodes (14): CONECTORES_FINALES, ContextoLectura, esSegundaPersona(), INTERROGATIVAS, leerTurnoLocal(), limitar(), MULETILLAS, palabras() (+6 more)
 
 ### Community 9 - "memoria.test.ts"
-Cohesion: 0.15
-Nodes (19): ref_node_path, AlmacenEnMemoria, memoriaVacia(), conFilas, ErrorMemoria, cerrada(), despues(), generar() (+11 more)
+Cohesion: 0.18
+Nodes (14): AlmacenEnMemoria, memoriaVacia(), ErrorMemoria, cerrada(), despues(), generar(), LINEAS, memoria() (+6 more)
 
 ### Community 10 - "memoria.ts"
 Cohesion: 0.08
-Nodes (44): aTexto(), describirDia(), describirFecha(), deTexto(), Dia, diaDeCalendario(), diaEnArgentina(), DIAS_SEMANA (+36 more)
+Nodes (46): aTexto(), describirDia(), describirFecha(), deTexto(), Dia, diaDeCalendario(), diaEnArgentina(), DIAS_SEMANA (+38 more)
 
 ### Community 11 - "opciones.ts"
-Cohesion: 0.09
-Nodes (39): abrirConversacion(), armarCerrada(), completarCerrada(), conTurnoPendiente(), interlocutorDe(), lineasDeConversacion(), seguirConversacion(), sumarLineas() (+31 more)
+Cohesion: 0.12
+Nodes (34): abrirConversacion(), armarCerrada(), completarCerrada(), conTurnoPendiente(), interlocutorDe(), lineasDeConversacion(), seguirConversacion(), sumarLineas() (+26 more)
 
 ### Community 12 - "compilerOptions"
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib (+11 more)
 
 ### Community 13 - "CLAUDE.md"
-Cohesion: 0.13
-Nodes (14): Next.js 16 breaking changes rule, Triage Labels, src/eventos.ts contrato compartido, Fase 0 (research + grill), Push directo a main con pull --rebase, Pagina de prueba por path (src/app/prueba/<path>), Parpadeo (AAC para ELA), Paths paralelos (path:* issues) (+6 more)
+Cohesion: 0.08
+Nodes (23): Conventions, Issue tracker: GitHub, Pull requests as a triage surface, Wayfinding operations, When a skill says "fetch the relevant ticket", When a skill says "publish to the issue tracker", Next.js 16 breaking changes rule, Triage Labels (+15 more)
 
 ### Community 14 - "llm/index.ts"
-Cohesion: 0.10
-Nodes (32): memoria/route.ts, esLinea(), GET(), POST(), opciones/route.ts, esPedido(), POST(), fecha() (+24 more)
+Cohesion: 0.09
+Nodes (33): memoria/route.ts, esLinea(), GET(), POST(), opciones/route.ts, esPedido(), POST(), fecha() (+25 more)
 
 ### Community 16 - "Deletrear.tsx"
 Cohesion: 0.08
-Nodes (51): Accion, agregarLetra(), armarFilas(), avanzar(), Barrido, BARRIDO_INICIAL, borrarLetra(), borrarPalabra() (+43 more)
+Nodes (56): deletrear/route.ts, esPedido(), POST(), predecir, proveedor, Accion, agregarLetra(), armarFilas() (+48 more)
 
 ### Community 17 - "urgencia/route.ts"
 Cohesion: 0.83
@@ -214,27 +225,27 @@ Nodes (4): urgencia/route.ts, ntfy(), POST(), telegram()
 
 ### Community 18 - "Research path voz: escuchar al interlocutor, fin de turno y decir la respuesta"
 Cohesion: 0.15
-Nodes (12): 2. Fin de turno, 5. Banco de voz y clonacion para ELA, 7. Ruido ambiente y microfono, Hallazgos, Hallazgos, Hallazgos, Preguntas abiertas para el grill, Recomendacion (+4 more)
+Nodes (12): 2. Fin de turno, 7. Ruido ambiente y microfono, 8. Diarizacion, Hallazgos, Hallazgos, Hallazgos, Preguntas abiertas para el grill, Recomendacion (+4 more)
 
 ### Community 20 - "LineaHistorial"
-Cohesion: 0.12
-Nodes (27): lectura/route.ts, esLinea(), POST(), Caso, CASOS, ROBERTO_DALE, ROBERTO_FRIO, ROBERTO_LAURA (+19 more)
+Cohesion: 0.16
+Nodes (16): Caso, CASOS, ROBERTO_DALE, ROBERTO_FRIO, ROBERTO_LAURA, enTandas(), leerLocal(), main() (+8 more)
 
 ### Community 22 - "eventos.ts"
 Cohesion: 0.15
 Nodes (19): esperar(), Estado, Medicion, ms(), PruebaCorte(), completar(), letrasRapidas(), pedir() (+11 more)
 
 ### Community 23 - "Huella"
-Cohesion: 0.18
-Nodes (11): huella.md (perfil fijo), Few-shot con frases reales del usuario, Onboarding en dos carriles (<10 min), renderHuella(), Drift de estilo, Senales de aprendizaje (opcion, Otra, deletreo, interlocutor), Completado, Huella (+3 more)
+Cohesion: 0.15
+Nodes (22): huella.md (perfil fijo), Few-shot con frases reales del usuario, Segmentacion por gap de inactividad + chequeo LLM, Onboarding en dos carriles (<10 min), renderHuella(), Drift de estilo, Senales de aprendizaje (opcion, Otra, deletreo, interlocutor), Fin de turno por silencio (~1200 ms) + disparo manual (+14 more)
 
 ### Community 24 - "completado.ts"
 Cohesion: 0.19
-Nodes (18): crearAlmacenEnMemoria(), crearCompletado(), hechosParaCompletado(), interpretar(), lineasDeLaConversacionActual(), normalizar(), promptSistema(), renderLinea() (+10 more)
+Nodes (19): crearAlmacenEnMemoria(), crearCompletado(), hechosParaCompletado(), interpretar(), lineasDeLaConversacionActual(), normalizar(), promptSistema(), renderLinea() (+11 more)
 
 ### Community 25 - "GLOSSARY.md (Parpadeo)"
-Cohesion: 0.30
-Nodes (12): I, Robot? (autoetnografia AAC 2025), Segmentacion por gap de inactividad + chequeo LLM, Fin de turno por silencio (~1200 ms) + disparo manual, GLOSSARY.md (Parpadeo), Cercania, Interlocutor, Opcion, Opciones fijas (+4 more)
+Cohesion: 0.16
+Nodes (16): almacen, GET(), AlmacenElecciones, crearAlmacenEleccionesEnArchivos(), crearAlmacenEleccionesEnMemoria(), Eleccion, EleccionInvalida, esPedidoEleccion() (+8 more)
 
 ### Community 26 - "Research: path nucleo-interfaz"
 Cohesion: 0.24
@@ -246,7 +257,7 @@ Nodes (13): ADR 0001 Memoria por usuario, .data/ storage en servidor, memoria.js
 
 ### Community 28 - "reductor.ts"
 Cohesion: 0.19
-Nodes (21): aceptarAcumulado(), activarUrgencia(), barridoDetenido(), Ctx, decir(), descartarAcumulado(), ejecutar(), esperarHabla() (+13 more)
+Nodes (18): aceptarAcumulado(), activarUrgencia(), barridoDetenido(), Ctx, decir(), descartarAcumulado(), ejecutar(), esperarHabla() (+10 more)
 
 ### Community 29 - "3. Aprender mientras se usa"
 Cohesion: 0.50
@@ -254,7 +265,7 @@ Nodes (4): 3. Aprender mientras se usa, Lo clasico en CAA, Memoria de LLMs en ge
 
 ### Community 31 - "Community 31"
 Cohesion: 0.07
-Nodes (43): invalidar(), aTexto(), describirDia(), describirFecha(), deTexto(), Dia, diaDeCalendario(), diaEnArgentina() (+35 more)
+Nodes (44): invalidar(), aTexto(), describirDia(), describirFecha(), deTexto(), Dia, diaDeCalendario(), diaEnArgentina() (+36 more)
 
 ### Community 32 - "Research: path deletrear (Fase 0)"
 Cohesion: 0.15
@@ -265,68 +276,68 @@ Cohesion: 0.05
 Nodes (34): crearCierre(), ErrorOpciones, agua, armar(), asado, { cierre, cerradas, almacen }, cinco, con (+26 more)
 
 ### Community 34 - "Community 34"
-Cohesion: 0.10
-Nodes (25): abrirConversacion(), armarCerrada(), completarCerrada(), conTurnoPendiente(), interlocutorDe(), lineasDeConversacion(), seguirConversacion(), sumarLineas() (+17 more)
+Cohesion: 0.09
+Nodes (26): abrirConversacion(), armarCerrada(), completarCerrada(), conTurnoPendiente(), interlocutorDe(), lineasDeConversacion(), seguirConversacion(), sumarLineas() (+18 more)
 
 ### Community 36 - "Community 36"
 Cohesion: 0.09
 Nodes (27): crearAlmacenEnMemoria(), CompletarFrase, crearCompletado(), DependenciasCompletado, hechosParaCompletado(), interpretar(), lineasDeLaConversacionActual(), normalizar() (+19 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.12
-Nodes (14): a, b, c, cerrada, conError, historial, Llamada, llamadas (+6 more)
+Cohesion: 0.11
+Nodes (15): cerrarConversacion(), a, b, c, cerrada, conError, historial, Llamada (+7 more)
 
 ### Community 38 - "Community 38"
 Cohesion: 0.07
-Nodes (32): AlmacenEnMemoria, memoriaVacia(), agenteTrabado, almacen, cerrada(), cola, CUATRO, despues() (+24 more)
+Nodes (31): AlmacenEnMemoria, memoriaVacia(), agenteTrabado, almacen, cerrada(), cola, CUATRO, despues() (+23 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.10
 Nodes (25): elementosBarrido(), abierto, abrir, antes, aplicar(), cerrado, cerrar, conOpciones() (+17 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.15
-Nodes (13): ESQUEMA_RESPUESTA, CON_TURNO, SIN_TURNO, Bloque, EjemploEstilo, Niveles, OpcionMostrada, OrigenHecho (+5 more)
+Cohesion: 0.18
+Nodes (12): ESQUEMA_RESPUESTA, crearProveedorAnthropic(), CON_TURNO, crearProveedorFalso(), SIN_TURNO, crearProveedorGateway(), Alias, Entorno (+4 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.11
-Nodes (20): HechoListado, HechosListados, invalidarHecho(), ahora, almacen, listar(), OPERACION, viaje (+12 more)
+Cohesion: 0.07
+Nodes (32): HechoListado, HechosListados, invalidarHecho(), ahora, almacen, OPERACION, viaje, conFilas (+24 more)
 
 ### Community 42 - "Community 42"
-Cohesion: 0.08
-Nodes (20): armar(), con, espera, { generar }, { generar, almacen }, { generar, almacen, hechoDe }, { generar, prompts }, { generar, prompts, almacen, hechoDe } (+12 more)
+Cohesion: 0.07
+Nodes (25): a, armar(), con, conversacion(), despues(), espera, { generar }, { generar, almacen } (+17 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.22
 Nodes (9): dependencies, ai, @anthropic-ai/sdk, @google/genai, groq-sdk, @mediapipe/tasks-vision, next, react (+1 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.11
-Nodes (23): Opcion, DebugNucleo(), Props, nucleo/index.ts, ACUMULADO_VENCE_MS, CONFIRMACION_FALSA_ALARMA_MS, GESTO_URGENCIA_MS, LECTURA_MAXIMO_MS (+15 more)
+Cohesion: 0.12
+Nodes (20): nucleo/index.ts, ACUMULADO_VENCE_MS, CONFIRMACION_FALSA_ALARMA_MS, GESTO_URGENCIA_MS, LECTURA_MAXIMO_MS, LeerTurno, MAXIMO_ESPERA_HABLA_MS, MAXIMO_OPCIONES (+12 more)
 
 ### Community 45 - "Community 45"
-Cohesion: 0.17
-Nodes (14): Caso, CASOS, ROBERTO_DALE, ROBERTO_FRIO, ROBERTO_LAURA, enTandas(), leerLocal(), main() (+6 more)
+Cohesion: 0.24
+Nodes (17): voz/page.tsx, Prueba(), callar(), cargarVoces(), elegirVoz(), hablar(), PREFERIDAS_LOCAL, PREFERIDAS_RED (+9 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.07
-Nodes (43): completar, esPedido(), POST(), proveedor, esPedido(), POST(), predecir, proveedor (+35 more)
+Cohesion: 0.23
+Nodes (13): crearAlmacenEnArchivos(), armarPedido(), directo(), Llamar, main(), mediana(), Medido, porHttp() (+5 more)
 
 ### Community 47 - "Community 47"
-Cohesion: 0.13
-Nodes (9): Medicion, PREFIJOS_DE_PRUEBA, Cercania, Eventos, Handler, handlers, Intencion, PedidoOpciones (+1 more)
+Cohesion: 0.12
+Nodes (15): GenerarOpciones, esPedido(), TIPOS_TURNO, Medicion, PREFIJOS_DE_PRUEBA, esPedido(), POST(), Cercania (+7 more)
 
 ### Community 48 - "Community 48"
 Cohesion: 0.18
 Nodes (8): llm/page.tsx, Medicion, Prueba(), Respuesta, TURNOS_DE_PRUEBA, Medicion, PREFIJOS_DE_PRUEBA, PruebaCompletado()
 
 ### Community 49 - "Community 49"
-Cohesion: 0.05
-Nodes (40): compilerOptions, allowImportingTsExtensions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib (+32 more)
+Cohesion: 0.11
+Nodes (18): compilerOptions, allowImportingTsExtensions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib (+10 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.16
-Nodes (14): leerConModelo(), POST(), armarPedidoLectura(), interpretarLectura(), leerTurnoConGateway(), PedidoLectura, Respuesta, historial (+6 more)
+Cohesion: 0.09
+Nodes (27): Caso, CASOS, ROBERTO_DALE, ROBERTO_FRIO, ROBERTO_LAURA, enTandas(), leerConModelo(), main() (+19 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.12
@@ -337,16 +348,16 @@ Cohesion: 0.33
 Nodes (6): 1. Que dice la investigacion sobre LLMs en CAA, "I, Robot?" (Weinberg, Valencia y otros, 2025) — LLM ultra personalizado, n=1, SocializeChat (Zhejiang, 2025) — memoria personal + cercania, SpeakFaster (Google, Nature Communications 2024), "The less I type, the better" (Valencia et al., CHI 2023), "Why So Serious?" (CHI 2025)
 
 ### Community 53 - "Community 53"
-Cohesion: 0.11
-Nodes (25): ai, @anthropic-ai/sdk, completar/route.ts, completar, esPedido(), POST(), proveedor, deletrear/route.ts (+17 more)
+Cohesion: 0.14
+Nodes (19): ref_node_test, completar/route.ts, completar, esPedido(), POST(), proveedor, ESQUEMA_RESPUESTA, MAX_TOKENS (+11 more)
 
 ### Community 54 - "Segunda tanda (pendientes del grill)"
 Cohesion: 0.14
 Nodes (14): 2.1 Limites de los tiers gratis (solo para dejar anotado), 2.3 `SpeechRecognition.start(audioTrack)` y eleccion de microfono, 2.4 Voces gratis de `speechSynthesis` en Chrome Windows, 2.5 Microfono para captar una ronda de 3-5 personas, Hallazgos, Hallazgos, Hallazgos, Hallazgos (+6 more)
 
 ### Community 55 - "Community 55"
-Cohesion: 0.16
-Nodes (15): CONECTORES_FINALES, ContextoLectura, esSegundaPersona(), INTERROGATIVAS, leerTurnoLocal(), limitar(), MULETILLAS, palabras() (+7 more)
+Cohesion: 0.15
+Nodes (16): leerLocal(), CONECTORES_FINALES, ContextoLectura, esSegundaPersona(), INTERROGATIVAS, leerTurnoLocal(), limitar(), MULETILLAS (+8 more)
 
 ### Community 56 - "Community 56"
 Cohesion: 0.13
@@ -358,11 +369,11 @@ Nodes (27): agenteMudo, almacen, { almacen, cerrar }, { almacen, pedidos, cerrar
 
 ### Community 58 - "Community 58"
 Cohesion: 0.06
-Nodes (44): Linea, anotarEnCurso(), anotarLinea(), contextoCharla(), lineas, Alternativa, constructor(), crearEscucha() (+36 more)
+Nodes (45): Linea, cierre, anotarEnCurso(), anotarLinea(), contextoCharla(), lineas, Alternativa, constructor() (+37 more)
 
 ### Community 59 - "Community 59"
-Cohesion: 0.15
-Nodes (8): reportarEleccion(), fechaDelEvento(), Hechos, LoQueAprendi(), ORIGEN, Medicion, Respuesta, TURNOS_DE_PRUEBA
+Cohesion: 0.11
+Nodes (18): compilerOptions, allowImportingTsExtensions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib (+10 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.36
@@ -373,16 +384,16 @@ Cohesion: 0.17
 Nodes (11): 1. Onboarding en AAC personalizada, 2. Aprender durante el uso: que es "esencial" y como consolidar, 3. Segmentacion automatica de conversaciones, 4. Formato de almacenamiento, 5. Riesgos y etica (onboarding y aprendizaje en ELA/AAC), Contradicciones y drift: patrones observados, Implicancias para Parpadeo (hackathon de 5 horas), Investigacion con LLMs (+3 more)
 
 ### Community 62 - "Community 62"
-Cohesion: 0.14
-Nodes (21): armarDia(), bloqueDelDia(), citaIntimo(), diasPendientes(), ErrorNivel, hora(), idBloque(), interpretar() (+13 more)
+Cohesion: 0.12
+Nodes (23): armarDia(), bloqueDelDia(), citaIntimo(), diasPendientes(), ErrorNivel, hora(), idBloque(), interpretar() (+15 more)
 
 ### Community 63 - "Domain Docs"
 Cohesion: 0.25
 Nodes (8): Before exploring, read these, code:block1 (/), code:block2 (/), Domain Docs, File structure, Flag ADR conflicts, Use the glossary's vocabulary, Domain Docs guide
 
 ### Community 64 - "Agent skills"
-Cohesion: 0.09
-Nodes (18): Agent skills, Domain docs, graphify, Issue tracker, Reglas de trabajo en paralelo (obligatorias), Triage labels, Agent skills, Domain docs (+10 more)
+Cohesion: 0.07
+Nodes (24): Agent skills, Domain docs, graphify, Issue tracker, Reglas de trabajo en paralelo (obligatorias), Triage labels, Agent skills, Domain docs (+16 more)
 
 ### Community 65 - "Community 65"
 Cohesion: 0.15
@@ -401,12 +412,12 @@ Cohesion: 0.18
 Nodes (9): AVISO_CUADRANTE, CeldaProps, FRANJA, Pantalla(), Props, historialPrevio(), pedidoActual(), Elemento (+1 more)
 
 ### Community 69 - "Lenguaje"
-Cohesion: 0.11
-Nodes (17): Conversacion, Lenguaje, Memoria, Parpadeo, Personas, Seleccion, Conversacion, Lenguaje (+9 more)
+Cohesion: 0.08
+Nodes (23): Conversacion, Lenguaje, Memoria, Parpadeo, Personas, Seleccion, Conversacion, Lenguaje (+15 more)
 
 ### Community 70 - "Community 70"
-Cohesion: 0.15
-Nodes (11): cerrarConversacion(), completarFrase(), esAbortado(), esPedidoCancelado(), PedidoCancelado, pedirCompletado(), pedirOpciones(), Estado (+3 more)
+Cohesion: 0.12
+Nodes (16): completarFrase(), esAbortado(), esPedidoCancelado(), PedidoCancelado, pedirCompletado(), pedirOpciones(), registrarEleccion(), reportarEleccion() (+8 more)
 
 ### Community 71 - "0001 - Memoria por usuario: perfil fijo, hechos aprendidos y agente de memoria en segundo plano"
 Cohesion: 0.40
@@ -417,8 +428,8 @@ Cohesion: 0.40
 Nodes (4): 0002 - Voz: reconocimiento de Chrome y microfono apagado mientras el sistema habla, Consecuencias, Contexto, Decision
 
 ### Community 73 - "Community 73"
-Cohesion: 0.27
-Nodes (10): elementosBarrido(), aplicar(), conOpciones(), deletreando(), despuesDeDecirSi(), enUrgencia(), fragmentoLeido(), iluminar() (+2 more)
+Cohesion: 0.32
+Nodes (11): elementosBarrido(), reducir(), aplicar(), conOpciones(), deletreando(), despuesDeDecirSi(), enUrgencia(), fragmentoLeido() (+3 more)
 
 ### Community 74 - "Community 74"
 Cohesion: 0.22
@@ -433,7 +444,7 @@ Cohesion: 0.60
 Nodes (5): crearNucleo(), despachar(), ejecutar(), leer(), reiniciarTick()
 
 ### Community 77 - "Community 77"
-Cohesion: 0.31
+Cohesion: 0.21
 Nodes (6): Conversacion(), Conversacion(), useNucleo(), leerTurnoRemoto(), Prueba(), LecturaTurno
 
 ### Community 78 - "Community 78"
@@ -453,8 +464,8 @@ Cohesion: 0.83
 Nodes (3): ntfy(), POST(), telegram()
 
 ### Community 84 - "Community 84"
-Cohesion: 0.22
-Nodes (8): Conventions, Issue tracker: GitHub, Pull requests as a triage surface, Wayfinding operations, When a skill says "fetch the relevant ticket", When a skill says "publish to the issue tracker", gh CLI issue conventions, Wayfinding operations (map + child tickets)
+Cohesion: 0.11
+Nodes (18): compilerOptions, allowImportingTsExtensions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib (+10 more)
 
 ### Community 85 - "Community 85"
 Cohesion: 0.67
@@ -468,6 +479,14 @@ Nodes (3): 6. Eco y barge-in, Hallazgos, Recomendacion
 Cohesion: 0.22
 Nodes (9): dependencies, ai, @anthropic-ai/sdk, @google/genai, groq-sdk, @mediapipe/tasks-vision, next, react (+1 more)
 
+### Community 88 - "Community 88"
+Cohesion: 0.50
+Nodes (3): eslintConfig, eslintConfig, eslintConfig
+
+### Community 89 - "Community 89"
+Cohesion: 0.50
+Nodes (3): nextConfig, nextConfig, nextConfig
+
 ### Community 93 - "Community 93"
 Cohesion: 0.22
 Nodes (9): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/turbopack, @types/node, @types/react, @types/react-dom (+1 more)
@@ -477,8 +496,8 @@ Cohesion: 0.22
 Nodes (9): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/turbopack, @types/node, @types/react, @types/react-dom (+1 more)
 
 ### Community 95 - "Community 95"
-Cohesion: 0.29
-Nodes (6): name, private, version, name, private, version
+Cohesion: 0.20
+Nodes (9): name, private, version, name, private, version, name, private (+1 more)
 
 ### Community 96 - "Community 96"
 Cohesion: 0.40
@@ -493,28 +512,72 @@ Cohesion: 0.67
 Nodes (3): 1. Web Speech API en Chrome con es-AR, Hallazgos, Recomendacion
 
 ### Community 99 - "Community 99"
+Cohesion: 0.24
+Nodes (13): lectura/route.ts, esLinea(), POST(), leerConModelo(), armarPedidoLectura(), interpretarLectura(), leerTurnoConGateway(), MODELO_LECTURA_POR_DEFECTO (+5 more)
+
+### Community 100 - "Community 100"
+Cohesion: 0.24
+Nodes (11): listarHechos(), elegirProveedorRollup(), modeloRollup(), NombreProveedor, anthropic, env, gateway, ServidorLlm (+3 more)
+
+### Community 101 - "Community 101"
+Cohesion: 0.20
+Nodes (11): Escucha, aWav(), crearEscuchaGroq(), cerrarFrase(), preparar(), procesar(), transcribir(), groqDisponible() (+3 more)
+
+### Community 102 - "Community 102"
+Cohesion: 0.26
+Nodes (10): CampoTurno(), anotarEnCurso(), anotarLinea(), contextoCharla(), lineas, voz/index.ts, esperar(), ADR-0002 (+2 more)
+
+### Community 103 - "Community 103"
+Cohesion: 0.25
+Nodes (8): completar, esPedido(), POST(), proveedor, esPedido(), POST(), predecir, proveedor
+
+### Community 104 - "Community 104"
+Cohesion: 0.20
+Nodes (5): armar(), CUATRO, guionado(), T0, ConversacionCerrada
+
+### Community 105 - "Community 105"
+Cohesion: 0.38
+Nodes (9): activos, campana(), ctx(), esperar(), PARCIALES, salidaCampana(), sonarAlarma(), sonarAviso() (+1 more)
+
+### Community 106 - "Community 106"
+Cohesion: 0.22
+Nodes (9): dependencies, ai, @anthropic-ai/sdk, @google/genai, groq-sdk, @mediapipe/tasks-vision, next, react (+1 more)
+
+### Community 107 - "Community 107"
+Cohesion: 0.22
+Nodes (9): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/turbopack, @types/node, @types/react, @types/react-dom (+1 more)
+
+### Community 108 - "Community 108"
+Cohesion: 0.29
+Nodes (6): exclude, include, exclude, include, exclude, include
+
+### Community 109 - "Community 109"
+Cohesion: 0.40
+Nodes (5): scripts, build, dev, lint, start
+
+### Community 110 - "Community 110"
 Cohesion: 0.67
-Nodes (3): 8. Diarizacion, Hallazgos, Recomendacion
+Nodes (3): 5. Banco de voz y clonacion para ELA, Hallazgos, Recomendacion
 
 ## Knowledge Gaps
-- **684 isolated node(s):** `eslintConfig`, `nextConfig`, `name`, `version`, `private` (+679 more)
+- **745 isolated node(s):** `eslintConfig`, `nextConfig`, `name`, `version`, `private` (+740 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `PedidoOpciones` connect `Community 47` to `llm/tipos.ts`, `medir-latencias.ts`, `Pantalla.tsx`, `vencen.test.ts`, `opciones.ts`, `llm/index.ts`, `Deletrear.tsx`, `eventos.ts`, `completado.ts`, `reductor.ts`, `Community 33`, `Community 34`, `Community 36`, `Community 37`, `Community 42`, `Community 44`, `Community 46`, `Community 48`, `Community 51`, `Community 53`, `Community 56`, `Community 59`, `Community 60`, `Community 70`?**
-  _High betweenness centrality (0.141) - this node is a cross-community bridge._
-- **Why does `LineaHistorial` connect `Community 50` to `voz/index.ts`, `llm/tipos.ts`, `medir-latencias.ts`, `Pantalla.tsx`, `vencen.test.ts`, `memoria.test.ts`, `memoria.ts`, `opciones.ts`, `llm/index.ts`, `Deletrear.tsx`, `LineaHistorial`, `eventos.ts`, `completado.ts`, `reductor.ts`, `Community 31`, `Community 34`, `Community 36`, `Community 38`, `Community 40`, `Community 44`, `Community 45`, `Community 46`, `Community 47`, `Community 48`, `Community 51`, `Community 56`, `Community 57`, `Community 58`, `Community 59`, `Community 60`, `Community 70`, `Community 77`?**
-  _High betweenness centrality (0.132) - this node is a cross-community bridge._
-- **Why does `voz/index.ts` connect `voz/index.ts` to `Pantalla.tsx`, `Community 47`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Why does `LineaHistorial` connect `Community 50` to `llm/tipos.ts`, `medir-latencias.ts`, `Pantalla.tsx`, `vencen.test.ts`, `memoria.test.ts`, `memoria.ts`, `opciones.ts`, `llm/index.ts`, `Deletrear.tsx`, `LineaHistorial`, `eventos.ts`, `completado.ts`, `reductor.ts`, `Community 31`, `Community 34`, `Community 36`, `Community 38`, `Community 41`, `Community 44`, `Community 46`, `Community 47`, `Community 48`, `Community 51`, `Community 56`, `Community 57`, `Community 58`, `Community 60`, `Community 70`, `Community 77`, `Community 99`, `Community 100`, `Community 102`?**
+  _High betweenness centrality (0.127) - this node is a cross-community bridge._
+- **Why does `PedidoOpciones` connect `Community 47` to `llm/tipos.ts`, `medir-latencias.ts`, `Pantalla.tsx`, `vencen.test.ts`, `opciones.ts`, `llm/index.ts`, `Deletrear.tsx`, `eventos.ts`, `completado.ts`, `reductor.ts`, `Community 33`, `Community 34`, `Community 36`, `Community 37`, `Community 42`, `Community 44`, `Community 46`, `Community 48`, `Community 51`, `Community 53`, `Community 56`, `Community 60`, `Community 70`, `Community 103`, `Community 104`?**
+  _High betweenness centrality (0.122) - this node is a cross-community bridge._
+- **Why does `voz/index.ts` connect `Community 102` to `voz/index.ts`, `Community 101`, `Pantalla.tsx`, `Community 105`, `Community 45`, `Community 47`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
 - **What connects `eslintConfig`, `nextConfig`, `name` to the rest of the system?**
-  _691 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _752 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Research: path llm` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10869565217391304 - nodes in this community are weakly interconnected._
 - **Should `voz/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.055176890619928594 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10507246376811594 - nodes in this community are weakly interconnected._
 - **Should `llm/tipos.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.07320024198427103 - nodes in this community are weakly interconnected._

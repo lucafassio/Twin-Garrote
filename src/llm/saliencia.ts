@@ -1,6 +1,6 @@
 // Saliencia (#36, SPICA): los hechos usados en las opciones que el usuario elige ganan peso y aparecen
 // antes en el prompt de opciones. "Otra" y las opciones fijas no tocan nada.
-// El decaimiento al cerrar una conversacion es de #39: los usados en ella tienen ultimoUso >= su inicio.
+// Al cerrar una conversacion (#39), los hechos no usados en ella decaen hacia 1 (decaerSaliencia).
 import type { Almacen, Hecho } from './tipos.ts'
 import { enFila } from './fila.ts'
 
@@ -57,14 +57,42 @@ export async function registrarEleccion(almacen: Almacen, eleccion: Eleccion, ah
   })
 }
 
-// Para quien guarda hechos armados a partir de una lectura vieja (el agente de memoria): conserva la
-// saliencia y el ultimo uso de las elecciones registradas mientras tanto en la memoria fresca. Solo
-// gana lo fresco si tiene un uso mas nuevo: asi un cambio propio del que guarda (un decaimiento) vale.
+// Decaimiento (#39): al cerrar una conversacion, la saliencia de cada hecho no usado en ella pierde
+// esta fraccion de lo que tiene por encima de 1. Desde el tope, 7 conversaciones sin uso la dejan
+// por debajo de lo que suma una eleccion.
+const DECAIMIENTO = 0.2
+// Con un exceso sobre 1 menor a esto, la saliencia vuelve justo a 1.
+const EXCESO_MINIMO = 0.01
+
+// Al cerrar la conversacion que empezo en inicio (ISO): los hechos usados en opciones elegidas en
+// ella (ultimoUso >= inicio) quedan como estan; el resto decae hacia 1, nunca por debajo. "Otra" y
+// las fijas no anotan uso, asi que no salvan a nadie. Lo llama quien cierra, dentro de la fila.
+export function decaerSaliencia(hechos: Hecho[], inicio: string): Hecho[] {
+  const desde = Date.parse(inicio)
+  return hechos.map((h) => {
+    const s = salienciaDe(h)
+    if (s <= SALIENCIA_INICIAL) return h
+    if (h.ultimoUso && Date.parse(h.ultimoUso) >= desde) return h
+    const exceso = (s - SALIENCIA_INICIAL) * (1 - DECAIMIENTO)
+    return { ...h, saliencia: exceso < EXCESO_MINIMO ? SALIENCIA_INICIAL : SALIENCIA_INICIAL + exceso }
+  })
+}
+
+// Para quien guarda hechos armados a partir de una lectura vieja (el agente de memoria): la saliencia
+// y el ultimo uso salen siempre de la memoria fresca, porque solo los cambian las elecciones y los
+// cierres, que pudieron caer mientras tanto. Un hecho que no esta en la fresca queda como vino.
 export function conservarUsosNuevos(hechos: Hecho[], frescos: Hecho[]): Hecho[] {
   const porId = new Map(frescos.map((h) => [h.id, h]))
   return hechos.map((h) => {
     const fresco = porId.get(h.id)
-    if (!fresco?.ultimoUso || (h.ultimoUso && Date.parse(h.ultimoUso) >= Date.parse(fresco.ultimoUso))) return h
-    return { ...h, saliencia: salienciaDe(fresco), ultimoUso: fresco.ultimoUso }
+    if (!fresco) return h
+    const sinUso = { ...h }
+    delete sinUso.saliencia
+    delete sinUso.ultimoUso
+    return {
+      ...sinUso,
+      ...(fresco.saliencia !== undefined ? { saliencia: fresco.saliencia } : {}),
+      ...(fresco.ultimoUso !== undefined ? { ultimoUso: fresco.ultimoUso } : {}),
+    }
   })
 }

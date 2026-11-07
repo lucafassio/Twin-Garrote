@@ -41,7 +41,7 @@ Dato sobre el usuario o su entorno extraido de una conversacion ("Laura se opera
 _Avoid_: recuerdo, dato, memoria
 
 **Saliencia**:
-Peso de un hecho por haberse usado en opciones que el usuario eligio. Arranca en 1 y sube hasta un tope cada vez que se elige una opcion que lo uso; "Otra" y las opciones fijas no la tocan. Ordena los hechos del prompt junto con la importancia y la coincidencia con el turno.
+Peso de un hecho por haberse usado en opciones que el usuario eligio. Arranca en 1 y sube hasta un tope cada vez que se elige una opcion que lo uso; "Otra" y las opciones fijas no la tocan. Al cerrar una conversacion, la de los hechos no usados en opciones elegidas en ella decae un poco hacia 1, nunca por debajo. Ordena los hechos del prompt junto con la importancia y la coincidencia con el turno.
 _Avoid_: relevancia, popularidad
 
 **Vencido**:

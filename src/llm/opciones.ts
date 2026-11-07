@@ -26,7 +26,7 @@ import {
 } from './conversacion.ts'
 import { enFila } from './fila.ts'
 import { bloqueDelDia } from './niveles.ts'
-import { MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
+import { decaerSaliencia, MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
 
@@ -149,8 +149,11 @@ async function actualizarConversacion(
     const sigue = actual !== null && actual.inicio === leida.conversacion?.inicio
     if (nueva) {
       // La cerrada lleva sus lineas guardadas y su contexto, nunca el del pedido que abre la siguiente.
-      const cerrada = sigue ? armarCerrada(actual, pedido.historial) : null
-      if (cerrada) dispararCierre(deps, cerrada)
+      if (sigue) {
+        memoria.hechos = decaerSaliencia(memoria.hechos, actual.inicio)
+        const cerrada = armarCerrada(actual, pedido.historial)
+        if (cerrada) dispararCierre(deps, cerrada)
+      }
       memoria.conversacion = abrirConversacion(pedido, ahora)
     } else {
       memoria.conversacion = sigue ? seguirConversacion(actual, pedido, ahora) : abrirConversacion(pedido, ahora)
@@ -198,6 +201,7 @@ export function crearCierre(deps: DependenciasCierre): CierreConversacion {
       if (!actual || !debeCerrar(actual)) return null
       const cerrada = armarCerrada(actual, historial)
       memoria.conversacion = null
+      memoria.hechos = decaerSaliencia(memoria.hechos, actual.inicio)
       if (porTiempo && cerrada) memoria.cerradaPorTiempo = { ...actual, lineas: cerrada.lineas }
       else delete memoria.cerradaPorTiempo
       await deps.almacen.guardarMemoria(memoria)

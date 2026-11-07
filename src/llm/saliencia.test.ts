@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { PedidoOpciones } from '@/eventos'
-import { crearOpciones } from './opciones.ts'
+import { crearCierre, crearOpciones } from './opciones.ts'
 import { crearAlmacenEnMemoria } from './almacen.ts'
 import { crearDisparadorMemoria } from './memoria.ts'
 import { registrarEleccion, SALIENCIA_TOPE } from './saliencia.ts'
@@ -238,6 +238,35 @@ describe('saliencia', () => {
     assert.ok(!orden.includes('Dato numero 11'))
   })
 
+  test('si el agente de memoria guarda mientras se cierra otra conversacion, el decaimiento no se pierde', async () => {
+    let soltar!: () => void
+    const espera = new Promise<void>((r) => (soltar = r))
+    let avisarLlamado!: () => void
+    const llamado = new Promise<void>((r) => (avisarLlamado = r))
+    const lento: Proveedor = {
+      nombre: 'lento',
+      async generar() {
+        avisarLlamado()
+        await espera
+        return JSON.stringify({ hechos: [], resumen: 'Charlaron.' })
+      },
+    }
+    const { generar, almacen, hechoDe } = armar([respuesta([[], [], [], []])], {
+      hechos: [{ ...RIVER, saliencia: SALIENCIA_TOPE }],
+    })
+    await generar(pedido(), T0)
+    const memoria = crearDisparadorMemoria({ proveedor: lento, almacen })
+    // El agente ya leyo la memoria (con la saliencia sin decaer) cuando llama al modelo.
+    memoria.disparar({ inicio: T0.toISOString(), fin: T0.toISOString(), lineas: [{ quien: 'usuario', texto: 'Hola.' }], cercania: null })
+    await llamado
+    await crearCierre({ almacen }).cerrar()
+    const decaida = hechoDe('h-river').saliencia!
+    assert.ok(decaida < SALIENCIA_TOPE)
+    soltar()
+    await memoria.listo()
+    assert.equal(hechoDe('h-river').saliencia, decaida)
+  })
+
   test('si el agente de memoria guarda mientras se elige, la saliencia subida no se pierde', async () => {
     let soltar!: () => void
     const espera = new Promise<void>((r) => (soltar = r))
@@ -257,5 +286,121 @@ describe('saliencia', () => {
     await memoria.listo()
     assert.ok(hechoDe('h-river').saliencia! > 1)
     assert.equal(hechoDe('h-river').ultimoUso, despues(MIN).toISOString())
+  })
+})
+
+// Decaimiento (#39): al cerrar una conversacion, los hechos que no se usaron en ella pierden peso hacia 1.
+describe('decaimiento de la saliencia', () => {
+  // Una conversacion: abre con un pedido de opciones, elige (o no) y se cierra a mano.
+  async function conversacion(
+    a: ReturnType<typeof armar>,
+    n: number,
+    eleccion: Parameters<typeof registrarEleccion>[1] | null = null,
+  ) {
+    const t = despues(n * 60 * MIN)
+    await a.generar(pedido(), t)
+    if (eleccion) await registrarEleccion(a.almacen, eleccion, despues(n * 60 * MIN + MIN))
+    await crearCierre({ almacen: a.almacen }).cerrar()
+  }
+
+  test('al cerrar, un hecho no usado decae hacia 1', async () => {
+    const a = armar([respuesta([[], [], [], []])], { hechos: [{ ...RIVER, saliencia: SALIENCIA_TOPE }] })
+    await conversacion(a, 0)
+    const s = a.hechoDe('h-river').saliencia!
+    assert.ok(s < SALIENCIA_TOPE && s > 1, `quedo en ${s}`)
+  })
+
+  test('tras varios cierres sin uso baja hasta 1 y nunca por debajo', async () => {
+    const vueltas = 40
+    const a = armar(
+      Array.from({ length: vueltas }, () => respuesta([[], [], [], []])),
+      { hechos: [{ ...RIVER, saliencia: SALIENCIA_TOPE }, LAURA] },
+    )
+    let antes = SALIENCIA_TOPE
+    for (let i = 0; i < vueltas; i++) {
+      await conversacion(a, i)
+      const s = a.hechoDe('h-river').saliencia!
+      assert.ok(s <= antes && s >= 1)
+      antes = s
+    }
+    assert.equal(a.hechoDe('h-river').saliencia, 1)
+    // Uno que nunca subio no cambia.
+    assert.equal(a.hechoDe('h-laura').saliencia, undefined)
+  })
+
+  test('un hecho usado en una opcion elegida en esa conversacion no decae', async () => {
+    const a = armar([respuesta([['h1'], ['h2'], [], []])], {
+      hechos: [{ ...RIVER, saliencia: 1.5 }, { ...LAURA, saliencia: 1.5 }],
+    })
+    await conversacion(a, 0, { tipo: 'opcion', texto: 'Opcion 1.' })
+    assert.equal(a.hechoDe('h-river').saliencia, 1.75)
+    assert.ok(a.hechoDe('h-laura').saliencia! < 1.5)
+  })
+
+  test('"Otra" y las opciones fijas no cuentan como uso', async () => {
+    for (const eleccion of [{ tipo: 'otra' } as const, { tipo: 'fija', fija: 'si' } as const]) {
+      const a = armar([respuesta([['h1'], ['h1'], ['h1'], ['h1']])], { hechos: [{ ...RIVER, saliencia: 1.5 }] })
+      await conversacion(a, 0, eleccion)
+      assert.ok(a.hechoDe('h-river').saliencia! < 1.5)
+    }
+  })
+
+  test('un uso de una conversacion anterior no salva del decaimiento', async () => {
+    const a = armar([respuesta([['h1'], [], [], []]), respuesta([[], [], [], []])], { hechos: [RIVER] })
+    await conversacion(a, 0, { tipo: 'opcion', texto: 'Opcion 1.' })
+    const subida = a.hechoDe('h-river').saliencia!
+    await conversacion(a, 1)
+    assert.ok(a.hechoDe('h-river').saliencia! < subida)
+  })
+
+  test('tambien decae cuando opciones detecta una conversacion nueva', async () => {
+    const a = armar([respuesta([[], [], [], []]), respuesta([[], [], [], []])], {
+      hechos: [{ ...RIVER, saliencia: SALIENCIA_TOPE }],
+    })
+    await a.generar(pedido(), T0)
+    await a.generar(pedido(), despues(60 * MIN))
+    assert.ok(a.hechoDe('h-river').saliencia! < SALIENCIA_TOPE)
+  })
+
+  test('el cierre por tiempo decae una vez; su cola no vuelve a decaer', async () => {
+    const a = armar([respuesta([[], [], [], []]), respuesta([[], [], [], []])], {
+      hechos: [{ ...RIVER, saliencia: SALIENCIA_TOPE }],
+    })
+    await a.generar(pedido(), T0)
+    const cierre = crearCierre({ almacen: a.almacen })
+    assert.ok(await cierre.cerrarSiInactiva(despues(20 * MIN)))
+    const decaida = a.hechoDe('h-river').saliencia!
+    assert.ok(decaida < SALIENCIA_TOPE)
+    // El pedido siguiente trae la cola de la cerrada y abre otra: ninguna de las dos decae.
+    await a.generar(pedido({ historial: [{ quien: 'usuario', texto: 'Si, todo bien.' }] }), despues(21 * MIN))
+    assert.equal(a.hechoDe('h-river').saliencia, decaida)
+  })
+
+  test('tras varios cierres sin uso, un hecho saliente pierde su lugar en el prompt; uno usado lo mantiene', async () => {
+    const vueltas = 12
+    const memoria = {
+      hechos: [
+        hecho({ id: 'a', texto: 'Le gusta el mate', importancia: 6 }),
+        hecho({ id: 'b', texto: 'Juega al truco', importancia: 5, saliencia: SALIENCIA_TOPE }),
+      ],
+    }
+    // Sin uso: el truco arranca primero y termina detras del mate.
+    const sin = armar(Array.from({ length: vueltas + 1 }, () => respuesta([[], [], [], []])), memoria)
+    for (let i = 0; i < vueltas; i++) await conversacion(sin, i)
+    assert.deepEqual(ordenEnPrompt(sin.prompts[0]), ['Juega al truco', 'Le gusta el mate'])
+    await sin.generar(pedido(), despues(vueltas * 60 * MIN))
+    assert.deepEqual(ordenEnPrompt(sin.prompts[vueltas]), ['Le gusta el mate', 'Juega al truco'])
+
+    // Elegido en cada conversacion: sigue primero y con su saliencia.
+    // El truco es h1 porque va primero en el prompt; la Opcion 1 lo usa.
+    const con = armar(Array.from({ length: vueltas + 1 }, () => respuesta([['h1'], [], [], []])), memoria)
+    for (let i = 0; i < vueltas; i++) {
+      await conversacion(con, i, { tipo: 'opcion', texto: 'Opcion 1.' })
+      assert.equal(alias(con.prompts[i], 'Juega al truco'), 'h1')
+      // Recien cerrada: el cierre no le saco nada.
+      assert.equal(con.hechoDe('b').saliencia, SALIENCIA_TOPE)
+    }
+    await con.generar(pedido(), despues(vueltas * 60 * MIN))
+    assert.deepEqual(ordenEnPrompt(con.prompts[vueltas]), ['Juega al truco', 'Le gusta el mate'])
   })
 })
