@@ -1,21 +1,17 @@
 import type { Opcion, PedidoOpciones } from '@/eventos'
 
-// STUB del cimiento: el path llm lo reemplaza con el fetch real a /api/opciones.
-// No cambiar la firma: el path nucleo-interfaz ya la usa.
+// Cliente del navegador: pide las opciones a /api/opciones.
+// No cambiar la firma: el path nucleo-interfaz ya la usa. Si falla, tira error y el nucleo
+// queda "sin conexion" con las opciones fijas.
 export async function pedirOpciones(pedido: PedidoOpciones): Promise<Opcion[]> {
-  await new Promise((r) => setTimeout(r, 800))
-  if (pedido.ultimoTurno === null) {
-    return [
-      { intencion: 'otra', texto: 'Che, ¿como salio River?' },
-      { intencion: 'otra', texto: 'Tengo un poco de sed.' },
-      { intencion: 'preguntar', texto: '¿Que hora es?' },
-      { intencion: 'otra', texto: 'Vení, sentate un rato conmigo.' },
-    ]
+  const respuesta = await fetch('/api/opciones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(pedido),
+  })
+  const datos = await respuesta.json().catch(() => null)
+  if (!respuesta.ok || !datos || !Array.isArray(datos.opciones)) {
+    throw new Error(datos?.error ?? `Fallo /api/opciones (${respuesta.status})`)
   }
-  return [
-    { intencion: 'aceptar', texto: 'Si, dale.' },
-    { intencion: 'rechazar', texto: 'No, gracias, todo bien.' },
-    { intencion: 'preguntar', texto: '¿Por que me preguntas?' },
-    { intencion: 'otra', texto: 'Dejame pensarlo.' },
-  ]
+  return datos.opciones as Opcion[]
 }

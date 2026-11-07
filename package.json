@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^1.6.0",
     "@google/genai": "^3.0.0",
     "@mediapipe/tasks-vision": "^1.2.2",
+    "ai": "^7.0.164",
     "groq-sdk": "^1.6.0",
     "next": "16.4.5",
     "react": "19.3.0",
