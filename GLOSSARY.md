@@ -56,6 +56,14 @@ _Avoid_: contexto, ventana
 La huella: el perfil y los hechos activos. No vence por tiempo como bloque; solo cada hecho con fecha puede quedar vencido.
 _Avoid_: historial, base de datos
 
+**Nivel**:
+Altura de la memoria con detalle decreciente: dia, semana y mes. Cada nivel es una lista de bloques. El corte de cada periodo lo calcula el codigo, en hora de Argentina.
+_Avoid_: capa, tier
+
+**Bloque**:
+Resumen de un periodo cerrado de un nivel (un dia, una semana, un mes), armado en segundo plano por un rollup (una sola llamada al modelo). Cita sus fuentes (resumenes, bloques del nivel de abajo y hechos); de ellas se deriva si toca algo intimo.
+_Avoid_: digest, consolidado
+
 **Agente de memoria**:
 Proceso en segundo plano que, al cerrarse una conversacion, extrae hechos de la conversacion cruda, los reconcilia con los que ya hay (agregar, actualizar, invalidar o nada) y escribe el resumen. Nunca corre durante un turno.
 _Avoid_: extractor, consolidador

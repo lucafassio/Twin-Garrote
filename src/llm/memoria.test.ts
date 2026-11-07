@@ -160,9 +160,10 @@ describe('agente de memoria', () => {
   test('escribe el resumen de la conversacion para la memoria corta', async () => {
     const { proveedor } = guionado([respuesta([], 'Marta conto lo de Laura. El asado paso al sabado.')])
     const r = await crearAgenteMemoria({ proveedor })(cerrada(), memoria(), PERFIL_ROBERTO)
-    assert.deepEqual(r.resumenes, [
-      { inicio: cerrada().inicio, fin: cerrada().fin, resumen: 'Marta conto lo de Laura. El asado paso al sabado.' },
-    ])
+    assert.equal(r.resumenes.length, 1)
+    const [{ id, ...resto }] = r.resumenes
+    assert.deepEqual(resto, { inicio: cerrada().inicio, fin: cerrada().fin, resumen: 'Marta conto lo de Laura. El asado paso al sabado.' })
+    assert.match(id ?? '', /^r-/) // con id, para citarlo desde los bloques
   })
 
   test('la cola de una conversacion cerrada por tiempo: aprende de las lineas nuevas y reemplaza su resumen', async () => {

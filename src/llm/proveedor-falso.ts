@@ -32,6 +32,8 @@ export function crearProveedorFalso(): Proveedor {
       if (salida?.nombre === 'memoria') return JSON.stringify({ hechos: [], resumen: '' })
       // El completado: sin modelo no propone nada, y el completado devuelve el prefijo tal cual.
       if (salida?.nombre === 'completado') return JSON.stringify({ frase: '' })
+      // Un rollup de niveles: sin modelo no resume nada (texto vacio no guarda bloque), pero tampoco falla.
+      if (salida?.nombre === 'nivel') return JSON.stringify({ texto: '', fuentes: [] })
       const sinTurno = usuario.includes('SIN_TURNO')
       const opciones = sinTurno ? SIN_TURNO : CON_TURNO[vuelta++ % CON_TURNO.length]
       return JSON.stringify({ opciones, registro: 'casual', nuevaConversacion: false })
