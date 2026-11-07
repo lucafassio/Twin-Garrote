@@ -54,10 +54,10 @@
     "semantic_hash": ""
   },
   "src/app/prueba/deletrear/page.tsx": {
-    "mtime": 1794057412.5647361,
-    "seen": 1794066360.099614,
-    "ast_hash": "aea7292e09ddb53f5c4ab575ef940015",
-    "semantic_hash": "aea7292e09ddb53f5c4ab575ef940015"
+    "mtime": 1794069584.8619454,
+    "seen": 1794069830.682924,
+    "ast_hash": "161b9a95212ae6da12b0599adeadb238",
+    "semantic_hash": ""
   },
   "src/app/prueba/llm/LoQueAprendi.tsx": {
     "mtime": 1794065365.9786053,
@@ -72,8 +72,8 @@
     "semantic_hash": "5d68949ecdba234e8f9553981e770f50"
   },
   "src/app/prueba/llm/page.tsx": {
-    "mtime": 1794069434.8190615,
-    "seen": 1794069449.5273962,
+    "mtime": 1794069584.8801227,
+    "seen": 1794069830.6829262,
     "ast_hash": "f78e0c6cd3f8d37d0c1eceb9920b8f11",
     "semantic_hash": ""
   },
@@ -102,10 +102,10 @@
     "semantic_hash": ""
   },
   "src/deletrear/index.ts": {
-    "mtime": 1794057412.5657814,
-    "seen": 1794066360.099617,
-    "ast_hash": "f5452892120ad065f70400a2b789f2e7",
-    "semantic_hash": "f5452892120ad065f70400a2b789f2e7"
+    "mtime": 1794069584.8634107,
+    "seen": 1794069830.68293,
+    "ast_hash": "3e09dc6474cc815674b2a032a56a1697",
+    "semantic_hash": ""
   },
   "src/dev/Simulador.tsx": {
     "mtime": 1794057412.5659542,
@@ -168,8 +168,8 @@
     "semantic_hash": "069c039f873e7bfb761fef8f4aa7b0cc"
   },
   "src/llm/cliente.ts": {
-    "mtime": 1794069442.4246995,
-    "seen": 1794069449.527403,
+    "mtime": 1794069584.8815687,
+    "seen": 1794069830.682935,
     "ast_hash": "d606a665b73b517aff20b07c0e6f28e8",
     "semantic_hash": ""
   },
@@ -492,21 +492,21 @@
     "semantic_hash": ""
   },
   "src/app/prueba/llm/PruebaCorte.tsx": {
-    "mtime": 1794069434.818863,
-    "seen": 1794069449.5273962,
+    "mtime": 1794069584.8796988,
+    "seen": 1794069830.6829262,
     "ast_hash": "be6ff1d22bc20665e53cd6e5eb8a1439",
     "semantic_hash": ""
   },
   "src/llm/cliente.test.ts": {
-    "mtime": 1794069434.8192143,
-    "seen": 1794069449.527402,
+    "mtime": 1794069584.881179,
+    "seen": 1794069830.682935,
     "ast_hash": "240dbbabdb25fc7bd9f422347e46d216",
     "semantic_hash": ""
   },
   "src/llm/medir-latencias.ts": {
-    "mtime": 1794069213.934483,
-    "seen": 1794069449.527405,
-    "ast_hash": "a681710645150bf627866ea89ecd862f",
+    "mtime": 1794069782.7308502,
+    "seen": 1794069830.6829371,
+    "ast_hash": "919661a216f95fab348e422cb94a467b",
     "semantic_hash": ""
   },
   "src/voz/escucharGroq.ts": {
@@ -519,6 +519,48 @@
     "mtime": 1794069132.4735627,
     "seen": 1794069449.527423,
     "ast_hash": "b7f48b37acfd7819865a300aa2fea30e",
+    "semantic_hash": ""
+  },
+  "src/app/api/deletrear/route.ts": {
+    "mtime": 1794069584.8613026,
+    "seen": 1794069830.68292,
+    "ast_hash": "23bb7d646ca09de9940dc10e833d7133",
+    "semantic_hash": ""
+  },
+  "src/deletrear/Deletrear.tsx": {
+    "mtime": 1794069584.8626425,
+    "seen": 1794069830.682928,
+    "ast_hash": "2b68fb14850dba474b8106813078b059",
+    "semantic_hash": ""
+  },
+  "src/deletrear/barrido.ts": {
+    "mtime": 1794069584.8628972,
+    "seen": 1794069830.6829288,
+    "ast_hash": "ca7195da868a23f7d3828ca3f1e0925c",
+    "semantic_hash": ""
+  },
+  "src/deletrear/deletrear.test.ts": {
+    "mtime": 1794069584.862992,
+    "seen": 1794069830.6829288,
+    "ast_hash": "1e60fcc41d52b09f9ab3668e2d19063b",
+    "semantic_hash": ""
+  },
+  "src/deletrear/diccionario.ts": {
+    "mtime": 1794069584.8631575,
+    "seen": 1794069830.6829288,
+    "ast_hash": "fef6ca51abb5b8ce373690c16aa49d5a",
+    "semantic_hash": ""
+  },
+  "src/deletrear/llm.ts": {
+    "mtime": 1794069584.8636534,
+    "seen": 1794069830.68293,
+    "ast_hash": "85fc16168f7674a96b4846d7743be0e0",
+    "semantic_hash": ""
+  },
+  "src/deletrear/prediccion.ts": {
+    "mtime": 1794069584.8638186,
+    "seen": 1794069830.68293,
+    "ast_hash": "267d3ac91932851801606ff6e7251116",
     "semantic_hash": ""
   }
 }
