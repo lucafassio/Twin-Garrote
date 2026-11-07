@@ -425,3 +425,115 @@ Fecha: 2026-11-07. Pregunta: "el proveedor de voz de OpenAI o Groq es mejor que 
 - Que `gpt-transcribe` soporte `semantic_vad` en sesiones de transcripcion.
 - Limites del tier gratis de Groq (solo en consola) y la contradiccion entre sus dos paginas de limites.
 - Precio por minuto actual de `gpt-4o-mini-tts` (solo hay precio por token).
+
+---
+
+## Cuarta tanda: que reconocedor usar (escuchar)
+
+Fecha: 2026-11-07. Decision del equipo: cambiar el reconocimiento (escuchar al interlocutor), no la voz que habla. Problema visto con Web Speech: resultados en tandas atrasadas y fin de turno dificil. Requisitos: espanol rioplatense, texto parcial en vivo, fin de turno propio del proveedor, baja latencia, conexion desde el navegador con token efimero minteado en un route handler, credito gratis o barato.
+
+### 4.0 Correcciones a las tandas anteriores
+
+- **Deepgram Flux SI soporta espanol (seccion 2 decia "la doc no lista explicitamente espanol").** `flux-general-multi` lista 10 idiomas, espanol (`es`) incluido; acepta subtags tipo `es-AR` pero cae al idioma base si no hay match exacto. `language_hint` es repetible y solo vale con `flux-general-multi` (con otro modelo da 400). Cada `EndOfTurn` trae `end_of_turn_confidence` y `trigger` (`"model"`). [Deepgram Flux language prompting](https://developers.deepgram.com/docs/flux/language-prompting). Flux Multilingual esta **GA** desde abril 2026. [Deepgram blog, Flux Multilingual](https://deepgram.com/blog/introducing-flux-multilingual.md)
+- **Google Cloud Speech-to-Text NO tiene Chirp 3 para es-AR.** La tabla oficial de idiomas lista para `es-AR` solo `telephony` y `telephony_short`. Chirp 3 tiene `es-ES` y `es-US` (GA) y `es-MX` (preview); no `es-419` ni `es-AR`. Chirp 3 si hace streaming (`StreamingRecognize`), pero sin diarizacion en streaming. [Google STT idiomas](https://docs.cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages), [Chirp 3](https://docs.cloud.google.com/speech-to-text/docs/models/chirp-3)
+- **AssemblyAI (secciones 3 y Resumen):** el modelo de streaming por defecto hoy es `universal-3-6-pro` (Universal-3.6 Pro Realtime, 32 idiomas, USD 0,45/h); el USD 0,15/h que figuraba es el de `universal-streaming-multilingual` (en, es, de, fr, pt, it), que sigue vigente. Diarizacion en streaming +USD 0,12/h. [AssemblyAI elegir modelo](https://www.assemblyai.com/docs/streaming/select-the-speech-model), [AssemblyAI pricing](https://www.assemblyai.com/pricing)
+- **ElevenLabs Scribe v2 Realtime (seccion 3):** el precio USD 0,39/h ahora esta confirmado en la pagina oficial (antes era fuente secundaria). [ElevenLabs API pricing](https://elevenlabs.io/pricing/api). Ademas el websocket tiene `commit_strategy` = `manual` | `vad` | `turn_prediction` (fin de turno propio, nuevo respecto de lo anotado). [ElevenLabs realtime API](https://elevenlabs.io/docs/api-reference/speech-to-text/v-1-speech-to-text-realtime)
+- **Azure (seccion 3):** confirmado F0 = 5 h/mes de transcripcion en tiempo real. [Azure pricing](https://azure.microsoft.com/en-us/pricing/details/speech/)
+
+### 4.1 Rankings publicos de precision
+
+- **Artificial Analysis (AA-WER v2, batch):** promedio de ~8 h de audio, 50% AA-AgentTalk, 25% VoxPopuli, 25% Earnings22, **todo en ingles; no hay desglose por idioma**. Algunos valores: Scribe v2 (ElevenLabs) 2,2%, MAI-Transcribe-2 (Microsoft) 2,0%, Voxtral Mini Transcribe 3 (Mistral) 2,2%, Gemini 3.5 Transcribe 2,6%, Universal-3.5 Pro (AssemblyAI) 3,0%, GPT Transcribe 3,3%, Soniox v5 Async 3,8%, Speechmatics Enhanced 4,0%, Chirp 3 4,3%, Whisper large v3 turbo (Groq) 4,6%, Nova-3 (Deepgram) 5,2%. Hay una vista de streaming (latencia hasta transcripcion final y hasta primer parcial, medida desde el fin de habla detectado por Silero VAD) con el mismo set de datos en ingles; sus numeros no se pudieron leer (la pagina los dibuja en graficos). [AA speech-to-text](https://artificialanalysis.ai/speech-to-text), [AA streaming](https://artificialanalysis.ai/speech-to-text/streaming). **Sirve como idea de calidad general, no dice nada de espanol.**
+- **Hugging Face Open ASR Leaderboard, pista multilingue (independiente, batch):** paper con datos al 27-03-2026; el multilingue usa FLEURS y CoVoST-2 (habla leida) para de/fr/it/es/pt. WER en espanol (promedio de los datasets): **ElevenLabs Scribe v2 2,33**, **AssemblyAI Universal 3 Pro 2,34**, Speechmatics Enhanced 2,78, Cohere Transcribe 2,81 (abierto), Voxtral Small 24B 3,04, Canary 1B v2 3,25, Whisper large v3 3,65, Parakeet TDT 0.6B v3 3,73. **No estan** Deepgram, Soniox, OpenAI (salvo Whisper), Google ni Azure. Sin evaluacion de streaming. [Open ASR Leaderboard paper, arXiv 2510.06961v4](https://arxiv.org/html/2510.06961v4), [Space](https://huggingface.co/spaces/hf-audio/open_asr_leaderboard)
+- **Benchmarks del vendedor (sesgados por definicion):**
+  - Soniox (streaming, audio de YouTube, 60 idiomas, 2026): espanol Soniox 1,25%, Speechmatics 1,4%, Deepgram 1,71%, AssemblyAI 1,74%, Google 2,84%, ElevenLabs Scribe v2 Realtime 3,16%, OpenAI 3,24%; otra pagina de Soniox pone Azure en 1,21% (por encima de Soniox). **Solo visto en resultados de busqueda sobre paginas de soniox.com; la pagina comparativa que se abrio no mostraba la tabla. (fuente del vendedor, no verificado en la pagina)** [Soniox vs AssemblyAI (es)](https://soniox.com/compare-stt/soniox-vs-assemblyai/spanish)
+  - Deepgram: Flux Multilingual con "best-in-class WER" en la mayoria de los idiomas, espanol incluido, y "hasta 3x menos latencia" de fin de turno que la competencia; los numeros solo estan en graficos. (fuente del vendedor) [Deepgram blog](https://deepgram.com/blog/introducing-flux-multilingual.md)
+- **Lectura:** en datos independientes, ElevenLabs y AssemblyAI encabezan espanol en batch. Para streaming en espanol no hay ranking independiente: solo el de Soniox (que se pone primero). Ninguna fuente mide **es-AR** ni habla espontanea rioplatense. La prueba propia es imprescindible.
+
+### 4.2 Proveedores con streaming en espanol
+
+**Deepgram Flux (`flux-general-multi`)**
+- Streaming por websocket `/v2/listen`, fin de turno integrado en el modelo (eventos de turno con `EndOfTurn`, `eot_threshold` 0,7, `eot_timeout_ms` 5000, `eager_eot_threshold` opcional; ver seccion 2). Espanol GA. `language_hint=es` para fijar idioma. [Flux language prompting](https://developers.deepgram.com/docs/flux/language-prompting)
+- Nova-3 (sin fin de turno semantico): espanol monolingue `es` y `es-419`; no hay `es-AR`. [Deepgram modelos e idiomas](https://developers.deepgram.com/docs/models-languages-overview)
+- Precio streaming: Flux Multilingual USD 0,0078/min (~0,47/h), Nova-3 mono 0,0077/min, Nova-3 multi 0,0092/min. **USD 200 gratis, sin tarjeta, no vence.** 150 conexiones concurrentes. [Deepgram pricing](https://deepgram.com/pricing)
+- Navegador: route handler llama `/v1/auth/grant` y devuelve JWT temporal (ver seccion 3). Latencia: sin cifra publica en ms. Diarizacion en Flux: no verificada.
+
+**AssemblyAI Universal-3.6 Pro Realtime / Universal-Streaming Multilingual**
+- `universal-3-6-pro` (default, 32 idiomas, code switching, prompting) o `universal-streaming-multilingual` (en/es/de/fr/pt/it). Ambos con parciales. [Elegir modelo](https://www.assemblyai.com/docs/streaming/select-the-speech-model), [Multilingue](https://www.assemblyai.com/docs/streaming/universal-streaming/multilingual-transcription)
+- Fin de turno propio: en U-3.6 Pro se decide sobre el transcript con presets `min_latency` / `balanced` / `max_accuracy`; en Universal-Streaming por confianza: `end_of_turn_confidence_threshold` 0,4, `min_turn_silence` 400 ms, `max_turn_silence` 1280 ms (preset "conservative": 0,7 / 800 / 3600 ms). Se puede forzar con `ForceEndpoint`. La doc no dice si el fin de turno semantico es igual de bueno en espanol. [Turn detection](https://www.assemblyai.com/docs/streaming/universal-streaming/turn-detection)
+- Precio: U-3.6 Pro USD 0,45/h, multilingual USD 0,15/h, diarizacion +0,12/h; **se factura por tiempo de websocket abierto** (cerrar al no escuchar). **USD 50 gratis, sin tarjeta**; free: 5 streams nuevos por minuto. [Pricing](https://www.assemblyai.com/pricing)
+- Navegador: token temporal minteado en el server (detalle de endpoint en la pagina de temporary tokens, no leida en esta tanda; ver seccion 3). Latencia: solo "Fastest"/"Fast", sin ms.
+
+**Soniox (`stt-rt-v6`, release 2026-11-03)**
+- 60+ idiomas, espanol `es` en real-time (sin variantes regionales). `stt-rt-v5` se retira el 2026-12-15. [Soniox modelos](https://docs.soniox.com/stt/models), [Idiomas](https://docs.soniox.com/stt/concepts/supported-languages)
+- Fin de turno semantico: `enable_endpoint_detection: true` devuelve un token `<end>`; `max_endpoint_delay_ms` 500-3000 (default 2000), `endpoint_sensitivity`, `endpoint_latency_adjustment_level`. Advierte que el endpointing baja la precision de diarizacion. [Endpoint detection](https://docs.soniox.com/stt/rt/endpoint-detection)
+- Navegador: `POST https://api.soniox.com/v1/auth/temporary-api-key` con `usage_type: "transcribe_websocket"` y `expires_in_seconds` corto; solo tiene que valer al abrir el websocket. [Direct stream](https://docs.soniox.com/stt/guides/direct-stream)
+- Precio: **USD 0,12/h** streaming (el mas barato con fin de turno). [Soniox pricing](https://soniox.com/pricing). **Sin credito gratis para cuentas nuevas desde octubre 2025** (hay docs viejas que dicen 300 min). [Blog Soniox](https://soniox.com/blog/2025-10-27-free-credits-update-for-soniox-api)
+
+**Speechmatics (Melia 1 / Enhanced / Standard)**
+- Real-time: Melia 1 USD 0,40/h, Standard 0,45/h, Enhanced 0,80/h. **USD 100 de credito gratis, sin tarjeta**; free: 2 sesiones real-time concurrentes. 55+ idiomas (la pagina no nombra espanol; es soportado segun Open ASR, pero no verificado en esta tanda para real-time). [Speechmatics pricing](https://www.speechmatics.com/pricing)
+- Fin de turno: `end_of_utterance_silence_trigger` (0-2 s; recomendado 0,5-0,8 s) en Enhanced/Standard, mensaje `EndOfUtterance`; es por silencio, no semantico. **Melia 1 lo rechaza** (hay que mandar `ForceEndOfUtterance` desde el cliente). [Turn detection](https://docs.speechmatics.com/speech-to-text/realtime/turn-detection)
+- Navegador: temporary key `type=rt`, `ttl` 60-86400 s, va como `?jwt=` en la URL del websocket. [Authentication](https://docs.speechmatics.com/get-started/authentication)
+
+**ElevenLabs Scribe v2 Realtime (`scribe_v2_realtime`)**
+- ~150 ms, 90+ idiomas, espanol incluido; `language_code` ISO 639-1/3 (sin variante regional). Eventos `PARTIAL_TRANSCRIPT` y `COMMITTED_TRANSCRIPT`. Hasta 50 keyterms. Sin diarizacion en realtime. [ElevenLabs STT](https://elevenlabs.io/docs/capabilities/speech-to-text)
+- Fin de turno: `commit_strategy` `vad` (con `vad_silence_threshold_secs`, `vad_threshold`, `min_silence_duration_ms`) o `turn_prediction`; defaults no publicados en la referencia. [Realtime API](https://elevenlabs.io/docs/api-reference/speech-to-text/v-1-speech-to-text-realtime)
+- Navegador: token de un solo uso `tokens.singleUse.create("realtime_scribe")` en el server, vence a los 15 min; el SDK cliente puede tomar el microfono directo (con `echoCancellation`/`noiseSuppression`), PCM 16 kHz. [Client-side streaming](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/realtime/client-side-streaming)
+- Precio USD 0,39/h (+0,08/h con keyterms). El plan gratis incluye horas de STT pero la pagina no dice cuantas. [API pricing](https://elevenlabs.io/pricing/api)
+
+**Gemini Live Transcribe (`gemini-3.5-transcribe-live`)**
+- Pipeline dedicado de transcripcion (no conversacional), websocket, PCM 16 bit 16 kHz mono en chunks de ~100 ms; `interim_input_transcription` (parciales) e `input_transcription` (final al pausar/terminar turno). Espanol: **`es-419`** y `es-US` (no `es-AR`). VAD automatico del server (default), hibrido (el cliente avisa `audio_stream_end`) o manual. Sesiones de **hasta 10 min** (hay que reconectar). Sin diarizacion. Token efimero con `uses: 1`, 30 min, y `liveConnectConstraints` que fijan modelo y config. [Live transcribe](https://aistudio.google.com/docs/live-api/live-transcribe)
+- Precio: **tier gratis** (los datos se usan para mejorar productos de Google: ojo con privacidad); pago ~USD 0,009/min combinado (~0,54/h). [Gemini pricing](https://aistudio.google.com/docs/pricing). Silencio por defecto del VAD y latencia: no publicados.
+
+**Azure Speech real-time**
+- es-AR nativo (seccion 3). Segmentacion por silencio `Speech_SegmentationSilenceTimeoutMs` 100-5000 ms (tipico 500); `Speech_SegmentationStrategy = "Semantic"` corta por puntuacion final, pero la doc dice que es para dictado/subtitulos continuos, **no para escenarios interactivos**, y no en todos los idiomas. Eventos `recognizing` (parcial) y `recognized` (final). [Azure how to recognize](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-recognize-speech)
+- F0: 5 h/mes gratis. [Azure pricing](https://azure.microsoft.com/en-us/pricing/details/speech/). Navegador: SDK JS con token de autorizacion emitido por el server (TTL no reverificado en esta tanda). Necesita la dependencia `microsoft-cognitiveservices-speech-sdk` (avisar al grupo).
+
+**Google Cloud Chirp 3:** sin es-AR (ver 4.0), streaming via gRPC sin camino de token efimero para navegador documentado (habria que proxiar el audio por el server). Descartado para nosotros.
+
+### 4.3 Tabla comparativa (escuchar)
+
+Integracion estimada en nuestra arquitectura: modulo `src/voz` con `crearEscucha` que emite parcial y turno; route handler para el token; captura con `getUserMedia` + AudioWorklet a PCM16 (salvo Web Speech y SDKs que toman el microfono).
+
+| Opcion | Precision espanol (fuente) | Streaming / parcial | Fin de turno propio | Latencia publicada | Costo | Gratis | Integracion |
+|---|---|---|---|---|---|---|---|
+| Web Speech Chrome (actual) | sin dato | si, en tandas atrasadas (visto) | no | sin dato | 0 | si | hecha |
+| Deepgram Flux multi | sin dato independiente; "best-in-class" (vendedor); Deepgram 1,71% en tabla de Soniox (vendedor rival) | si | **si, modelo** (`EndOfTurn`) | sin ms; "3x menos" EoT (vendedor) | USD 0,47/h | USD 200 | 2-3 h |
+| AssemblyAI U-3.6 Pro RT | U3 Pro batch 2,34 (Open ASR, independiente) | si | **si, semantico + silencio** (params documentados) | sin ms | USD 0,45/h (multi: 0,15/h) | USD 50 | 2-3 h |
+| ElevenLabs Scribe v2 RT | Scribe v2 batch 2,33 (Open ASR); RT 3,16% (tabla Soniox, vendedor rival) | si | si (`vad` / `turn_prediction`) | ~150 ms (vendedor) | USD 0,39/h | algo en plan free (cantidad sin dato) | 1,5-2,5 h (SDK con microfono) |
+| Soniox stt-rt-v6 | 1,25% (vendedor) | si | **si, semantico** (`<end>`) | sin ms | USD 0,12/h | **no** | 2-3 h |
+| Speechmatics Enhanced / Melia | Enhanced batch 2,78 (Open ASR); 1,4% (tabla Soniox) | si | por silencio (Enhanced/Standard); Melia no | sin ms | USD 0,40-0,80/h | USD 100 | 2-3 h |
+| Gemini 3.5 Transcribe Live | sin dato es (AA ingles 2,6% para la version batch) | si | VAD del server (auto/hibrido) | sin ms | ~USD 0,54/h | **tier gratis** (datos usados por Google) | 3 h (reconexion cada 10 min) |
+| Azure Speech | 1,21% (tabla Soniox, vendedor rival) | si | por silencio (semantico no apto interactivo) | sin ms | pago sin reverificar | 5 h/mes | 2-3 h + dependencia nueva |
+| OpenAI gpt-live-transcribe | sin dato es; 3,24% OpenAI en tabla Soniox | si | **no** (VAD propio) | sin ms | USD 1/h | no | 3-4 h |
+| OpenAI gpt-transcribe (Realtime) | sin dato es | no (texto al cerrar turno) | si (`server_vad`) | sin ms | USD 0,27/h | no | 3-4 h |
+| Groq whisper-large-v3-turbo | Whisper large v3 3,65 (Open ASR) | no (por frase) | no (VAD propio) | sin ms | USD 0,04/h (min 10 s/request) | si | 2-3 h |
+| Google Chirp 3 | sin es-AR | si (gRPC) | endpointing por silencio | sin ms | sin dato | sin dato | 4+ h, descartado |
+
+### 4.4 Recomendacion
+
+**Top 3 para la prueba comparativa con audio es-AR propio:**
+
+1. **Deepgram Flux (`flux-general-multi`, `language_hint=es`).** Es el unico cuyo producto central es justamente el fin de turno, tiene el credito gratis mas grande y el camino de token para navegador ya documentado. Riesgo: no hay dato independiente de precision en espanol. Hace falta: cuenta en console.deepgram.com (sin tarjeta), API key en `.env.local` (`DEEPGRAM_API_KEY`), route handler que llame `/v1/auth/grant`.
+2. **AssemblyAI Universal-3.6 Pro Realtime.** Mejor dato independiente de espanol (familia U3 Pro, 2,34 en Open ASR) y fin de turno semantico con parametros claros y presets (para Parpadeo, arrancar en "conservative": 0,7 / 800 / 3600 ms, porque cortar antes es peor que esperar). Hace falta: cuenta (USD 50, sin tarjeta), `ASSEMBLYAI_API_KEY`, route handler de token temporal. Recordar cerrar el websocket cuando no se escucha (se cobra por conexion abierta).
+3. **ElevenLabs Scribe v2 Realtime.** Mejor WER independiente en espanol (batch) y SDK que toma el microfono directo, lo que acorta la integracion; tiene `turn_prediction`. Riesgo: en la tabla de Soniox el modo realtime rinde peor que el batch. Hace falta: cuenta ElevenLabs (verificar horas STT del plan free en la consola), `ELEVENLABS_API_KEY`, route handler que cree el token de un solo uso.
+
+**Suplentes:** Gemini 3.5 Transcribe Live si se quiere costo cero (gratis, `es-419`, pero los datos los usa Google y hay que reconectar cada 10 min). Soniox si se acepta pagar desde el primer minuto (barato: USD 0,12/h; mejor numero de espanol, pero autoproclamado).
+
+**Como armar la prueba rapido (~1 h):**
+
+- **Audio:** 5-10 frases en es-AR dichas por el equipo como hablaria un interlocutor real (preguntas con voseo, nombres propios como "Roberto", una frase con pausa a mitad tipo "y... que queres comer?", una con ruido de fondo). Grabar WAV mono PCM 16 bit a 16 kHz (Audacity o `ffmpeg -i in.m4a -ac 1 -ar 16000 -sample_fmt s16 frase01.wav`), dejando ~2 s de silencio al final para que salte el fin de turno. Escribir la transcripcion de referencia en un `.txt` al lado.
+- **Script de Node (scratch, fuera de `src/`):** por cada proveedor y cada WAV, **simular streaming**: abrir el websocket con la key del server (no hace falta token para la prueba), mandar el PCM en chunks de 20-100 ms con `setTimeout` a ritmo real, y registrar: (a) el tiempo desde el ultimo chunk con habla hasta el primer parcial que llega despues, (b) el tiempo hasta el evento de fin de turno (`EndOfTurn` en Flux, turno con `end_of_turn` en AssemblyAI, commit en ElevenLabs), (c) el texto final. Node 22+ trae `WebSocket` global, asi que no hace falta instalar nada.
+- **WER:** normalizar referencia e hipotesis (minusculas, sin puntuacion, sin tildes solo para comparar) y calcular distancia de Levenshtein por palabras / cantidad de palabras de referencia. Anotar aparte si cortaron el turno antes de tiempo en la frase con pausa (eso importa mas que un punto de WER).
+- **Version mas rapida pero menos fiel:** mandar los mismos WAV a la API por archivo de cada proveedor (Deepgram `/v1/listen`, AssemblyAI transcript, ElevenLabs `scribe_v2`, Gemini `gemini-3.5-transcribe`). Sirve solo para comparar WER: **la latencia por archivo no es la de streaming** (no incluye parciales ni fin de turno, y el modelo batch puede no ser el mismo que el de realtime; Flux no tiene version por archivo).
+- Correr cada frase 2-3 veces por proveedor y desde la red del lugar de la demo si se puede: la latencia la domina la red Argentina-EE.UU.
+
+### 4.5 Lo que no se pudo verificar
+
+- Precision de cualquier proveedor en **es-AR** o habla espontanea rioplatense: no hay benchmark publico; Open ASR mide habla leida (FLEURS/CoVoST-2) y en batch.
+- Numeros del leaderboard de streaming de Artificial Analysis (solo en graficos) y si incluye algun desglose por idioma.
+- La tabla de espanol de Soniox se vio solo en resultados de busqueda, no en la pagina abierta.
+- Latencia en ms de fin de turno de Flux, AssemblyAI, Soniox, Gemini y Speechmatics: ninguno la publica como numero.
+- Defaults del VAD de ElevenLabs realtime y del VAD automatico de Gemini Live; horas STT del plan free de ElevenLabs.
+- Si el fin de turno semantico de AssemblyAI / Soniox / Flux funciona igual de bien en espanol que en ingles.
+- Endpoint exacto y TTL del token temporal de AssemblyAI (pagina de temporary tokens no leida) y TTL del token de Azure.
+- Espanol en real-time de Speechmatics (pagina de idiomas no leida) y precio pago actual de Azure STT.
