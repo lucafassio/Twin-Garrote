@@ -895,13 +895,13 @@
     "semantic_hash": ""
   },
   "C:\\Proyectos\\Twin-Garrote-39\\src\\llm\\opciones.test.ts": {
-    "mtime": 1794072203.4609392,
-    "ast_hash": "08ef22925c1c2ea81f9f243b58c26b46",
+    "mtime": 1794072638.0314932,
+    "ast_hash": "5ac33186c52964fb13e7a60feba01602",
     "semantic_hash": ""
   },
   "C:\\Proyectos\\Twin-Garrote-39\\src\\llm\\opciones.ts": {
-    "mtime": 1794072507.994603,
-    "ast_hash": "9bb8d55471852ee925582f637f6487fc",
+    "mtime": 1794072638.249756,
+    "ast_hash": "c6274e429d25a16dac3b7e9dcdb741ca",
     "semantic_hash": ""
   },
   "C:\\Proyectos\\Twin-Garrote-39\\src\\llm\\pedido.ts": {
@@ -950,12 +950,12 @@
     "semantic_hash": ""
   },
   "C:\\Proyectos\\Twin-Garrote-39\\src\\llm\\saliencia.test.ts": {
-    "mtime": 1794072562.3491068,
-    "ast_hash": "42b3a96854c68eae972dc520649d3f28",
+    "mtime": 1794072638.258123,
+    "ast_hash": "d2a0eeb176d57e0384f4aa72d6f7ea31",
     "semantic_hash": ""
   },
   "C:\\Proyectos\\Twin-Garrote-39\\src\\llm\\saliencia.ts": {
-    "mtime": 1794072553.8748162,
+    "mtime": 1794072638.2616847,
     "ast_hash": "2a20e165e694e6fe7f5fb22dae8c8194",
     "semantic_hash": ""
   },
@@ -1095,7 +1095,7 @@
     "semantic_hash": ""
   },
   "C:\\Proyectos\\Twin-Garrote-39\\GLOSSARY.md": {
-    "mtime": 1794072569.0003526,
+    "mtime": 1794072638.2107925,
     "ast_hash": "0177d4a8d3e183fac8c651353b317a36",
     "semantic_hash": ""
   },
