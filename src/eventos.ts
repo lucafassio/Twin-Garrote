@@ -12,13 +12,23 @@ export type Perfil = {
   frasesTipicas: string[]
 }
 
-export type LineaHistorial = { quien: 'interlocutor' | 'usuario'; texto: string }
+// origen (opcional): como eligio el usuario su respuesta. Lo usa el agente de memoria:
+// lo deletreado pesa mas que lo elegido entre opciones.
+export type LineaHistorial = {
+  quien: 'interlocutor' | 'usuario'
+  texto: string
+  origen?: 'opcion' | 'fija' | 'deletreo'
+}
+
+// Relacion del interlocutor con el usuario. Opcional: si nadie la aclara, la infiere el LLM.
+export type Cercania = 'familia' | 'conocido' | 'formal'
 
 // Pedido al LLM. ultimoTurno null = el usuario quiere iniciar charla (eligio Otra sin turno).
 export type PedidoOpciones = {
   historial: LineaHistorial[]
   ultimoTurno: string | null
   yaMostradas: string[] // opciones ya mostradas para este turno, para no repetirlas
+  cercania?: Cercania // opcional: define tono y que hechos se pueden usar
 }
 
 export type Eventos = {
