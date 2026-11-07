@@ -19,6 +19,8 @@ export default function Prueba() {
         onRepetir={nucleo.repetir}
         onTerminarDeletreo={nucleo.terminarDeletreo}
         onCancelarDeletreo={nucleo.cancelarDeletreo}
+        onConfirmarInterlocutor={nucleo.confirmarInterlocutor}
+        onDescartarInterlocutor={nucleo.descartarInterlocutor}
       />
       <Simulador />
       <SimuladorOjos />

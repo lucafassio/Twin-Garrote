@@ -27,7 +27,7 @@ beforeEach(() => {
     velocidadMs: 1000,
     pedirOpciones: async (p) => {
       pedidos.push(p)
-      return OPCIONES
+      return { opciones: OPCIONES }
     },
   })
   nucleo.iniciar()
@@ -184,7 +184,7 @@ describe('motor', () => {
       velocidadMs: 1000,
       pedirOpciones: async (p) => {
         pedidos.push(p)
-        return OPCIONES
+        return { opciones: OPCIONES }
       },
       leerTurno: async (texto) => {
         leidos.push(texto)
@@ -204,7 +204,7 @@ describe('motor', () => {
       velocidadMs: 1000,
       pedirOpciones: async (p) => {
         pedidos.push(p)
-        return OPCIONES
+        return { opciones: OPCIONES }
       },
       leerTurno: () => new Promise(() => {}), // nunca responde
     })
@@ -223,7 +223,7 @@ describe('motor', () => {
       velocidadMs: 1000,
       pedirOpciones: async (p) => {
         pedidos.push(p)
-        return OPCIONES
+        return { opciones: OPCIONES }
       },
       leerTurno: async () => {
         throw new Error('sin red')
@@ -265,7 +265,7 @@ describe('registro de elecciones', () => {
   // Reemplaza el nucleo del beforeEach por uno con registrarEleccion.
   function conRegistro(registrarEleccion: (p: PedidoEleccion) => unknown) {
     nucleo.detener()
-    nucleo = crearNucleo({ velocidadMs: 1000, pedirOpciones: async () => OPCIONES, registrarEleccion })
+    nucleo = crearNucleo({ velocidadMs: 1000, pedirOpciones: async () => ({ opciones: OPCIONES }), registrarEleccion })
     nucleo.iniciar()
   }
 
@@ -300,5 +300,56 @@ describe('registro de elecciones', () => {
     mock.timers.tick(3000) // fin de la espera de habla: el barrido vuelve a arrancar
     mock.timers.tick(1000)
     assert.equal(nucleo.obtener().iluminado, 1)
+  })
+})
+
+describe('interlocutor probable', () => {
+  // Reemplaza el nucleo del beforeEach por uno que responde como pedirOpcionesConInterlocutor.
+  function conProbable(nombre: string) {
+    nucleo.detener()
+    nucleo = crearNucleo({
+      velocidadMs: 1000,
+      pedirOpciones: async (p) => {
+        pedidos.push(p)
+        return { opciones: OPCIONES, interlocutorProbable: { nombre, confianza: 'alta' } }
+      },
+    })
+    nucleo.iniciar()
+  }
+
+  async function turno(texto: string) {
+    bus.emit('turno', { texto })
+    await vaciarPromesas() // lectura del turno
+    await vaciarPromesas() // opciones
+  }
+
+  test('la respuesta con interlocutor probable muestra el chip', async () => {
+    conProbable('Laura')
+    await turno('¿Cómo estás, pa?')
+    assert.equal(nucleo.obtener().conversacion, 'opciones')
+    assert.equal(nucleo.obtener().interlocutorProbable, 'Laura')
+  })
+
+  test('confirmado, el nombre viaja en el pedido siguiente', async () => {
+    conProbable('Laura')
+    await turno('¿Cómo estás, pa?')
+    assert.equal(pedidos[0].interlocutor, undefined)
+    nucleo.confirmarInterlocutor('Laura')
+    await turno('¿Y qué comiste hoy?')
+    assert.equal(pedidos[1].interlocutor, 'Laura')
+  })
+
+  test('3 min sin pedir opciones es otra conversacion: el confirmado se borra', async () => {
+    conProbable('Laura')
+    await turno('¿Cómo estás, pa?')
+    nucleo.confirmarInterlocutor('Laura')
+    mock.timers.tick(2 * 60_000)
+    await turno('¿Y qué comiste hoy?') // reinicia la cuenta
+    mock.timers.tick(2 * 60_000)
+    assert.equal(nucleo.obtener().interlocutorConfirmado, 'Laura')
+    mock.timers.tick(60_000)
+    assert.equal(nucleo.obtener().interlocutorConfirmado, null)
+    await turno('¿Querés mate?')
+    assert.equal(pedidos[2].interlocutor, undefined)
   })
 })

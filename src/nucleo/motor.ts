@@ -1,5 +1,6 @@
 import { bus, type LineaHistorial, type Opcion, type PedidoOpciones } from '@/eventos'
 import type { PedidoEleccion } from '@/llm/elecciones'
+import type { InterlocutorProbable } from '@/llm/tipos'
 import { leerTurnoLocal } from './lecturaLocal'
 import { estadoInicial, reducir } from './reductor'
 import type { Accion, Efecto, Estado, LecturaTurno } from './tipos'
@@ -15,11 +16,19 @@ export const MAXIMO_OPCIONES = 4
 export const CONFIRMACION_FALSA_ALARMA_MS = 5000
 export const LECTURA_MAXIMO_MS = 800 // si el lector con modelo tarda mas, decide la heuristica local
 export const ACUMULADO_VENCE_MS = 4000 // sin fragmentos nuevos, se decide con la ultima lectura
+// Sin pedir opciones por este rato, lo que sigue es otra conversacion y el interlocutor confirmado se
+// borra. Es el corte de "misma conversacion" del LLM (MISMA_CONVERSACION_MS en src/llm/opciones.ts):
+// pasado eso el LLM puede abrir una nueva, y el nombre de la anterior no tiene que llegarle. Copiado y
+// no importado: opciones.ts es del servidor y arrastraria sus dependencias al navegador.
+export const CONVERSACION_VENCE_MS = 3 * 60_000
 
 export type LeerTurno = (texto: string, historial: LineaHistorial[]) => Promise<LecturaTurno>
 
+// Lo que usa el nucleo de pedirOpcionesConInterlocutor (cliente del LLM). Sin interlocutor probable no hay chip.
+export type OpcionesRecibidas = { opciones: Opcion[]; interlocutorProbable?: InterlocutorProbable }
+
 export type OpcionesNucleo = {
-  pedirOpciones: (pedido: PedidoOpciones) => Promise<Opcion[]>
+  pedirOpciones: (pedido: PedidoOpciones) => Promise<OpcionesRecibidas>
   leerTurno?: LeerTurno // lector con modelo (Jev, LLM tipado); sin el, solo heuristica local
   registrarEleccion?: (pedido: PedidoEleccion) => unknown // segundo plano: no se espera y sus fallas se ignoran
   nombreUsuario?: string
@@ -35,6 +44,8 @@ export type Nucleo = {
   repetir(): void
   terminarDeletreo(texto: string): void
   cancelarDeletreo(): void
+  confirmarInterlocutor(nombre: string): void
+  descartarInterlocutor(nombre: string): void
   setVelocidad(ms: number): void
   velocidad(): number
 }
@@ -56,6 +67,7 @@ export function crearNucleo({
   let espera: ReturnType<typeof setTimeout> | null = null
   let confirmacion: ReturnType<typeof setTimeout> | null = null
   let vencimiento: ReturnType<typeof setTimeout> | null = null
+  let vencimientoConversacion: ReturnType<typeof setTimeout> | null = null
 
   // Lee el turno con el modelo si hay, con la heuristica local como respaldo
   // (si no hay modelo, si tarda mas de LECTURA_MAXIMO_MS o si falla).
@@ -96,7 +108,8 @@ export function crearNucleo({
     if (espera) clearTimeout(espera)
     if (confirmacion) clearTimeout(confirmacion)
     if (vencimiento) clearTimeout(vencimiento)
-    tick = gesto = espera = confirmacion = vencimiento = null
+    if (vencimientoConversacion) clearTimeout(vencimientoConversacion)
+    tick = gesto = espera = confirmacion = vencimiento = vencimientoConversacion = null
   }
 
   function ejecutar(efecto: Efecto) {
@@ -126,7 +139,15 @@ export function crearNucleo({
       case 'pedirOpciones': {
         const { pedidoId } = efecto
         pedirOpciones(efecto.pedido).then(
-          (opciones) => despachar({ tipo: 'opcionesRecibidas', pedidoId, opciones: opciones.slice(0, MAXIMO_OPCIONES) }),
+          (respuesta) => {
+            const { opciones, interlocutorProbable } = respuesta
+            despachar({
+              tipo: 'opcionesRecibidas',
+              pedidoId,
+              opciones: opciones.slice(0, MAXIMO_OPCIONES),
+              ...(interlocutorProbable ? { interlocutorProbable } : {}),
+            })
+          },
           () => despachar({ tipo: 'opcionesFallaron', pedidoId }),
         )
         break
@@ -147,6 +168,10 @@ export function crearNucleo({
         try {
           Promise.resolve(registrarEleccion?.(efecto.pedido)).catch(() => {})
         } catch {}
+        break
+      case 'armarVencimientoConversacion':
+        if (vencimientoConversacion) clearTimeout(vencimientoConversacion)
+        vencimientoConversacion = setTimeout(() => despachar({ tipo: 'venceConversacion' }), CONVERSACION_VENCE_MS)
         break
       case 'armarEsperaHabla':
         if (espera) clearTimeout(espera)
@@ -187,6 +212,8 @@ export function crearNucleo({
     repetir: () => despachar({ tipo: 'repetir' }),
     terminarDeletreo: (texto) => despachar({ tipo: 'terminarDeletreo', texto }),
     cancelarDeletreo: () => despachar({ tipo: 'cancelarDeletreo' }),
+    confirmarInterlocutor: (nombre) => despachar({ tipo: 'confirmarInterlocutor', nombre }),
+    descartarInterlocutor: (nombre) => despachar({ tipo: 'descartarInterlocutor', nombre }),
     setVelocidad(ms) {
       velocidad = Math.max(400, ms)
       if (activo) reiniciarTick()

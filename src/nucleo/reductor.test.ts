@@ -2,7 +2,7 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Opcion } from '@/eventos'
-import { elementosBarrido, estadoInicial, pedidoActual, reducir } from './reductor'
+import { chipInterlocutor, elementosBarrido, estadoInicial, pedidoActual, reducir } from './reductor'
 import type { Accion, Efecto, Estado, LecturaTurno } from './tipos'
 
 const OPCIONES: Opcion[] = [
@@ -725,5 +725,118 @@ describe('tipo de turno y registro de elecciones', () => {
       const r = reducir(iluminar(conOpciones(), el), { tipo: 'parpadeoLargo' })
       assert.equal(registros(r.efectos).length, 0, el)
     }
+  })
+})
+
+describe('interlocutor probable (chip ¿Habla Laura?)', () => {
+  const conProbable = (nombre: string, estado = estadoInicial) =>
+    aplicar(
+      estado,
+      { tipo: 'turno', texto: 'Hola pa, ¿como estas?' },
+      { tipo: 'opcionesRecibidas', pedidoId: estado.pedidoId + 1, opciones: OPCIONES, interlocutorProbable: { nombre, confianza: 'media' } },
+    )
+  const pedidoDe = (efectos: Efecto[]) => {
+    const p = efectos.find((x) => x.tipo === 'pedirOpciones')
+    assert.ok(p && p.tipo === 'pedirOpciones')
+    return p.pedido
+  }
+
+  test('un probable de la huella muestra el chip sin confirmar', () => {
+    assert.deepEqual(chipInterlocutor(conProbable('Laura').estado), { nombre: 'Laura', confirmado: false })
+  })
+
+  test('con "desconocido" o sin el campo no hay chip', () => {
+    assert.equal(chipInterlocutor(conProbable('desconocido').estado), null)
+    assert.equal(chipInterlocutor(conOpciones()), null)
+  })
+
+  test('un probable de un pedido viejo no cambia nada', () => {
+    const e = reducir(conOpciones(), {
+      tipo: 'opcionesRecibidas', pedidoId: 0, opciones: OPCIONES, interlocutorProbable: { nombre: 'Laura', confianza: 'alta' },
+    }).estado
+    assert.equal(chipInterlocutor(e), null)
+  })
+
+  test('un probable sin confirmar nunca viaja como interlocutor', () => {
+    const e = conProbable('Laura').estado
+    assert.ok(!('interlocutor' in pedidoActual(e)))
+    const r = reducir(e, { tipo: 'turno', texto: '¿Y que vas a comer?' })
+    assert.ok(!('interlocutor' in pedidoDe(r.efectos)))
+  })
+
+  test('confirmar manda el nombre en los pedidos siguientes', () => {
+    const e = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Laura' }).estado
+    assert.deepEqual(chipInterlocutor(e), { nombre: 'Laura', confirmado: true })
+    assert.equal(pedidoActual(e).interlocutor, 'Laura')
+    const r = reducir(e, { tipo: 'turno', texto: '¿Y que vas a comer?' })
+    assert.equal(pedidoDe(r.efectos).interlocutor, 'Laura')
+  })
+
+  test('tocar el chip no cambia el barrido ni dice nada', () => {
+    const antes = conProbable('Laura').estado
+    const r = reducir(antes, { tipo: 'confirmarInterlocutor', nombre: 'Laura' })
+    assert.deepEqual(r.efectos, [])
+    assert.equal(r.estado.iluminado, antes.iluminado)
+    assert.deepEqual(elementosBarrido(r.estado), elementosBarrido(antes))
+  })
+
+  test('confirmar un nombre que ya no es el del chip no hace nada', () => {
+    const e = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Marta' }).estado
+    assert.equal(e.interlocutorConfirmado, null)
+  })
+
+  test('descartar saca el chip y ese nombre no vuelve en la conversacion', () => {
+    const e = reducir(conProbable('Laura').estado, { tipo: 'descartarInterlocutor', nombre: 'Laura' }).estado
+    assert.equal(chipInterlocutor(e), null)
+    assert.equal(chipInterlocutor(conProbable('Laura', e).estado), null)
+    assert.deepEqual(chipInterlocutor(conProbable('Marta', e).estado), { nombre: 'Marta', confirmado: false })
+  })
+
+  test('descartar el confirmado deja de mandarlo', () => {
+    let e = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Laura' }).estado
+    e = reducir(e, { tipo: 'descartarInterlocutor', nombre: 'Laura' }).estado
+    assert.equal(chipInterlocutor(e), null)
+    assert.ok(!('interlocutor' in pedidoActual(e)))
+  })
+
+  test('con un confirmado, otro probable pregunta de nuevo y sigue mandando el confirmado', () => {
+    const conLaura = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Laura' }).estado
+    const e = conProbable('Marta', conLaura).estado
+    assert.deepEqual(chipInterlocutor(e), { nombre: 'Marta', confirmado: false })
+    assert.equal(pedidoActual(e).interlocutor, 'Laura')
+    const conMarta = reducir(e, { tipo: 'confirmarInterlocutor', nombre: 'Marta' }).estado
+    assert.equal(pedidoActual(conMarta).interlocutor, 'Marta')
+  })
+
+  test('el mismo probable que el confirmado no vuelve a preguntar', () => {
+    const conLaura = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Laura' }).estado
+    assert.deepEqual(chipInterlocutor(conProbable('Laura', conLaura).estado), { nombre: 'Laura', confirmado: true })
+  })
+
+  test('el probable es del turno que se respondio: un pedido nuevo lo saca', () => {
+    const r = reducir(conProbable('Laura').estado, { tipo: 'turno', texto: '¿Y que vas a comer?' })
+    assert.equal(chipInterlocutor(r.estado), null)
+    const fallo = reducir(r.estado, { tipo: 'opcionesFallaron', pedidoId: r.estado.pedidoId })
+    assert.equal(chipInterlocutor(fallo.estado), null)
+  })
+
+  test('un pedido nuevo no saca al confirmado', () => {
+    const e = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Laura' }).estado
+    const r = reducir(e, { tipo: 'turno', texto: '¿Y que vas a comer?' })
+    assert.deepEqual(chipInterlocutor(r.estado), { nombre: 'Laura', confirmado: true })
+  })
+
+  test('cada pedido de opciones arma el vencimiento de la conversacion', () => {
+    const r = reducir(estadoInicial, { tipo: 'turno', texto: 'Hola' })
+    assert.ok(tipos(r.efectos).includes('armarVencimientoConversacion'))
+  })
+
+  test('cuando vence la conversacion se borra todo lo del interlocutor', () => {
+    let e = reducir(conProbable('Laura').estado, { tipo: 'confirmarInterlocutor', nombre: 'Laura' }).estado
+    e = reducir(e, { tipo: 'descartarInterlocutor', nombre: 'Marta' }).estado
+    e = reducir(e, { tipo: 'venceConversacion' }).estado
+    assert.equal(chipInterlocutor(e), null)
+    assert.ok(!('interlocutor' in pedidoActual(e)))
+    assert.deepEqual(e.interlocutoresDescartados, [])
   })
 })

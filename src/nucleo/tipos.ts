@@ -1,5 +1,6 @@
 import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 import type { PedidoEleccion } from '@/llm/elecciones'
+import type { InterlocutorProbable } from '@/llm/tipos'
 
 // Lectura del turno: que es lo que se escucho, antes de pedir opciones.
 // paraUsuario y completo son probabilidades 0..1 (de un modelo o de la heuristica local).
@@ -47,6 +48,10 @@ export type Estado = {
   descartado: string | null // ultimo texto que no parecia para el usuario (se muestra en gris)
   tipoTurno: TipoTurno | null // del turno que se esta respondiendo
   deletreando: boolean // Deletrear esta montado y maneja su propio barrido
+  // Chip "¿Habla Laura?" (#48). Lo toca el interlocutor, nunca entra al barrido.
+  interlocutorProbable: string | null // propuesta del LLM sin confirmar: nunca viaja en el pedido
+  interlocutorConfirmado: string | null // viaja en PedidoOpciones.interlocutor hasta que vence la conversacion
+  interlocutoresDescartados: string[] // tocaron "No": no se vuelven a preguntar en esta conversacion
 }
 
 export type Accion =
@@ -58,7 +63,7 @@ export type Accion =
   | { tipo: 'ojos'; cerrados: boolean; progreso: number; perdido?: boolean } // perdido: vision dejo de ver los ojos
   | { tipo: 'parpadeoLargo' }
   | { tipo: 'tick' }
-  | { tipo: 'opcionesRecibidas'; pedidoId: number; opciones: Opcion[] }
+  | { tipo: 'opcionesRecibidas'; pedidoId: number; opciones: Opcion[]; interlocutorProbable?: InterlocutorProbable }
   | { tipo: 'opcionesFallaron'; pedidoId: number }
   | { tipo: 'hablando'; activo: boolean }
   | { tipo: 'escuchando'; activo: boolean }
@@ -69,6 +74,9 @@ export type Accion =
   | { tipo: 'repetir' } // click de la sala en Repetir
   | { tipo: 'terminarDeletreo'; texto: string } // Deletrear devolvio la frase escrita
   | { tipo: 'cancelarDeletreo' } // vuelve al barrido principal; el borrador lo guarda Deletrear
+  | { tipo: 'confirmarInterlocutor'; nombre: string } // el interlocutor toco "Si" en el chip
+  | { tipo: 'descartarInterlocutor'; nombre: string } // el interlocutor toco "No" en el chip
+  | { tipo: 'venceConversacion' } // un rato sin pedir opciones: lo que sigue es otra conversacion
 
 // Lo que el motor tiene que hacer afuera del reductor.
 export type Efecto =
@@ -83,6 +91,7 @@ export type Efecto =
   | { tipo: 'armarGestoUrgencia' }
   | { tipo: 'desarmarGestoUrgencia' }
   | { tipo: 'armarEsperaHabla' }
+  | { tipo: 'armarVencimientoConversacion' }
   | { tipo: 'registrarEleccion'; pedido: PedidoEleccion } // segundo plano: si falla, no cambia nada
 
 export type Resultado = { estado: Estado; efectos: Efecto[] }

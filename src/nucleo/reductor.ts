@@ -1,5 +1,6 @@
 import type { LineaHistorial, PedidoOpciones } from '@/eventos'
 import type { Eleccion } from '@/llm/elecciones'
+import { INTERLOCUTOR_DESCONOCIDO } from '@/llm/tipos'
 import type { Accion, Efecto, Elemento, Estado, Resultado } from './tipos'
 
 // Reglas del nucleo (issue #5). Funcion pura: sin timers, sin red, sin React.
@@ -40,6 +41,9 @@ export const estadoInicial: Estado = {
   descartado: null,
   tipoTurno: null,
   deletreando: false,
+  interlocutorProbable: null,
+  interlocutorConfirmado: null,
+  interlocutoresDescartados: [],
 }
 
 // Umbrales de la lectura del turno.
@@ -81,7 +85,24 @@ export function pedidoActual(e: Estado): PedidoOpciones {
     ultimoTurno: e.ultimoTurno,
     yaMostradas: [],
     ...(e.tipoTurno ? { tipoTurno: e.tipoTurno } : {}),
+    // Solo el confirmado por el interlocutor: el probable nunca nombra ni atribuye nada.
+    ...(e.interlocutorConfirmado ? { interlocutor: e.interlocutorConfirmado } : {}),
   }
+}
+
+// Que muestra el chip del interlocutor: la pregunta por el probable o, si no hay, el confirmado.
+export function chipInterlocutor(e: Estado): { nombre: string; confirmado: boolean } | null {
+  if (e.interlocutorProbable) return { nombre: e.interlocutorProbable, confirmado: false }
+  if (e.interlocutorConfirmado) return { nombre: e.interlocutorConfirmado, confirmado: true }
+  return null
+}
+
+// El probable que trajo la respuesta, si hay que preguntarlo: no si es desconocido, el ya
+// confirmado o uno que el interlocutor ya dijo que no es.
+function probableAPreguntar(e: Estado, nombre: string | undefined): string | null {
+  if (!nombre || nombre === INTERLOCUTOR_DESCONOCIDO) return null
+  if (nombre === e.interlocutorConfirmado || e.interlocutoresDescartados.includes(nombre)) return null
+  return nombre
 }
 
 // Helpers que mutan una copia del estado y acumulan efectos.
@@ -98,11 +119,13 @@ function pedirOpciones(c: Ctx) {
   c.e.pedidoId += 1
   c.e.conversacion = 'pensando'
   c.e.opciones = []
+  c.e.interlocutorProbable = null // era del turno anterior: la respuesta nueva trae el suyo
   c.efectos.push({
     tipo: 'pedirOpciones',
     pedidoId: c.e.pedidoId,
     pedido: { ...pedidoActual(c.e), yaMostradas: c.e.yaMostradas },
   })
+  c.efectos.push({ tipo: 'armarVencimientoConversacion' })
   reiniciarBarrido(c)
 }
 
@@ -353,6 +376,7 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       if (accion.pedidoId !== e.pedidoId || e.conversacion !== 'pensando') break
       e.opciones = accion.opciones
       e.conversacion = accion.opciones.length > 0 ? 'opciones' : 'sinConexion'
+      e.interlocutorProbable = probableAPreguntar(e, accion.interlocutorProbable?.nombre)
       reiniciarBarrido(c)
       break
 
@@ -417,6 +441,27 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       if (!e.deletreando || e.urgencia) break
       e.deletreando = false
       reiniciarBarrido(c)
+      break
+
+    // El chip lo toca el interlocutor: no mueve el barrido ni dice nada.
+    case 'confirmarInterlocutor':
+      if (accion.nombre !== e.interlocutorProbable) break
+      e.interlocutorConfirmado = accion.nombre
+      e.interlocutorProbable = null
+      break
+
+    case 'descartarInterlocutor':
+      if (e.interlocutorProbable === accion.nombre) e.interlocutorProbable = null
+      if (e.interlocutorConfirmado === accion.nombre) e.interlocutorConfirmado = null
+      if (!e.interlocutoresDescartados.includes(accion.nombre)) {
+        e.interlocutoresDescartados = [...e.interlocutoresDescartados, accion.nombre]
+      }
+      break
+
+    case 'venceConversacion':
+      e.interlocutorProbable = null
+      e.interlocutorConfirmado = null
+      e.interlocutoresDescartados = []
       break
   }
 
