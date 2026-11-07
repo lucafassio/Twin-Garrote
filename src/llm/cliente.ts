@@ -1,4 +1,6 @@
 import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
+import type { Eleccion } from './saliencia.ts'
+export type { Eleccion } from './saliencia.ts'
 
 // Cliente del navegador del path llm. Las firmas de pedirOpciones y completarFrase no cambian:
 // los usan nucleo-interfaz y deletrear.
@@ -109,4 +111,15 @@ export async function cerrarConversacion(historial: LineaHistorial[] = []): Prom
   } catch {
     return false
   }
+}
+
+// Avisa lo que eligio el usuario (#36): con una opcion del LLM, los hechos que uso ganan peso para las
+// proximas. "Otra" y las fijas se pueden mandar igual: no tocan nada, y el registro de elecciones de
+// #19 las va a usar. Opcional para el nucleo. Nunca tira ni hace esperar: es de segundo plano.
+export function reportarEleccion(eleccion: Eleccion): void {
+  fetch('/api/memoria', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accion: 'elegir', eleccion }),
+  }).catch(() => {})
 }

@@ -10,9 +10,12 @@
 // manda, y la cercania y el interlocutor de la propia conversacion. Por defecto espera a que el agente
 // termine, para mostrar lo aprendido (la demo); con esperar: false responde al toque y el agente sigue
 // en segundo plano (el nucleo al apagarse). Una cercania en el cuerpo se ignora.
+//   POST { accion: 'elegir', eleccion }                  -> { subidos }
+// 'elegir' registra lo que eligio el usuario (#36): si es una opcion del LLM, sus hechos suben de
+// saliencia. "Otra" y las fijas no tocan nada. El registro de elecciones de #19 extiende esta accion.
 import { connection } from 'next/server'
 import type { LineaHistorial } from '@/eventos'
-import { invalidarHecho, listarHechos } from '@/llm'
+import { esEleccion, invalidarHecho, listarHechos, registrarEleccion } from '@/llm'
 import { servidorLlm } from '@/llm/servidor'
 
 function esLinea(x: unknown): x is LineaHistorial {
@@ -70,5 +73,10 @@ export async function POST(request: Request) {
     })
   }
 
-  return Response.json({ error: "accion tiene que ser 'invalidar' o 'cerrar'" }, { status: 400 })
+  if (cuerpo.accion === 'elegir') {
+    if (!esEleccion(cuerpo.eleccion)) return Response.json({ error: 'eleccion no es una Eleccion' }, { status: 400 })
+    return Response.json({ subidos: await registrarEleccion(almacen, cuerpo.eleccion) })
+  }
+
+  return Response.json({ error: "accion tiene que ser 'invalidar', 'cerrar' o 'elegir'" }, { status: 400 })
 }

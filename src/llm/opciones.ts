@@ -8,6 +8,7 @@ import type {
   ConversacionCerrada,
   Hecho,
   Memoria,
+  OpcionMostrada,
   PerfilHuella,
   Proveedor,
   Registro,
@@ -24,6 +25,7 @@ import {
   sumarLineas,
 } from './conversacion.ts'
 import { enFila } from './fila.ts'
+import { MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
 
@@ -58,17 +60,22 @@ export function crearOpciones(deps: DependenciasOpciones): GenerarOpciones {
     const memoria = await guardarLineasDelPedido(deps, pedido)
 
     const deteccion = detectarConversacion(memoria.conversacion, pedido.historial, ahora)
+    const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno, ahora)
     const sistema = promptSistema()
-    const usuario = promptUsuario({ pedido, perfil, memoria, deteccion, ahora })
+    const usuario = promptUsuario({ pedido, perfil, memoria, hechos, deteccion, ahora })
 
-    const respuesta = await pedirConReintento(deps.proveedor, sistema, usuario)
+    // El modelo ve cada hecho con un id corto (h1, h2...): devuelve esos y se traducen a los reales.
+    const idsPorAlias = new Map(hechos.map((h, i) => [aliasHecho(i), h.id]))
+    const respuesta = await pedirConReintento(deps.proveedor, sistema, usuario, idsPorAlias)
 
     const nuevaConversacion =
       deteccion.tipo === 'nueva' ? true : deteccion.tipo === 'misma' ? false : respuesta.nuevaConversacion
 
-    await actualizarConversacion(deps, memoria, pedido, ahora, nuevaConversacion)
+    const mostradas = respuesta.opciones.map((o) => ({ texto: o.texto, hechos: o.hechos }))
+    await actualizarConversacion(deps, memoria, pedido, ahora, nuevaConversacion, mostradas)
 
-    return { opciones: respuesta.opciones, registro: respuesta.registro, nuevaConversacion }
+    const opciones = respuesta.opciones.map((o) => ({ intencion: o.intencion, texto: o.texto }))
+    return { opciones, registro: respuesta.registro, nuevaConversacion }
   }
 }
 
@@ -131,6 +138,7 @@ async function actualizarConversacion(
   pedido: PedidoOpciones,
   ahora: Date,
   nueva: boolean,
+  mostradas: OpcionMostrada[],
 ) {
   await enFila(deps.almacen, async () => {
     const memoria = await deps.almacen.leerMemoria()
@@ -146,6 +154,9 @@ async function actualizarConversacion(
     } else {
       memoria.conversacion = sigue ? seguirConversacion(actual, pedido, ahora) : abrirConversacion(pedido, ahora)
     }
+    // Las de esta vuelta van primero; las anteriores quedan por si este pedido ya no es el de la
+    // pantalla. Una conversacion nueva arranca sin las de la anterior.
+    memoria.conversacion.mostradas = [...mostradas, ...(memoria.conversacion.mostradas ?? [])].slice(0, MAX_MOSTRADAS)
     // Si un cierre por tiempo cayo mientras el modelo pensaba, las lineas de este pedido ya estaban
     // guardadas y se aprendieron: no hay cola que esperar.
     delete memoria.cerradaPorTiempo
@@ -220,12 +231,16 @@ Reglas:
 11. Si no hay turno (SIN_TURNO), propone 4 arranques de charla basados en la huella y los temas recientes.
 12. Si te dicen los minutos de silencio desde el ultimo turno, decidi si es una conversacion nueva (nuevaConversacion).
 13. Quien habla: si la seccion Interlocutor lo dice, podes nombrarlo y adaptar el tono a esa persona. Si no lo dice, no sabes quien es: no lo nombres ni asumas que es alguien de la huella. Las personas de la huella son de quienes se habla, no quien habla.
+14. En cada opcion, hechos lista los ids (h1, h2...) de los hechos que usaste para escribirla, como mucho 3. Si no usaste ninguno, va vacia.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
-{"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"..."}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
+{"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"...","hechos":["h1"]}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
 }
 
 // Fuera los invalidados y los vencidos a la hora del pedido (vencido no es invalidado: sigue en la memoria).
+const aliasHecho = (i: number) => `h${i + 1}`
+
+// Orden: importancia por saliencia, mas la coincidencia con el turno; con el mismo tope de cantidad.
 function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno: string | null, ahora: Date): Hecho[] {
   const palabras = new Set(
     (turno ?? '')
@@ -240,7 +255,7 @@ function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno
       .filter((p) => palabras.has(p)).length
   return hechosVigentes(hechos, ahora)
     .filter((h) => !(cercania === 'formal' && h.intimo))
-    .map((h) => ({ h, puntaje: h.importancia + 3 * coincidencias(h) }))
+    .map((h) => ({ h, puntaje: pesoDe(h) + 3 * coincidencias(h) }))
     .sort((a, b) => b.puntaje - a.puntaje || Date.parse(b.h.fecha) - Date.parse(a.h.fecha))
     .slice(0, MAX_HECHOS)
     .map((x) => x.h)
@@ -272,17 +287,18 @@ function promptUsuario(p: {
   pedido: PedidoOpciones
   perfil: PerfilHuella
   memoria: Memoria
+  hechos: Hecho[] // los que entran, ya ordenados
   deteccion: Deteccion
   ahora: Date
 }): string {
-  const { pedido, perfil, memoria, deteccion, ahora } = p
+  const { pedido, perfil, memoria, hechos, deteccion, ahora } = p
   const partes: string[] = []
 
   partes.push(`# Huella\n\n${perfil.markdown.trim()}`)
 
-  const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno, ahora)
   if (hechos.length > 0) {
-    partes.push(`## Hechos que sabes\n${hechos.map((h) => `- ${textoConFecha(h, ahora)}`).join('\n')}`)
+    const lineas = hechos.map((h, i) => `- [${aliasHecho(i)}] ${textoConFecha(h, ahora)}`)
+    partes.push(`## Hechos que sabes\n${lineas.join('\n')}`)
   }
 
   const ejemplos = [...memoria.ejemplosEstilo]
@@ -325,9 +341,18 @@ const peso = (origen: 'deletreo' | 'opcion') => (origen === 'deletreo' ? 2 : 1)
 
 // --- Respuesta del modelo ----------------------------------------------------
 
-type RespuestaModelo = { opciones: Opcion[]; registro: Registro; nuevaConversacion: boolean }
+type OpcionConHechos = Opcion & { hechos: string[] } // ids reales de los hechos que uso
+type RespuestaModelo = { opciones: OpcionConHechos[]; registro: Registro; nuevaConversacion: boolean }
 
-async function pedirConReintento(proveedor: Proveedor, sistema: string, usuario: string): Promise<RespuestaModelo> {
+const MAX_HECHOS_POR_OPCION = 3
+
+async function pedirConReintento(
+  proveedor: Proveedor,
+  sistema: string,
+  usuario: string,
+  idsPorAlias: Map<string, string>,
+): Promise<RespuestaModelo> {
+  const interpretar = (texto: string) => interpretarRespuesta(texto, idsPorAlias)
   const primera = interpretar(await proveedor.generar({ sistema, usuario }))
   if (primera) return primera
   const aviso = '\n\nTu respuesta anterior no era el JSON pedido. Responde solo el JSON, con exactamente 4 opciones.'
@@ -339,7 +364,17 @@ async function pedirConReintento(proveedor: Proveedor, sistema: string, usuario:
 const INTENCIONES: Intencion[] = ['aceptar', 'rechazar', 'preguntar', 'otra']
 const REGISTROS: Registro[] = ['formal', 'casual', 'intimo']
 
-function interpretar(texto: string): RespuestaModelo | null {
+// Los ids de hechos que no estaban entre los mandados al modelo se ignoran; sin la lista, ninguno.
+function interpretarHechos(valor: unknown, idsPorAlias: Map<string, string>): string[] {
+  if (!Array.isArray(valor)) return []
+  const ids = valor
+    .filter((v): v is string => typeof v === 'string')
+    .map((v) => idsPorAlias.get(v.trim().replace(/^\[|\]$/g, '')))
+    .filter((id): id is string => id !== undefined)
+  return [...new Set(ids)].slice(0, MAX_HECHOS_POR_OPCION)
+}
+
+function interpretarRespuesta(texto: string, idsPorAlias: Map<string, string>): RespuestaModelo | null {
   const limpio = texto
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
@@ -363,7 +398,11 @@ function interpretar(texto: string): RespuestaModelo | null {
   )
   if (opciones.length < 4) return null
   return {
-    opciones: opciones.slice(0, 4).map((o) => ({ intencion: o.intencion, texto: o.texto.trim() })),
+    opciones: opciones.slice(0, 4).map((o) => ({
+      intencion: o.intencion,
+      texto: o.texto.trim(),
+      hechos: interpretarHechos((o as { hechos?: unknown }).hechos, idsPorAlias),
+    })),
     registro: REGISTROS.includes(d.registro as Registro) ? (d.registro as Registro) : 'casual',
     nuevaConversacion: d.nuevaConversacion === true,
   }

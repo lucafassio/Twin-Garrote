@@ -5,6 +5,7 @@ import type { Cercania, LineaHistorial, Opcion, PedidoOpciones } from '@/eventos
 import PruebaCompletado from './PruebaCompletado'
 import PruebaCorte from './PruebaCorte'
 import { LoQueAprendi } from './LoQueAprendi'
+import { reportarEleccion } from '@/llm/cliente'
 
 // Pagina de prueba del path llm. Solo la toca ese path.
 // Se escribe un turno (o se elige uno de los 10 de prueba), se piden las opciones y se mide la latencia.
@@ -81,6 +82,7 @@ export default function Prueba() {
   }
 
   function elegir(o: Opcion) {
+    reportarEleccion({ tipo: 'opcion', texto: o.texto })
     const nuevas: LineaHistorial[] = []
     if (!sinTurno) nuevas.push({ quien: 'interlocutor', texto: turno })
     nuevas.push({ quien: 'usuario', texto: o.texto, origen: 'opcion' })

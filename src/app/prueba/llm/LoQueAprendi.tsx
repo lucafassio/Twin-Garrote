@@ -130,6 +130,7 @@ export function LoQueAprendi({
                   <p className="text-sm text-gray-500">
                     {ORIGEN[h.origen]} · interlocutor: {h.interlocutor ?? 'no se sabe'} · {fecha(h.fecha)} · importancia{' '}
                     {h.importancia}
+                    {h.saliencia && h.saliencia > 1 ? ` · saliencia x${h.saliencia}` : ''}
                     {h.intimo ? ' · íntimo' : ''}
                   </p>
                   {evento && <p className="text-sm text-amber-700">Evento: {evento}</p>}

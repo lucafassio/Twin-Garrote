@@ -51,6 +51,10 @@ export type Hecho = {
   fechaInvalidacion: string | null // ISO; un hecho invalidado no se borra
   intimo: boolean // salud, familia, plata...: nunca con cercania formal
   reemplazaA?: string // id del hecho que este actualizo (el viejo queda invalidado, con su historia)
+  // Saliencia (#36): cuanto pesa por haberse usado en opciones elegidas. Arranca en 1 y sube hasta un
+  // tope; una memoria vieja sin estos campos se lee como saliencia 1 y sin uso.
+  saliencia?: number
+  ultimoUso?: string // ISO de la ultima vez que se eligio una opcion que lo usaba
 }
 
 // El perfil que carga la familia en el onboarding. El aprendizaje nunca lo reescribe.
@@ -93,7 +97,13 @@ export type ConversacionActual = {
   // El ultimo turno del interlocutor (ultimoTurno del ultimo pedido): entra al historial recien con
   // el pedido siguiente. Si la conversacion se cierra antes (por tiempo), se suma al cerrarla.
   turnoPendiente?: string | null
+  // Las ultimas opciones mostradas, la mas nueva primero, con los ids de los hechos que uso cada una:
+  // al elegir una, se buscan sus hechos aca. Se guardan varias vueltas: un pedido cancelado que termina
+  // tarde en el servidor no borra las que estan en pantalla.
+  mostradas?: OpcionMostrada[]
 }
+
+export type OpcionMostrada = { texto: string; hechos: string[] }
 
 export type Memoria = {
   hechos: Hecho[]

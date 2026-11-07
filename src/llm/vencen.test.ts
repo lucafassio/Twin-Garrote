@@ -152,7 +152,7 @@ describe('hechos que vencen: eventos con fecha', () => {
     const { hecho } = await guardar({ tiempo: tiempo({ expresion: 'mañana', forma: 'relativo', dias: 1 }) })
     // Miercoles 11/11, 15:00 en Argentina: el dia siguiente a la conversacion.
     const linea = (await promptOpciones([hecho], '2026-11-11T18:00:00.000Z')).split('\n').find((l) => l.includes('Laura se opera'))
-    assert.equal(linea, '- Laura se opera de la rodilla. (el miércoles 11/11, hoy)')
+    assert.equal(linea, '- [h1] Laura se opera de la rodilla. (el miércoles 11/11, hoy)')
   })
 
   test('los dias relativos tambien se restan: "ayer" dicho el 10/11 es el 9/11', async () => {
@@ -311,7 +311,7 @@ describe('hechos que vencen: eventos con fecha', () => {
       fechaInvalidacion: null,
       intimo: false,
     }
-    assert.match(await promptOpciones([viejo], '2030-01-01T12:00:00.000Z'), /^- Roberto es hincha de River\.$/m)
+    assert.match(await promptOpciones([viejo], '2030-01-01T12:00:00.000Z'), /^- \[h1\] Roberto es hincha de River\.$/m)
   })
 })
 

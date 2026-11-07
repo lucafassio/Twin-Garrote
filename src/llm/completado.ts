@@ -8,6 +8,7 @@ import type { Almacen, ConversacionActual, Hecho, Proveedor, SalidaProveedor } f
 import { lineasDeConversacion } from './conversacion.ts'
 import { hechosVigentes, textoConFecha } from './fechas.ts'
 import { NUEVA_CONVERSACION_MS, seccionMemoriaCorta } from './opciones.ts'
+import { pesoDe } from './saliencia.ts'
 
 const MAX_HECHOS = 10
 const MAX_EJEMPLOS = 6
@@ -110,7 +111,7 @@ Respondes solo JSON, sin texto alrededor: {"frase":"..."}`
 function hechosParaCompletado(hechos: Hecho[], cercania: Cercania | undefined, ahora: Date): Hecho[] {
   return hechosVigentes(hechos, ahora)
     .filter((h) => !(cercania === 'formal' && h.intimo))
-    .sort((a, b) => b.importancia - a.importancia || Date.parse(b.fecha) - Date.parse(a.fecha))
+    .sort((a, b) => pesoDe(b) - pesoDe(a) || Date.parse(b.fecha) - Date.parse(a.fecha))
     .slice(0, MAX_HECHOS)
 }
 

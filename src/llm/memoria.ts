@@ -9,6 +9,7 @@
 import type { LineaHistorial } from '@/eventos'
 import { enFila } from './fila.ts'
 import { crearCierre, crearOpciones } from './opciones.ts'
+import { conservarUsosNuevos } from './saliencia.ts'
 import { DIAS_SEMANA, describirDia, describirFecha, estaVencido, finDelDia, resolverFecha } from './fechas.ts'
 import type { TiempoEstructurado } from './fechas.ts'
 import type {
@@ -161,7 +162,9 @@ export function crearDisparadorMemoria(deps: {
     // mover la conversacion actual. Desde aca solo se escriben hechos, resumenes y ejemplos.
     const guardar = await enFila(deps.almacen, async () => {
       const fresca = await deps.almacen.leerMemoria()
-      const m: Memoria = { ...fresca, hechos: nueva.hechos, resumenes: nueva.resumenes, ejemplosEstilo: nueva.ejemplosEstilo }
+      // Las elecciones registradas mientras tanto (saliencia) no se pierden.
+      const hechos = conservarUsosNuevos(nueva.hechos, fresca.hechos)
+      const m: Memoria = { ...fresca, hechos, resumenes: nueva.resumenes, ejemplosEstilo: nueva.ejemplosEstilo }
       await deps.almacen.guardarMemoria(m)
       return m
     })
