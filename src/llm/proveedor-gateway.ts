@@ -18,6 +18,8 @@ export function crearProveedorGateway(modelo = MODELO_GATEWAY): Proveedor {
           prompt: usuario,
           maxOutputTokens: salida?.maxTokens ?? MAX_TOKENS,
           output: Output.object({ schema: esquema }),
+          // Igual que en el proveedor anthropic: sin thinking, que se come tokens y latencia.
+          providerOptions: { anthropic: { thinking: { type: 'disabled' } } },
         })
         return JSON.stringify(output)
       } catch (error) {

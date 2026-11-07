@@ -15,6 +15,8 @@ export function crearProveedorAnthropic(modelo = MODELO_ANTHROPIC): Proveedor {
         max_tokens: salida?.maxTokens ?? MAX_TOKENS,
         system: sistema,
         messages: [{ role: 'user', content: usuario }],
+        // Haiku 5.5 piensa por defecto: se come los tokens y la latencia. Para 4 opciones no hace falta.
+        thinking: { type: 'disabled' },
         output_config: { format: { type: 'json_schema', schema: (salida?.esquema ?? ESQUEMA_RESPUESTA) as never } },
       })
       return mensaje.content.map((b) => (b.type === 'text' ? b.text : '')).join('')
