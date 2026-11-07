@@ -8,10 +8,17 @@ export type LecturaMirada = { zona: string | null; confianza: number }
 
 export function crearEstabilizadorMirada({
   permanenciaMs = 300,
+  permanenciaCambioMs = 800, // de una zona marcada a otra: los ojos siguen al barrido y no hay que saltar
   umbral = 0.6,
   umbralMantener = 0.4,
   perdidaMs = 1000,
-}: { permanenciaMs?: number; umbral?: number; umbralMantener?: number; perdidaMs?: number } = {}) {
+}: {
+  permanenciaMs?: number
+  permanenciaCambioMs?: number
+  umbral?: number
+  umbralMantener?: number
+  perdidaMs?: number
+} = {}) {
   let marcada: string | null = null
   let candidata: string | null = null
   let candidataDesde = 0
@@ -33,7 +40,8 @@ export function crearEstabilizadorMirada({
           candidata = zona
           candidataDesde = ahora
         }
-        if (ahora - candidataDesde >= permanenciaMs && zona !== marcada) {
+        const requerido = marcada !== null ? permanenciaCambioMs : permanenciaMs
+        if (ahora - candidataDesde >= requerido && zona !== marcada) {
           marcada = zona
           candidata = null
           return marcada

@@ -2,6 +2,7 @@ import type { FaceLandmarker, NormalizedLandmark } from '@mediapipe/tasks-vision
 import { bus } from '../eventos'
 import { ajustarCompensacion } from './compensacion'
 import { ajustarMirada, crearDetector, puntosCalibracion, type Mirada, type Punto } from './senales'
+import { silenciarAvisosMediaPipe } from './avisos'
 import { crearClasificadorZonas, extraerRasgos } from './zonas'
 
 // --- Mirada por zonas (ver zonas.ts) ---
@@ -376,6 +377,7 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
   }
 
   try {
+    silenciarAvisosMediaPipe() // antes de cargar: MediaPipe guarda console.error al cargar
     const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
     const archivos = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.2/wasm')
     modelo = await FaceLandmarker.createFromOptions(archivos, {

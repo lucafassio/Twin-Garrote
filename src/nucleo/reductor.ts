@@ -58,6 +58,10 @@ export function elementosBarrido(estado: Estado): Elemento[] {
   return filtrados.length ? filtrados : todos
 }
 
+function mismoElementoBarrido(a: Elemento, b: Elemento) {
+  return a.tipo === b.tipo && (a.tipo !== 'opcion' || (b.tipo === 'opcion' && a.indice === b.indice))
+}
+
 // Orden del barrido: opciones (por probabilidad) y despues la franja fija.
 // En una pregunta de si o no, Si y No van primero: se puede contestar sin esperar al LLM.
 function todosLosElementos(estado: Estado): Elemento[] {
@@ -354,12 +358,19 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       e.escuchando = accion.activo
       break
 
-    case 'zonaMirada':
+    case 'zonaMirada': {
       // Con los ojos cerrados la mirada no vale: se esta eligiendo lo que estaba iluminado.
       if (e.ojosCerrados || accion.zona === e.zonaMirada) break
+      const antes = elementosBarrido(e)[e.iluminado]
       e.zonaMirada = accion.zona
-      reiniciarBarrido(c)
+      e.pausado = false
+      // Si lo iluminado sigue en la lista nueva, sigue iluminado: los ojos siguen al
+      // barrido por la franja y un cambio de zona no lo tiene que mandar al principio.
+      const sigue = antes ? elementosBarrido(e).findIndex((el) => mismoElementoBarrido(el, antes)) : -1
+      if (sigue >= 0) e.iluminado = sigue
+      else reiniciarBarrido(c)
       break
+    }
 
     case 'finEsperaHabla':
       if (e.esperandoHabla) {

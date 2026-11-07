@@ -192,6 +192,25 @@ describe('mirada por zonas', () => {
     assert.equal(e.iluminado, 0)
   })
 
+  test('si se pierde la zona, el barrido sigue en el mismo elemento (no vuelve al principio)', () => {
+    let e = iluminar(mirar(conOpciones(), 'franja'), 'otra')
+    e = mirar(e, null)
+    assert.deepEqual(elementosBarrido(e)[e.iluminado], { tipo: 'otra' })
+  })
+
+  test('volver a la franja desde sin zona sigue en el mismo elemento', () => {
+    let e = iluminar(conOpciones(), 'no')
+    e = mirar(e, 'franja')
+    assert.deepEqual(elementosBarrido(e)[e.iluminado], { tipo: 'no' })
+  })
+
+  test('si el elemento iluminado no esta en la zona nueva, arranca por el primero', () => {
+    let e = iluminar(mirar(conOpciones(), 'franja'), 'espera')
+    e = mirar(e, 'opcion2')
+    assert.deepEqual(nombres(e), ['opcion2'])
+    assert.equal(e.iluminado, 0)
+  })
+
   test('con los ojos cerrados la mirada se ignora', () => {
     let e = reducir(mirar(conOpciones(), 'opcion0'), { tipo: 'ojos', cerrados: true, progreso: 0.5 }).estado
     e = mirar(e, 'opcion3')

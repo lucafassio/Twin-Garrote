@@ -23,6 +23,15 @@ describe('estabilizador de la mirada', () => {
     assert.equal(e.leer({ zona: 'opcion1', confianza: 0.9 }, 700), undefined)
   })
 
+  test('cambiar de una zona marcada a otra pide 800 ms firmes', () => {
+    const e = nuevo()
+    e.leer({ zona: 'franja', confianza: 0.9 }, 0)
+    e.leer({ zona: 'franja', confianza: 0.9 }, 300)
+    e.leer({ zona: 'opcion3', confianza: 0.9 }, 400)
+    assert.equal(e.leer({ zona: 'opcion3', confianza: 0.9 }, 900), undefined) // 500 ms: todavia no
+    assert.equal(e.leer({ zona: 'opcion3', confianza: 0.9 }, 1200), 'opcion3')
+  })
+
   test('la confianza baja no marca una zona nueva', () => {
     const e = nuevo()
     e.leer({ zona: 'opcion2', confianza: 0.5 }, 0)
