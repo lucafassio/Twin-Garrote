@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { bus } from '@/eventos'
 import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz } from '@/voz'
+import { depuracionEscucha } from '@/voz/escuchar'
 import { cargarVoces, elegirVoz } from '@/voz/hablar'
 
 // Pagina de prueba del path voz. Solo la toca ese path.
@@ -15,6 +16,8 @@ export default function Prueba() {
   const [turnos, setTurnos] = useState<string[]>([])
   const [log, setLog] = useState<string[]>([])
   const [silencio, setSilencio] = useState(ajustesVoz.silencioMs)
+  const [extra, setExtra] = useState(ajustesVoz.extraSinFinalMs)
+  const [resultados, setResultados] = useState<string[]>([])
   const [frase, setFrase] = useState('Si, dale, me encantaria.')
   const [voces, setVoces] = useState<SpeechSynthesisVoice[]>([])
   const [hayReconocimiento, setHayReconocimiento] = useState(true)
@@ -38,7 +41,12 @@ export default function Prueba() {
       bus.on('detenerUrgencia', ({ falsaAlarma }) => anotar(`detenerUrgencia${falsaAlarma ? ' (falsa alarma)' : ' (atendida)'}`)),
       bus.on('repetir', () => anotar('repetir')),
     ]
-    return () => offs.forEach((off) => off())
+    depuracionEscucha.alResultado = ({ texto, final, desdeAnteriorMs }) =>
+      setResultados((r) => [`+${desdeAnteriorMs} ms ${final ? 'FINAL' : 'parcial'}: ${texto}`, ...r].slice(0, 60))
+    return () => {
+      offs.forEach((off) => off())
+      depuracionEscucha.alResultado = null
+    }
   }, [])
 
   useEffect(() => {
@@ -84,11 +92,11 @@ export default function Prueba() {
         <h2 className="text-sm uppercase text-zinc-400">Turno a mano</h2>
         <CampoTurno />
         <label className="flex items-center gap-3 text-sm">
-          Silencio de fin de turno: {silencio} ms
+          Silencio de fin de turno (frase final): {silencio} ms
           <input
             type="range"
             min={500}
-            max={2500}
+            max={3000}
             step={100}
             value={silencio}
             onChange={(e) => {
@@ -97,6 +105,21 @@ export default function Prueba() {
             }}
           />
         </label>
+        <label className="flex items-center gap-3 text-sm">
+          Extra si Chrome no la cerro: {extra} ms
+          <input
+            type="range"
+            min={0}
+            max={3000}
+            step={100}
+            value={extra}
+            onChange={(e) => {
+              ajustesVoz.extraSinFinalMs = Number(e.target.value)
+              setExtra(ajustesVoz.extraSinFinalMs)
+            }}
+          />
+        </label>
+        <p className="text-xs text-zinc-500">Frases de hasta {ajustesVoz.palabrasFraseCorta} palabras esperan el doble.</p>
       </section>
 
       <section className="space-y-2">
@@ -149,6 +172,15 @@ export default function Prueba() {
           </ul>
         </section>
       </div>
+
+      <section>
+        <h2 className="text-sm uppercase text-zinc-400">Resultados de Chrome (tiempo desde el anterior)</h2>
+        <ul className="max-h-64 overflow-auto font-mono text-xs">
+          {resultados.map((r, i) => (
+            <li key={i}>{r}</li>
+          ))}
+        </ul>
+      </section>
 
       <section className="text-sm text-zinc-400">
         <h2 className="uppercase">Voces</h2>

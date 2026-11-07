@@ -31,8 +31,13 @@ export type Escucha = {
   cerrarTurno(): void // cierra a mano el turno en curso
 }
 
+// Para /prueba/voz: cada resultado de Chrome con el tiempo desde el anterior, para ajustar el fin de turno.
+export const depuracionEscucha: {
+  alResultado: ((r: { texto: string; final: boolean; desdeAnteriorMs: number }) => void) | null
+} = { alResultado: null }
+
 type OpcionesEscucha = {
-  silencioMs: () => number
+  esperaMs: (texto: string, final: boolean) => number // silencio que cierra el turno en curso
   alParcial: (texto: string) => void
   alTurno: (texto: string) => void
   alEstado: (activo: boolean) => void
@@ -41,7 +46,7 @@ type OpcionesEscucha = {
 const RELANZAR_MS = 250
 const ERRORES_FATALES = ['not-allowed', 'service-not-allowed', 'audio-capture']
 
-export function crearEscucha({ silencioMs, alParcial, alTurno, alEstado }: OpcionesEscucha): Escucha {
+export function crearEscucha({ esperaMs, alParcial, alTurno, alEstado }: OpcionesEscucha): Escucha {
   const Ctor = constructor()
   if (!Ctor) {
     console.warn('voz: este navegador no tiene reconocimiento de voz; queda solo CampoTurno')
@@ -59,6 +64,7 @@ export function crearEscucha({ silencioMs, alParcial, alTurno, alEstado }: Opcio
   let largo = 0
   let pendiente = ''
   let silencio: ReturnType<typeof setTimeout> | null = null
+  let ultimoResultado = performance.now()
 
   function cerrarTurno() {
     if (silencio) clearTimeout(silencio)
@@ -101,10 +107,14 @@ export function crearEscucha({ silencioMs, alParcial, alTurno, alEstado }: Opcio
     for (let i = ignorarHasta; i < largo; i++) partes.push(e.results[i][0].transcript)
     const texto = partes.join(' ').replace(/\s+/g, ' ').trim()
     if (!texto || !quiere) return
+    const final = e.results[largo - 1].isFinal
+    const ahora = performance.now()
+    depuracionEscucha.alResultado?.({ texto, final, desdeAnteriorMs: Math.round(ahora - ultimoResultado) })
+    ultimoResultado = ahora
     pendiente = texto
     alParcial(texto)
     if (silencio) clearTimeout(silencio)
-    silencio = setTimeout(cerrarTurno, silencioMs())
+    silencio = setTimeout(cerrarTurno, esperaMs(texto, final))
   }
 
   rec.onerror = (e) => {

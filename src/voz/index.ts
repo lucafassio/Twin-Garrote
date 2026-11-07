@@ -14,8 +14,19 @@ export { cerrarTurno } from './turnoManual'
 
 // Ajustables en vivo desde /prueba/voz.
 export const ajustesVoz = {
-  silencioMs: 1200, // silencio que cierra el turno
+  silencioMs: 1500, // silencio que cierra el turno cuando Chrome ya marco la frase como final
+  extraSinFinalMs: 1000, // espera de mas si Chrome todavia no la cerro: sus resultados llegan en tandas
+  palabrasFraseCorta: 2, // "Roberto..." o "Che..." esperan el doble: casi seguro sigue algo
   nombre: 'Roberto', // como se nombra al usuario en los mensajes al contacto
+}
+
+// Fin de turno adaptativo: con silencio fijo, las tandas de Chrome y las pausas
+// despues de un vocativo partian una frase en dos turnos.
+function esperaFinDeTurno(texto: string, final: boolean): number {
+  let ms = ajustesVoz.silencioMs
+  if (!final) ms += ajustesVoz.extraSinFinalMs
+  if (texto.split(' ').length <= ajustesVoz.palabrasFraseCorta) ms *= 2
+  return ms
 }
 
 const REABRIR_MS = 500 // espera despues de hablar antes de volver a escuchar
@@ -32,7 +43,7 @@ export function iniciarVoz(): () => void {
   let reabrir: ReturnType<typeof setTimeout> | null = null
 
   const escucha = crearEscucha({
-    silencioMs: () => ajustesVoz.silencioMs,
+    esperaMs: esperaFinDeTurno,
     alParcial: (texto) => bus.emit('transcripcionParcial', { texto }),
     alTurno: (texto) => bus.emit('turno', { texto }),
     alEstado: (activo) => bus.emit('escuchando', { activo }),
