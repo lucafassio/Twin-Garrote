@@ -202,7 +202,8 @@ describe('hechos que vencen: eventos con fecha', () => {
     })
     assert.equal(hecho.expresionOriginal, 'hasta el domingo')
     assert.equal(hecho.fechaEvento, undefined)
-    assert.equal(hecho.validoHasta, undefined)
+    // Igual vence al final del domingo 15/11.
+    assert.equal(hecho.validoHasta, '2026-11-16T02:59:59.999Z')
   })
 
   test('una fecha imposible se descarta y el hecho se guarda igual, sin vencimiento', async () => {
@@ -311,5 +312,81 @@ describe('hechos que vencen: eventos con fecha', () => {
       intimo: false,
     }
     assert.match(await promptOpciones([viejo], '2030-01-01T12:00:00.000Z'), /^- Roberto es hincha de River\.$/m)
+  })
+})
+
+describe('hechos que vencen: estados y estables', () => {
+  const VIAJE = { texto: 'Laura esta de viaje.', tipo: 'estado' }
+  const hastaElDomingo = tiempo({ expresion: 'hasta el domingo', forma: 'diaSemana', diaSemana: 'domingo', hasta: true })
+
+  test('"Laura esta de viaje hasta el domingo", dicho el martes 10/11, vale hasta el final del domingo 15/11', async () => {
+    const { hecho } = await guardar({ ...VIAJE, tiempo: hastaElDomingo })
+    assert.equal(hecho.tipo, 'estado')
+    assert.equal(hecho.expresionOriginal, 'hasta el domingo')
+    assert.equal(hecho.fechaEvento, undefined)
+    assert.equal(hecho.validoHasta, '2026-11-16T02:59:59.999Z')
+  })
+
+  test('un estado "hasta el domingo" entra al prompt de opciones el domingo y no el lunes', async () => {
+    const { hecho } = await guardar({ ...VIAJE, tiempo: hastaElDomingo })
+    // Domingo 15/11, 15:00 y 23:30 en Argentina.
+    assert.match(await promptOpciones([hecho], '2026-11-15T18:00:00.000Z'), /Laura esta de viaje/)
+    assert.match(await promptOpciones([hecho], '2026-11-16T02:30:00.000Z'), /Laura esta de viaje/)
+    // Lunes 16/11, 9:00 en Argentina.
+    assert.doesNotMatch(await promptOpciones([hecho], '2026-11-16T12:00:00.000Z'), /Laura esta de viaje/)
+  })
+
+  test('un "hasta" con fecha del calendario usa la misma cuenta: "hasta el 20 de noviembre"', async () => {
+    const { hecho } = await guardar({
+      ...VIAJE,
+      tiempo: tiempo({ expresion: 'hasta el 20 de noviembre', forma: 'calendario', dia: 20, mes: 11, hasta: true }),
+    })
+    assert.equal(hecho.validoHasta, '2026-11-21T02:59:59.999Z')
+  })
+
+  test('un "hasta" con fecha imposible se descarta: el estado se guarda sin fin y sigue entrando', async () => {
+    const { hecho } = await guardar({
+      ...VIAJE,
+      tiempo: tiempo({ expresion: 'hasta el 31 de febrero', forma: 'calendario', dia: 31, mes: 2, hasta: true }),
+    })
+    assert.equal(hecho.texto, 'Laura esta de viaje.')
+    assert.equal(hecho.expresionOriginal, 'hasta el 31 de febrero')
+    assert.equal(hecho.validoHasta, undefined)
+    assert.match(await promptOpciones([hecho], '2027-06-01T12:00:00.000Z'), /Laura esta de viaje/)
+  })
+
+  test('un estado sin fin conocido sigue entrando al prompt de opciones', async () => {
+    const { hecho } = await guardar({ ...VIAJE, tiempo: SIN_TIEMPO })
+    assert.equal(hecho.validoHasta, undefined)
+    assert.match(await promptOpciones([hecho], '2027-06-01T12:00:00.000Z'), /Laura esta de viaje/)
+  })
+
+  test('un estado que empieza en una fecha no vence ese dia: el momento no es su fin', async () => {
+    const { hecho } = await guardar({
+      ...VIAJE,
+      tiempo: tiempo({ expresion: 'desde el jueves', forma: 'diaSemana', diaSemana: 'jueves' }),
+    })
+    assert.equal(hecho.validoHasta, undefined)
+    assert.match(await promptOpciones([hecho], '2026-11-20T12:00:00.000Z'), /Laura esta de viaje/)
+  })
+
+  test('un estable nunca vence, aunque el agente le ponga un "hasta"', async () => {
+    const { hecho } = await guardar({ texto: 'Roberto es hincha de River.', tipo: 'estable', tiempo: hastaElDomingo })
+    assert.equal(hecho.tipo, 'estable')
+    assert.equal(hecho.validoHasta, undefined)
+    assert.match(await promptOpciones([hecho], '2030-01-01T12:00:00.000Z'), /Roberto es hincha de River/)
+  })
+
+  test('al actualizar un estado con fin por uno sin fin, el nuevo no hereda el vencimiento', async () => {
+    const { memoria: m1, hecho: viejo } = await guardar({ ...VIAJE, tiempo: hastaElDomingo })
+    const { hecho: nuevo } = await guardar(
+      { ...VIAJE, accion: 'actualizar', id: viejo.id, texto: 'Laura se quedo a vivir afuera.', tiempo: SIN_TIEMPO },
+      '2026-11-11T18:00:00.000Z',
+      m1,
+    )
+    assert.equal(nuevo.reemplazaA, viejo.id)
+    assert.equal(nuevo.expresionOriginal, undefined)
+    assert.equal(nuevo.validoHasta, undefined)
+    assert.match(await promptOpciones([nuevo], '2026-11-20T12:00:00.000Z'), /Laura se quedo a vivir afuera/)
   })
 })

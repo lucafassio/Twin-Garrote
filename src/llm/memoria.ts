@@ -371,15 +371,17 @@ function camposDeTiempo(c: Candidato, referencia: Date): Partial<Hecho> {
   const campos: Partial<Hecho> = {}
   if (c.tipo) campos.tipo = c.tipo
   if (c.expresion) campos.expresionOriginal = c.expresion
-  // Un "hasta" marca el fin de un estado, no el dia de un evento: por ahora se guarda sin fecha (#31).
-  if (c.tipo === 'evento' && !c.hasta) {
-    const fecha = resolverFecha(c.tiempo, referencia)
-    const hasta = fecha ? finDelDia(fecha) : null
-    if (fecha && hasta) {
-      campos.fechaEvento = fecha
-      campos.validoHasta = hasta
-    }
-  }
+  // Solo vencen un evento y lo que tiene un "hasta". Un estable nunca. Un estado sin "hasta" tampoco:
+  // el momento no es su fin, sigue hasta que una conversacion lo contradiga o la familia lo invalide.
+  const vence = c.tipo === 'evento' || (c.tipo === 'estado' && c.hasta)
+  if (!vence) return campos
+  const fecha = resolverFecha(c.tiempo, referencia)
+  const fin = fecha ? finDelDia(fecha) : null
+  if (!fecha || !fin) return campos
+  // Un "hasta" marca el fin de algo: vence ese dia, pero no es el dia de un evento. Si el agente lo llamo
+  // evento ("esta de viaje hasta el domingo"), queda como evento sin fechaEvento, con validoHasta.
+  if (!c.hasta) campos.fechaEvento = fecha
+  campos.validoHasta = fin
   return campos
 }
 

@@ -1647,7 +1647,7 @@
       "file_type": "code",
       "norm_label": "reconciliar()",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L386"
+      "source_location": "L388"
     },
     {
       "id": "src_llm_memoria_renderhechoexistente",
@@ -2223,7 +2223,7 @@
       "file_type": "code",
       "norm_label": "crearopcionesconmemoria()",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L436"
+      "source_location": "L438"
     },
     {
       "id": "src_deletrear_barrido_agregarletra",
@@ -12467,7 +12467,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L377",
+      "source_location": "L378",
       "weight": 1.0
     },
     {
@@ -12479,7 +12479,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L378",
+      "source_location": "L379",
       "weight": 1.0
     },
     {
@@ -12611,7 +12611,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L437",
+      "source_location": "L439",
       "weight": 1.0
     },
     {
@@ -12623,7 +12623,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L438",
+      "source_location": "L440",
       "weight": 1.0
     },
     {
@@ -12683,7 +12683,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L395",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -12695,7 +12695,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L396",
+      "source_location": "L398",
       "weight": 1.0
     },
     {
@@ -12707,7 +12707,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L398",
+      "source_location": "L400",
       "weight": 1.0
     },
     {
@@ -27127,7 +27127,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L386",
+      "source_location": "L388",
       "weight": 1.0
     },
     {
@@ -27138,7 +27138,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/llm/memoria.ts",
-      "source_location": "L436",
+      "source_location": "L438",
       "weight": 1.0
     },
     {
@@ -32345,5 +32345,5 @@
       "source_file": "docs/research/nucleo-interfaz.md"
     }
   ],
-  "built_at_commit": "940a349f558574ca08a98973ccbc9969ab5c8702"
+  "built_at_commit": "fb236b84542bd40f2d2c698f4b8f6686c743c41f"
 }

@@ -40,7 +40,7 @@ export type Hecho = {
   expresionOriginal?: string // la expresion temporal tal como se dijo ("el jueves")
   fechaEvento?: string // YYYY-MM-DD, el dia del evento en Argentina; la calcula el codigo
   validoDesde?: string // ISO, desde cuando es cierto, si se sabe
-  validoHasta?: string // ISO; para un evento, el final del dia del evento en Argentina
+  validoHasta?: string // ISO; el final del dia del evento, o del dia del "hasta" de un estado, en Argentina
   id: string
   texto: string
   origen: OrigenHecho

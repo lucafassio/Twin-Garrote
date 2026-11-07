@@ -216,9 +216,9 @@
     "semantic_hash": "018b9f261d5785bb7694def0c8915696"
   },
   "src/llm/memoria.ts": {
-    "mtime": 1794071196.0686474,
-    "seen": 1794071226.1184871,
-    "ast_hash": "53ed91b5202a5820f41f4e416556bf52",
+    "mtime": 1794071273.9412527,
+    "seen": 1794071283.188166,
+    "ast_hash": "df2eaa949a406b1349556cbcf0c903c7",
     "semantic_hash": ""
   },
   "src/llm/opciones.test.ts": {
