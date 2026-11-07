@@ -48,15 +48,24 @@ describe('diccionario', () => {
 describe('barrido', () => {
   const filas: Fila[] = armarFilas(['Tengo frío.'], ['frío'], true)
 
-  test('orden: frases, palabras, acciones, letras', () => {
+  test('orden: frases, palabras, acciones, letras, numeros', () => {
     assert.deepEqual(
       filas.map((f) => f.id),
-      ['frases', 'palabras', 'acciones', 'l1', 'l2', 'l3', 'l4', 'l5'],
+      ['frases', 'palabras', 'acciones', 'l1', 'l2', 'l3', 'l4', 'l5', 'n1', 'n2'],
     )
     assert.deepEqual(
       armarFilas([], [], false).map((f) => f.id),
-      ['acciones', 'l1', 'l2', 'l3', 'l4', 'l5'],
+      ['acciones', 'l1', 'l2', 'l3', 'l4', 'l5', 'n1', 'n2'],
     )
+  })
+
+  test('los numeros se escriben como cualquier letra', () => {
+    const n = filas.filter((f) => f.id === 'n1' || f.id === 'n2').flatMap((f) => f.items)
+    assert.deepEqual(
+      n.map((i) => (i.tipo === 'letra' ? i.letra : '?')).join(''),
+      '1234567890',
+    )
+    assert.equal(agregarLetra('tengo ', '8'), 'tengo 8')
   })
 
   test('entra a la fila y elige una letra, despues vuelve arriba', () => {

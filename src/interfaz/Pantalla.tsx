@@ -46,7 +46,7 @@ function Celda({ iluminada, progreso, elegible, base, children, onClick }: Celda
       role={onClick ? 'button' : undefined}
       className={[
         onClick ? 'cursor-pointer' : '',
-        'relative flex items-center justify-center overflow-hidden rounded-2xl p-6 text-center',
+        'relative flex min-h-0 items-center justify-center overflow-hidden rounded-2xl p-[1.5vh] text-center',
         base,
         iluminada ? 'outline outline-[10px] -outline-offset-[10px] outline-yellow-300' : 'border-2 border-zinc-700',
         elegible ? '' : 'opacity-40',
@@ -115,7 +115,7 @@ export default function Pantalla({
   // los parpadeos de "Fue sin querer" le elegirian letras. El borrador lo guarda deletrear.
   if (estado.deletreando) {
     return (
-      <div className="flex h-screen flex-col bg-zinc-950 text-zinc-50">
+      <div className="flex h-screen flex-col overflow-hidden bg-zinc-950 text-zinc-50">
         <div className="min-h-0 flex-1">
           <Deletrear
             pedido={pedidoActual(estado)}
@@ -124,7 +124,7 @@ export default function Pantalla({
             velocidadMs={velocidadMs}
           />
         </div>
-        {operador && <div className="px-4 pb-4">{operador}</div>}
+        {operador && <div className="max-h-[35vh] shrink-0 overflow-y-auto px-4 pb-4">{operador}</div>}
       </div>
     )
   }
@@ -135,15 +135,16 @@ export default function Pantalla({
   const textoArriba = enCurso ?? estado.turnoMostrado
 
   return (
-    <div className="flex h-screen flex-col gap-4 bg-zinc-950 p-4 text-zinc-50">
+    // Todo entra en la pantalla, sin scroll: el centro se achica y el texto escala con el alto.
+    <div className="flex h-screen flex-col gap-4 overflow-hidden bg-zinc-950 p-4 text-zinc-50">
       {/* Arriba: lo que dijo (o va diciendo) el interlocutor */}
-      <header className="flex min-h-28 items-center justify-between gap-6 rounded-2xl bg-zinc-900 px-8 py-4">
-        <div className="flex flex-col gap-1">
-          <p className={`text-5xl leading-tight ${enCurso ? 'text-zinc-400 italic' : ''}`}>
+      <header className="flex max-h-[22vh] min-h-[10vh] shrink-0 items-center justify-between gap-6 overflow-hidden rounded-2xl bg-zinc-900 px-8 py-[1vh]">
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className={`line-clamp-3 text-[clamp(1.5rem,5vh,3rem)] leading-tight ${enCurso ? 'text-zinc-400 italic' : ''}`}>
             {textoArriba ?? <span className="text-zinc-500">Esperando que alguien hable…</span>}
           </p>
           {estado.descartado && !enCurso && (
-            <p className="text-2xl text-zinc-500">No parecía para vos: «{estado.descartado}»</p>
+            <p className="truncate text-[clamp(1rem,2.5vh,1.5rem)] text-zinc-500">No parecía para vos: «{estado.descartado}»</p>
           )}
         </div>
         {estado.hablando || estado.esperandoHabla ? (
@@ -154,13 +155,13 @@ export default function Pantalla({
       </header>
 
       {estado.pausado && (
-        <div className="rounded-2xl bg-sky-900 px-8 py-3 text-center text-4xl">
+        <div className="shrink-0 rounded-2xl bg-sky-900 px-8 py-2 text-center text-[clamp(1.25rem,3.5vh,2.25rem)]">
           Barrido en pausa · parpadeá para seguir
         </div>
       )}
 
       {/* Centro: 4 cuadrantes con las opciones */}
-      <main className="grid flex-1 grid-cols-2 grid-rows-2 gap-4 text-5xl leading-tight">
+      <main className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-4 text-[clamp(1.5rem,5vh,3rem)] leading-tight">
         {[0, 1, 2, 3].map((indice) => {
           const opcion = estado.conversacion === 'opciones' ? estado.opciones[indice] : undefined
           const el: Elemento = { tipo: 'opcion', indice }
@@ -179,7 +180,7 @@ export default function Pantalla({
       </main>
 
       {/* Abajo: franja fija, siempre visible */}
-      <footer className="grid h-36 grid-cols-7 gap-4 text-4xl font-bold">
+      <footer className="grid h-[14vh] shrink-0 grid-cols-7 gap-4 text-[clamp(1rem,4vh,2.25rem)] font-bold">
         {FRANJA.map(({ tipo, texto }) => {
           const el: Elemento = { tipo }
           return (
@@ -197,7 +198,7 @@ export default function Pantalla({
         })}
       </footer>
 
-      {operador}
+      {operador && <div className="max-h-[35vh] shrink-0 overflow-y-auto">{operador}</div>}
     </div>
   )
 }

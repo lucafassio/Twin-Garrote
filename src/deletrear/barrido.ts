@@ -1,6 +1,6 @@
 // Barrido de deletrear, puro y testeable: primero ilumina filas, un parpadeo largo entra
 // a la fila iluminada y despues ilumina sus elementos de a uno.
-// Orden: Frases (si hay) -> Palabras (si hay) -> Acciones -> 5 filas de letras por frecuencia.
+// Orden: Frases (si hay) -> Palabras (si hay) -> Acciones -> 5 filas de letras por frecuencia -> 2 de numeros.
 
 export type Accion = 'decir' | 'borrarLetra' | 'borrarPalabra' | 'salir'
 
@@ -8,9 +8,9 @@ export type Item =
   | { tipo: 'frase'; texto: string }
   | { tipo: 'palabra'; texto: string }
   | { tipo: 'accion'; accion: Accion }
-  | { tipo: 'letra'; letra: string } // ' ' = espacio
+  | { tipo: 'letra'; letra: string } // ' ' = espacio; tambien los numeros
 
-export type IdFila = 'frases' | 'palabras' | 'acciones' | 'l1' | 'l2' | 'l3' | 'l4' | 'l5'
+export type IdFila = 'frases' | 'palabras' | 'acciones' | 'l1' | 'l2' | 'l3' | 'l4' | 'l5' | 'n1' | 'n2'
 
 export type Fila = { id: IdFila; items: Item[] }
 
@@ -23,6 +23,12 @@ export const LETRAS: string[][] = [
   ['ñ', 'x', 'k', 'w'],
 ]
 
+// Al final: se usan poco (horas, fechas, cantidades). De a 5 para no alargar el barrido de la fila.
+export const NUMEROS: string[][] = [
+  ['1', '2', '3', '4', '5'],
+  ['6', '7', '8', '9', '0'],
+]
+
 export const VUELTAS_HASTA_PAUSA = 3
 
 export function armarFilas(frases: string[], palabras: string[], hayTexto: boolean): Fila[] {
@@ -33,6 +39,9 @@ export function armarFilas(frases: string[], palabras: string[], hayTexto: boole
   filas.push({ id: 'acciones', items: acciones.map((accion) => ({ tipo: 'accion', accion })) })
   LETRAS.forEach((letras, i) => {
     filas.push({ id: `l${i + 1}` as IdFila, items: letras.map((letra) => ({ tipo: 'letra', letra })) })
+  })
+  NUMEROS.forEach((numeros, i) => {
+    filas.push({ id: `n${i + 1}` as IdFila, items: numeros.map((letra) => ({ tipo: 'letra', letra })) })
   })
   return filas
 }

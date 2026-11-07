@@ -173,25 +173,31 @@ export default function Deletrear({ pedido, onTerminar, onCancelar, velocidadMs 
     }
   }, [])
 
+  // Todo entra en la pantalla, sin scroll: las filas se reparten el alto y el texto escala con el alto.
   return (
-    <div className="flex h-full flex-col gap-4 bg-zinc-950 p-4 text-zinc-50">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden bg-zinc-950 p-3 text-zinc-50">
       {pedido.ultimoTurno && (
-        <p className="text-3xl text-zinc-400">
+        <p className="shrink-0 truncate text-[clamp(1rem,3vh,1.875rem)] text-zinc-400">
           Te dijeron: <span className="text-zinc-100">«{pedido.ultimoTurno}»</span>
         </p>
       )}
-      <div className="min-h-24 rounded-2xl bg-zinc-900 px-8 py-4 text-6xl leading-tight">
-        {texto ? (
-          <span className="whitespace-pre-wrap">{texto}</span>
-        ) : (
-          <span className="text-4xl text-zinc-500">Escribí una pista: el comienzo o la palabra importante</span>
-        )}
-        <span className="animate-pulse text-yellow-300">|</span>
+      {/* Si el texto no entra, se ve el final (lo ultimo escrito) */}
+      <div className="flex max-h-[18vh] min-h-[8vh] shrink-0 flex-col justify-end overflow-hidden rounded-2xl bg-zinc-900 px-8 py-[1vh] text-[clamp(1.5rem,5.5vh,3.75rem)] leading-tight">
+        <p>
+          {texto ? (
+            <span className="whitespace-pre-wrap">{texto}</span>
+          ) : (
+            <span className="text-[0.6em] text-zinc-500">Escribí una pista: el comienzo o la palabra importante</span>
+          )}
+          <span className="animate-pulse text-yellow-300">|</span>
+        </p>
       </div>
       {barrido.pausado && (
-        <p className="rounded-2xl bg-sky-900 px-8 py-3 text-center text-3xl">Barrido en pausa: parpadeo largo para seguir</p>
+        <p className="shrink-0 rounded-2xl bg-sky-900 px-8 py-2 text-center text-[clamp(1rem,3vh,1.875rem)]">
+          Barrido en pausa: parpadeo largo para seguir
+        </p>
       )}
-      <div className="flex flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-[0.8vh]">
         {filas.map((fila) => (
           <FilaVista
             key={fila.id}
@@ -235,19 +241,30 @@ function FilaVista({
 }) {
   const esFrase = fila.id === 'frases'
   return (
-    <div className={['flex items-stretch gap-3 rounded-2xl p-2', filaIluminada ? LUZ : ''].join(' ')}>
+    // Frases ocupa el doble de alto: son dos renglones de dos frases.
+    <div
+      className={[
+        'flex min-h-0 items-stretch gap-3 rounded-2xl p-1',
+        esFrase ? 'flex-[2]' : 'flex-1',
+        filaIluminada ? LUZ : '',
+      ].join(' ')}
+    >
       {NOMBRE_FILA[fila.id] && (
-        <span className="flex w-40 shrink-0 items-center text-2xl text-zinc-400">{NOMBRE_FILA[fila.id]}</span>
+        <span className="flex w-40 shrink-0 items-center text-[clamp(0.875rem,2.5vh,1.5rem)] text-zinc-400">
+          {NOMBRE_FILA[fila.id]}
+        </span>
       )}
-      <div className={['grid flex-1 gap-3', esFrase ? 'grid-cols-2' : 'grid-flow-col auto-cols-fr'].join(' ')}>
+      <div
+        className={['grid min-h-0 flex-1 gap-2', esFrase ? 'grid-cols-2 grid-rows-2' : 'grid-flow-col auto-cols-fr'].join(' ')}
+      >
         {fila.items.map((item, i) => {
           const luz = itemIluminado === i
           return (
             <div
               key={i}
               className={[
-                'relative flex items-center justify-center overflow-hidden rounded-xl px-4 py-3 text-center',
-                esFrase ? 'text-3xl' : 'text-4xl font-bold',
+                'relative flex min-h-0 items-center justify-center overflow-hidden rounded-xl px-3 text-center leading-tight',
+                esFrase ? 'text-[clamp(0.875rem,2.6vh,1.875rem)]' : 'text-[clamp(1rem,4.5vh,2.25rem)] font-bold',
                 item.tipo === 'accion' ? 'bg-zinc-800 text-sky-200' : 'bg-zinc-900',
                 luz ? LUZ : 'border-2 border-zinc-700',
               ].join(' ')}
@@ -255,7 +272,7 @@ function FilaVista({
               {luz && progreso > 0 && (
                 <div className="absolute inset-y-0 left-0 bg-yellow-300/40" style={{ width: `${progreso * 100}%` }} />
               )}
-              <span className="relative">{textoItem(item)}</span>
+              <span className="relative line-clamp-2">{textoItem(item)}</span>
             </div>
           )
         })}
