@@ -493,7 +493,7 @@ function reconciliar(hechos: Hecho[], candidatos: Candidato[], conversacion: Con
 
 // crearOpciones y el cierre con el agente de memoria enganchado: cuando opciones detecta que la
 // conversacion anterior cerro, o se la cierra por tiempo o a mano, el agente corre en segundo plano.
-// Con proveedorRollup, despues del agente se arman los niveles (bloque del dia, #34).
+// Con proveedorRollup, despues del agente se arman los niveles (dia, semana y mes; #34, #37).
 // Es lo que usa el servidor (servidor.ts).
 export function crearOpcionesConMemoria(deps: {
   proveedor: Proveedor

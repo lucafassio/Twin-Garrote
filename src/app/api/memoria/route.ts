@@ -13,9 +13,10 @@
 //   POST { accion: 'elegir', eleccion }                  -> { subidos }
 // 'elegir' registra lo que eligio el usuario (#36): si es una opcion del LLM, sus hechos suben de
 // saliencia. "Otra" y las fijas no tocan nada. El registro de elecciones de #19 extiende esta accion.
-//   POST { accion: 'consolidar' }                        -> { bloque, modelo, activos, vencidos, invalidados, niveles }
-// 'consolidar' (Consolidar ahora, #34) arma el bloque del dia de hoy con lo que haya, sin esperar el
-// corte. GET, invalidar y cerrar tambien devuelven los niveles (bloques de dia), para la demo.
+//   POST { accion: 'consolidar' }                        -> { dia, semana, modelos, activos, vencidos, invalidados, niveles }
+// 'consolidar' (Consolidar ahora, #34, #37) arma los bloques del dia y la semana de hoy con lo que
+// haya, sin esperar el corte. GET, invalidar y cerrar tambien devuelven los niveles (dia, semana y
+// mes), para la demo.
 import { connection } from 'next/server'
 import type { LineaHistorial } from '@/eventos'
 import { esEleccion, invalidarHecho, listarHechos, nivelesDe, registrarEleccion } from '@/llm'
@@ -90,14 +91,14 @@ export async function POST(request: Request) {
   }
 
   if (cuerpo.accion === 'consolidar') {
-    const modelo = modeloRollup('dia')
+    const modelos = { dia: modeloRollup('dia'), semana: modeloRollup('semana') }
     try {
-      const bloque = await memoria.consolidarAhora()
-      return Response.json({ bloque, modelo, ...(await loAprendido(almacen)) })
+      const { dia, semana } = await memoria.consolidarAhora()
+      return Response.json({ dia, semana, modelos, ...(await loAprendido(almacen)) })
     } catch (e) {
       console.error('[api/memoria] consolidar', e)
       const mensaje = e instanceof Error ? e.message : String(e)
-      return Response.json({ error: `No se pudo consolidar: ${mensaje}`, modelo }, { status: 502 })
+      return Response.json({ error: `No se pudo consolidar: ${mensaje}`, modelos }, { status: 502 })
     }
   }
 

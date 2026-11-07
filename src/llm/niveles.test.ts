@@ -256,10 +256,15 @@ describe('consolidar ahora', () => {
       hechos: [hecho({ id: 'h-hoy', fecha: '2026-11-07T11:00:00.000Z' })],
     }
     const { almacen, pedidos, disparador } = armar(
-      [bloque('Hoy a la manana...', ['r-manana', 'h-hoy']), bloque('Hoy, todo el dia...', ['r-manana'])],
+      [
+        bloque('Hoy a la manana...', ['r-manana', 'h-hoy']),
+        bloque('La semana...', ['dia-2026-11-07']),
+        bloque('Hoy, todo el dia...', ['r-manana']),
+        bloque('La semana, otra vez...', ['dia-2026-11-07']),
+      ],
       hoy,
     )
-    const b = await disparador.consolidarAhora()
+    const { dia: b } = await disparador.consolidarAhora()
     assert.equal(b?.texto, 'Hoy a la manana...')
     assert.equal(pedidos[0].nivel, 'dia')
     assert.ok(pedidos[0].usuario.includes('r-manana'))
@@ -275,12 +280,12 @@ describe('consolidar ahora', () => {
   test('el bloque parcial de hoy se rehace al cruzar la medianoche', async () => {
     const hoy: Partial<Memoria> = { resumenes: [resumen('r-manana', '2026-11-07T11:00:00.000Z')] }
     const { almacen, pedidos, disparador, cerrar } = armar(
-      [bloque('Parcial.', ['r-manana']), bloque('Completo.', ['r-manana'])],
+      [bloque('Parcial.', ['r-manana']), bloque('Semana parcial.', ['dia-2026-11-07']), bloque('Completo.', ['r-manana'])],
       hoy,
     )
     await disparador.consolidarAhora()
-    await cerrar(new Date('2026-11-08T12:00:00Z')) // domingo a la manana
-    assert.equal(pedidos.length, 2)
+    await cerrar(new Date('2026-11-08T12:00:00Z')) // domingo a la manana: la semana sigue abierta
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['dia', 'semana', 'dia'])
     const dia = almacen.memoria().niveles?.dia ?? []
     assert.equal(dia.length, 1)
     assert.equal(dia[0].texto, 'Completo.')
@@ -372,5 +377,293 @@ describe('bloque del dia en el prompt de opciones', () => {
   test('una memoria vieja sin niveles arma las opciones como siempre', async () => {
     const prompt = await promptCon({ hechos: [hecho({ id: 'h-importante' })] })
     assert.ok(prompt.includes('hecho h-importante'))
+  })
+})
+
+// --- Semana y mes (#37) ------------------------------------------------------------
+
+// La semana del lunes 2/11 al lunes 9/11 (Argentina) y noviembre entero.
+const SEMANA_2 = { desde: '2026-11-02T03:00:00.000Z', hasta: '2026-11-09T03:00:00.000Z' }
+const NOVIEMBRE = { desde: '2026-11-01T03:00:00.000Z', hasta: '2026-12-01T03:00:00.000Z' }
+const LUNES_9 = new Date('2026-11-09T12:00:00Z')
+
+const DIA_MS = 86_400_000
+const bloqueCon = (id: string, desde: string, hasta: string, fuentes: string[], extra: Partial<Bloque> = {}): Bloque => ({
+  id,
+  desde,
+  hasta,
+  texto: `texto ${id}`,
+  fuentes,
+  ...extra,
+})
+// Bloques de un dia o una semana que empiezan en la medianoche argentina de `fecha`.
+const deDias = (nivel: 'dia' | 'semana', dias: number) => (fecha: string, fuentes: string[] = [], extra: Partial<Bloque> = {}) => {
+  const desde = Date.parse(`${fecha}T03:00:00.000Z`)
+  return bloqueCon(`${nivel}-${fecha}`, new Date(desde).toISOString(), new Date(desde + dias * DIA_MS).toISOString(), fuentes, extra)
+}
+const diaBloque = deDias('dia', 1)
+const semanaBloque = deDias('semana', 7)
+const OCTUBRE = bloqueCon('mes-2026-10-01', '2026-10-01T03:00:00.000Z', NOVIEMBRE.desde, ['semana-2026-10-26'])
+
+// La semana del 2/11 tiene sus dias; la anterior y octubre ya tienen bloque.
+const MEMORIA_DE_LA_SEMANA: Partial<Memoria> = {
+  hechos: [
+    hecho({ id: 'h-semana', fecha: '2026-11-04T15:00:00.000Z' }),
+    hecho({ id: 'h-menor', importancia: 4, fecha: '2026-11-04T15:00:00.000Z' }),
+    hecho({ id: 'h-octubre', fecha: '2026-10-30T15:00:00.000Z' }),
+    hecho({ id: 'h-invalidado', estado: 'invalidado', fechaInvalidacion: '2026-11-05T15:00:00.000Z', fecha: '2026-11-04T15:00:00.000Z' }),
+  ],
+  niveles: {
+    dia: [
+      diaBloque('2026-10-30', ['h-octubre']),
+      diaBloque('2026-11-04', ['h-semana']),
+      diaBloque('2026-11-05'),
+      diaBloque('2026-11-06'),
+      diaBloque('2026-11-07', [], { descartado: '2026-11-08T12:00:00.000Z' }),
+      diaBloque('2026-11-08'),
+    ],
+    semana: [semanaBloque('2026-10-26', ['dia-2026-10-30'])],
+    mes: [OCTUBRE],
+  },
+}
+
+// Sin el bloque del domingo, que sale de una conversacion de ese dia.
+function conDomingoSinBloque(): Partial<Memoria> {
+  const m = structuredClone(MEMORIA_DE_LA_SEMANA)
+  m.niveles!.dia = m.niveles!.dia.filter((b) => b.id !== 'dia-2026-11-08')
+  m.resumenes = [resumen('r-domingo', '2026-11-08T18:00:00.000Z')]
+  return m
+}
+
+describe('bloque de la semana', () => {
+  test('cruzar el fin de semana arma la semana con sus bloques de dia y los hechos de importancia 6 o mas', async () => {
+    const { almacen, pedidos, cerrar } = armar(
+      [bloque('La semana de Roberto...', ['dia-2026-11-05', 'h-semana', 'dia-2026-10-30'])],
+      MEMORIA_DE_LA_SEMANA,
+    )
+    await cerrar(LUNES_9)
+
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['semana'])
+    for (const id of ['dia-2026-11-04', 'dia-2026-11-05', 'dia-2026-11-06', 'dia-2026-11-08', 'h-semana']) {
+      assert.ok(pedidos[0].usuario.includes(id), id)
+    }
+    for (const id of ['dia-2026-10-30', 'dia-2026-11-07', 'h-menor', 'h-octubre', 'h-invalidado']) {
+      assert.ok(!pedidos[0].usuario.includes(id), id)
+    }
+
+    const semana = almacen.memoria().niveles?.semana ?? []
+    assert.deepEqual(semana.map((b) => b.id), ['semana-2026-10-26', 'semana-2026-11-02'])
+    assert.equal(semana[1].desde, SEMANA_2.desde)
+    assert.equal(semana[1].hasta, SEMANA_2.hasta)
+    assert.equal(semana[1].texto, 'La semana de Roberto...')
+    // Cita los bloques de dia y los hechos; lo que no se le mando se descarta.
+    assert.deepEqual(semana[1].fuentes, ['dia-2026-11-05', 'h-semana'])
+  })
+
+  test('primero se arma el dia que falta y la semana ya lo usa', async () => {
+    const { almacen, pedidos, cerrar } = armar(
+      [bloque('El domingo...', ['r-domingo']), bloque('La semana...', ['dia-2026-11-08'])],
+      conDomingoSinBloque(),
+    )
+    await cerrar(LUNES_9)
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['dia', 'semana'])
+    assert.ok(pedidos[1].usuario.includes('El domingo...'))
+    assert.deepEqual(almacen.memoria().niveles?.semana.at(-1)?.fuentes, ['dia-2026-11-08'])
+  })
+
+  test('si falla el dia, la semana espera al proximo cierre', async () => {
+    const { almacen, pedidos, errores, cerrar } = armar(
+      [new Error('sin red'), bloque('El domingo...', ['r-domingo']), bloque('La semana...', ['dia-2026-11-08'])],
+      conDomingoSinBloque(),
+    )
+    await cerrar(LUNES_9)
+    assert.equal(errores.length, 1)
+    assert.equal(almacen.memoria().niveles?.semana.length, 1)
+    await cerrar(new Date('2026-11-09T20:00:00Z'))
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['dia', 'dia', 'semana'])
+    assert.equal(almacen.memoria().niveles?.semana.length, 2)
+  })
+
+  test('si falla la semana, no rompe el cierre y se reintenta en el proximo', async () => {
+    const { almacen, pedidos, errores, cerrar } = armar(
+      [new Error('sin red'), bloque('La semana...', ['h-semana'])],
+      MEMORIA_DE_LA_SEMANA,
+    )
+    await cerrar(LUNES_9)
+    assert.equal(errores.length, 1)
+    assert.equal(almacen.memoria().resumenes.at(-1)?.resumen, 'Se saludaron.')
+    assert.equal(almacen.memoria().niveles?.semana.length, 1)
+    await cerrar(new Date('2026-11-09T20:00:00Z'))
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['semana', 'semana'])
+    assert.equal(almacen.memoria().niveles?.semana.length, 2)
+  })
+
+  test('el hecho intimo que cita un bloque de dia queda en las fuentes de la semana aunque el modelo no lo cite', async () => {
+    const conIntimo = structuredClone(MEMORIA_DE_LA_SEMANA)
+    conIntimo.hechos!.push(hecho({ id: 'h-salud', intimo: true, importancia: 5, fecha: '2026-11-06T15:00:00.000Z' }))
+    conIntimo.niveles!.dia.find((b) => b.id === 'dia-2026-11-06')!.fuentes = ['h-salud']
+    const { almacen, cerrar } = armar([bloque('La semana...', ['h-semana'])], conIntimo)
+    await cerrar(LUNES_9)
+    assert.deepEqual(almacen.memoria().niveles?.semana.at(-1)?.fuentes, ['h-semana', 'h-salud'])
+  })
+
+  test('cerrar otra conversacion la misma semana no arma otra', async () => {
+    // El miercoles se arma el dia del lunes (la conversacion que cerro): el modelo no tiene nada que decir.
+    const { pedidos, cerrar } = armar([bloque('La semana...', ['h-semana']), bloque('', [])], MEMORIA_DE_LA_SEMANA)
+    await cerrar(LUNES_9)
+    await cerrar(new Date('2026-11-11T20:00:00Z')) // miercoles
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['semana', 'dia'])
+  })
+})
+
+describe('bloque del mes', () => {
+  // Noviembre con sus semanas: la del 26/10 lo toca por el domingo 1/11 y la del 30/11 por el lunes
+  // 30/11. Octubre ya tiene bloque.
+  const MEMORIA_DEL_MES: Partial<Memoria> = {
+    hechos: [
+      hecho({ id: 'h-mes', importancia: 8, fecha: '2026-11-15T15:00:00.000Z' }),
+      hecho({ id: 'h-menor', importancia: 3, fecha: '2026-11-15T15:00:00.000Z' }),
+      hecho({ id: 'h-octubre', importancia: 9, fecha: '2026-10-20T15:00:00.000Z' }),
+    ],
+    niveles: {
+      dia: [],
+      semana: ['2026-10-19', '2026-10-26', '2026-11-02', '2026-11-09', '2026-11-16', '2026-11-23', '2026-11-30'].map((f) =>
+        semanaBloque(f),
+      ),
+      mes: [OCTUBRE],
+    },
+  }
+  // El lunes 7/12: cerro la semana del 30/11, la del ultimo dia de noviembre.
+  const LUNES_7_DIC = new Date('2026-12-07T12:00:00Z')
+
+  test('el mes espera a que cierre la semana de su ultimo dia', async () => {
+    const { pedidos, cerrar } = armar([], MEMORIA_DEL_MES)
+    await cerrar(new Date('2026-12-01T12:00:00Z'))
+    assert.equal(pedidos.length, 0)
+  })
+
+  test('cruzar el fin de mes pide el mes al modelo configurado para mes, con sus semanas y hechos', async () => {
+    const { almacen, pedidos, cerrar } = armar([bloque('En noviembre nacio Tomas.', ['semana-2026-11-09', 'h-mes'])], MEMORIA_DEL_MES)
+    await cerrar(LUNES_7_DIC)
+
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['mes'])
+    for (const id of ['semana-2026-10-26', 'semana-2026-11-02', 'semana-2026-11-23', 'semana-2026-11-30', 'h-mes']) {
+      assert.ok(pedidos[0].usuario.includes(id), id)
+    }
+    for (const id of ['semana-2026-10-19', 'h-menor', 'h-octubre']) assert.ok(!pedidos[0].usuario.includes(id), id)
+
+    const mes = almacen.memoria().niveles?.mes ?? []
+    assert.deepEqual(mes.map((b) => b.id), ['mes-2026-10-01', 'mes-2026-11-01'])
+    assert.equal(mes[1].desde, NOVIEMBRE.desde)
+    assert.equal(mes[1].hasta, NOVIEMBRE.hasta)
+    assert.deepEqual(mes[1].fuentes, ['semana-2026-11-09', 'h-mes'])
+  })
+
+  test('si falla el mes, se reintenta en el proximo cierre', async () => {
+    const { almacen, pedidos, cerrar } = armar([new Error('sin red'), bloque('Noviembre...', ['h-mes'])], MEMORIA_DEL_MES)
+    await cerrar(LUNES_7_DIC)
+    assert.equal(almacen.memoria().niveles?.mes.length, 1)
+    await cerrar(new Date('2026-12-07T20:00:00Z'))
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['mes', 'mes'])
+    assert.equal(almacen.memoria().niveles?.mes.length, 2)
+  })
+})
+
+describe('consolidar ahora arma dia y semana', () => {
+  test('la semana de hoy sale de los dias que haya, incluido el de hoy recien armado', async () => {
+    const hoy: Partial<Memoria> = {
+      resumenes: [resumen('r-manana', '2026-11-07T11:00:00.000Z')],
+      niveles: { dia: [diaBloque('2026-11-05'), diaBloque('2026-10-30')], semana: [], mes: [] },
+    }
+    const { almacen, pedidos, disparador } = armar(
+      [bloque('Hoy...', ['r-manana']), bloque('La semana hasta hoy...', ['dia-2026-11-05', 'dia-2026-11-07'])],
+      hoy,
+    )
+    const { dia, semana } = await disparador.consolidarAhora()
+    assert.equal(dia?.texto, 'Hoy...')
+    assert.equal(semana?.texto, 'La semana hasta hoy...')
+    assert.deepEqual(pedidos.map((p) => p.nivel), ['dia', 'semana'])
+    assert.ok(pedidos[1].usuario.includes('Hoy...'))
+    assert.ok(!pedidos[1].usuario.includes('dia-2026-10-30'))
+    const guardada = almacen.memoria().niveles?.semana ?? []
+    assert.equal(guardada.length, 1)
+    assert.equal(guardada[0].desde, SEMANA_2.desde)
+    assert.deepEqual(guardada[0].fuentes, ['dia-2026-11-05', 'dia-2026-11-07'])
+  })
+})
+
+describe('semana y mes en el prompt de opciones', () => {
+  const CUATRO = JSON.stringify({
+    opciones: [
+      { intencion: 'aceptar', texto: 'Si, dale.' },
+      { intencion: 'rechazar', texto: 'No, gracias.' },
+      { intencion: 'preguntar', texto: '¿Cuando?' },
+      { intencion: 'otra', texto: 'Dejame pensarlo.' },
+    ],
+    registro: 'casual',
+    nuevaConversacion: false,
+  })
+
+  // El lunes 9/11: la semana anterior es la del 2/11 y el mes anterior, octubre.
+  async function promptCon(memoria: Partial<Memoria>, cercania?: 'familia' | 'formal') {
+    const usuarios: string[] = []
+    const proveedor: Proveedor = {
+      nombre: 'opciones',
+      async generar({ usuario }) {
+        usuarios.push(usuario)
+        return CUATRO
+      },
+    }
+    const generar = crearOpciones({ proveedor, almacen: crearAlmacenEnMemoria({ memoria }) })
+    await generar({ historial: [], ultimoTurno: '¿Como estas?', yaMostradas: [], ...(cercania ? { cercania } : {}) }, LUNES_9)
+    return usuarios[0]
+  }
+
+  const hechos = [hecho({ id: 'h-river' }), hecho({ id: 'h-salud', intimo: true })]
+
+  test('entran la semana anterior y el mes anterior si existen y no estan descartados', async () => {
+    const prompt = await promptCon({
+      hechos,
+      niveles: {
+        dia: [],
+        semana: [
+          semanaBloque('2026-11-02', ['h-river'], { texto: 'SEMANA-PASADA' }),
+          semanaBloque('2026-10-26', ['h-river'], { texto: 'SEMANA-VIEJA' }),
+        ],
+        mes: [{ ...OCTUBRE, texto: 'OCTUBRE' }],
+      },
+    })
+    assert.ok(prompt.includes('SEMANA-PASADA'))
+    assert.ok(prompt.includes('OCTUBRE'))
+    assert.ok(!prompt.includes('SEMANA-VIEJA'))
+
+    const descartado = '2026-11-09T10:00:00.000Z'
+    const sinNada = await promptCon({
+      hechos,
+      niveles: {
+        dia: [],
+        semana: [semanaBloque('2026-11-02', ['h-river'], { texto: 'SEMANA-DESCARTADA', descartado })],
+        mes: [{ ...OCTUBRE, texto: 'OCTUBRE-DESCARTADO', descartado }],
+      },
+    })
+    assert.ok(!sinNada.includes('SEMANA-DESCARTADA'))
+    assert.ok(!sinNada.includes('OCTUBRE-DESCARTADO'))
+  })
+
+  test('con cercania formal no entra una semana ni un mes que citen, por debajo, un hecho intimo', async () => {
+    const memoria: Partial<Memoria> = {
+      hechos,
+      niveles: {
+        dia: [diaBloque('2026-11-06', ['h-salud'])],
+        semana: [semanaBloque('2026-11-02', ['dia-2026-11-06'], { texto: 'SEMANA-INTIMA' }), semanaBloque('2026-10-26', ['h-salud'])],
+        mes: [{ ...OCTUBRE, texto: 'OCTUBRE-INTIMO' }], // cita semana-2026-10-26, que cita h-salud
+      },
+    }
+    const formal = await promptCon(memoria, 'formal')
+    assert.ok(!formal.includes('SEMANA-INTIMA'))
+    assert.ok(!formal.includes('OCTUBRE-INTIMO'))
+    const familia = await promptCon(memoria, 'familia')
+    assert.ok(familia.includes('SEMANA-INTIMA'))
+    assert.ok(familia.includes('OCTUBRE-INTIMO'))
   })
 })

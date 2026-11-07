@@ -15,7 +15,7 @@ import type {
   ResultadoOpciones,
   ResumenConversacion,
 } from './tipos.ts'
-import { describirDia, hechosVigentes, textoConFecha } from './fechas.ts'
+import { hechosVigentes, textoConFecha } from './fechas.ts'
 import {
   abrirConversacion,
   armarCerrada,
@@ -25,7 +25,7 @@ import {
   sumarLineas,
 } from './conversacion.ts'
 import { enFila } from './fila.ts'
-import { bloqueDelDia } from './niveles.ts'
+import { bloqueDe, describirPeriodo } from './niveles.ts'
 import { decaerSaliencia, MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
 export { lineasDeConversacion } from './conversacion.ts'
@@ -314,9 +314,12 @@ function promptUsuario(p: {
   if (ejemplos.length > 0) {
     partes.push(`## Frases que dijo hace poco\n${ejemplos.map((e) => `- "${e.texto}"`).join('\n')}`)
   }
-  // El bloque del dia (#34): despues de la huella, para no colgar sus subsecciones de el.
-  const dia = bloqueDelDia(memoria, pedido.cercania, ahora)
-  if (dia) partes.push(`# Resumen del ${describirDia(new Date(dia.desde))}\n${dia.texto}`)
+  // Los bloques del mes, la semana y el dia anteriores (#34, #37), de lo mas viejo a lo mas nuevo:
+  // despues de la huella, para no colgar sus subsecciones de ella.
+  for (const corte of ['mes', 'semana', 'dia'] as const) {
+    const b = bloqueDe(corte, memoria, pedido.cercania, ahora)
+    if (b) partes.push(`# Resumen ${corte === 'dia' ? 'del' : 'de'} ${describirPeriodo(corte, new Date(b.desde))}\n${b.texto}`)
+  }
 
   const memoriaCorta = seccionMemoriaCorta(memoria.resumenes, ahora)
   if (memoriaCorta) partes.push(memoriaCorta)

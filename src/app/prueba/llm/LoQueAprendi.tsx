@@ -8,7 +8,7 @@ import type { Bloque, Hecho, Niveles } from '@/llm/tipos'
 
 // Demo del aprendizaje (#12): "Lo que aprendí de vos" y el botón para cerrar la conversación.
 // El botón es solo para la demo: en el producto la conversación se cierra sola por el silencio.
-// Consolidar ahora (#34) arma el bloque del dia de hoy sin esperar la medianoche.
+// Consolidar ahora (#34, #37) arma los bloques del dia y la semana de hoy sin esperar el corte.
 
 type Hechos = { activos: HechoListado[]; vencidos: HechoListado[]; invalidados: HechoListado[] }
 
@@ -27,12 +27,29 @@ function fechaDelEvento(h: Hecho) {
 
 const ZONA = 'America/Argentina/Buenos_Aires'
 
-// "viernes 6/11", y si el bloque es de Consolidar ahora (no cubre el dia entero), hasta que hora.
-function fechaBloque(b: Bloque) {
-  const dia = new Date(b.desde).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric', timeZone: ZONA })
-  const parcial = Date.parse(b.hasta) - Date.parse(b.desde) < 24 * 3_600_000
-  const hasta = new Date(b.hasta).toLocaleTimeString('es-AR', { timeStyle: 'short', timeZone: ZONA })
-  return parcial ? `${dia}, hasta las ${hasta}` : dia
+type Corte = keyof Niveles
+
+const DIA_MS = 24 * 3_600_000
+const LARGO: Record<Corte, number> = { dia: DIA_MS, semana: 7 * DIA_MS, mes: 28 * DIA_MS }
+const TITULO: Record<Corte, string> = { dia: 'Dia por dia', semana: 'Semana por semana', mes: 'Mes por mes' }
+
+const diaDe = (ms: number) =>
+  new Date(ms).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric', timeZone: ZONA })
+
+// "viernes 6/11", "semana del lunes 2/11 al domingo 8/11", "noviembre de 2026". Si el bloque es de
+// Consolidar ahora (no cubre el periodo entero), hasta cuando.
+function fechaBloque(corte: Corte, b: Bloque) {
+  const desde = Date.parse(b.desde)
+  const hasta = Date.parse(b.hasta)
+  const parcial = hasta - desde < LARGO[corte]
+  if (corte === 'mes') return new Date(desde).toLocaleDateString('es-AR', { month: 'long', year: 'numeric', timeZone: ZONA })
+  if (corte === 'semana') {
+    return parcial
+      ? `semana del ${diaDe(desde)}, hasta el ${diaDe(hasta)}`
+      : `semana del ${diaDe(desde)} al ${diaDe(hasta - 1)}`
+  }
+  const hora = new Date(hasta).toLocaleTimeString('es-AR', { timeStyle: 'short', timeZone: ZONA })
+  return parcial ? `${diaDe(desde)}, hasta las ${hora}` : diaDe(desde)
 }
 
 const fuentes = (n: number) => `${n} ${n === 1 ? 'fuente' : 'fuentes'}`
@@ -117,10 +134,10 @@ export function LoQueAprendi({
     const datos = await enviar('consolidar', { accion: 'consolidar' })
     if (!datos) return
     const ms = Math.round(performance.now() - inicio)
+    const armado = (nombre: string, b: Bloque | null, modelo: string) =>
+      b ? `${nombre}: ${fuentes(b.fuentes.length)} (${modelo})` : `${nombre}: nada para resumir (${modelo})`
     setAviso(
-      datos.bloque
-        ? `Bloque del dia armado (${ms} ms, ${datos.modelo}), con ${fuentes(datos.bloque.fuentes.length)}.`
-        : `No se armo bloque (${datos.modelo}): no hay nada de hoy o el proveedor no resumio.`,
+      `Consolidado en ${ms} ms. ${armado('Dia', datos.dia, datos.modelos.dia)}. ${armado('Semana', datos.semana, datos.modelos.semana)}.`,
     )
   }
 
@@ -146,26 +163,29 @@ export function LoQueAprendi({
           Recargar
         </button>
         {ocupado === 'cerrar' && <span>Aprendiendo…</span>}
-        {ocupado === 'consolidar' && <span>Resumiendo el dia…</span>}
+        {ocupado === 'consolidar' && <span>Resumiendo el dia y la semana…</span>}
       </div>
       {aviso && <p className="text-sm">{aviso}</p>}
       {error && <p className="rounded bg-red-100 p-3 text-red-800">Error: {error}</p>}
 
-      {niveles && niveles.dia.length > 0 && (
-        <div>
-          <p className="font-semibold">Dia por dia</p>
-          <ul className="space-y-2">
-            {[...niveles.dia].reverse().map((b) => (
-              <li key={b.id} className={`rounded border p-3 ${b.descartado ? 'opacity-50' : ''}`}>
-                <p className="text-sm text-gray-500">
-                  {fechaBloque(b)} · {fuentes(b.fuentes.length)}{b.descartado ? ' · descartado' : ''}
-                </p>
-                <p>{b.texto}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {niveles &&
+        (['dia', 'semana', 'mes'] as const)
+          .filter((corte) => niveles[corte].length > 0)
+          .map((corte) => (
+            <div key={corte}>
+              <p className="font-semibold">{TITULO[corte]}</p>
+              <ul className="space-y-2">
+                {[...niveles[corte]].reverse().map((b) => (
+                  <li key={b.id} className={`rounded border p-3 ${b.descartado ? 'opacity-50' : ''}`}>
+                    <p className="text-sm text-gray-500">
+                      {fechaBloque(corte, b)} · {fuentes(b.fuentes.length)}{b.descartado ? ' · descartado' : ''}
+                    </p>
+                    <p>{b.texto}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
       {hechos && hechos.activos.length === 0 && hechos.vencidos.length === 0 && (
         <p className="text-sm text-gray-500">Todavía no aprendí nada.</p>
