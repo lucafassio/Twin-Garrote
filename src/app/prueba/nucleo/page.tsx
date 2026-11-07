@@ -1,13 +1,22 @@
 'use client'
 
 import Simulador from '@/dev/Simulador'
+import DebugNucleo from '@/interfaz/DebugNucleo'
+import Pantalla from '@/interfaz/Pantalla'
+import { useNucleo } from '@/interfaz/useNucleo'
+import SimuladorOjos from './SimuladorOjos'
 
 // Pagina de prueba del path nucleo. Solo la toca ese path.
+// Espacio = parpadeo largo directo. Mantener O = ojos cerrados (congela, 2 s = urgencia).
+// Escape = cortar urgencia. + / - = velocidad del barrido.
 export default function Prueba() {
+  const { nucleo, estado } = useNucleo()
   return (
-    <main className="p-8">
-      <h1 className="text-4xl font-bold">Prueba: NUCLEO</h1>
+    <>
+      <Pantalla estado={estado} onCortarUrgencia={nucleo.cortarUrgencia} />
       <Simulador />
-    </main>
+      <SimuladorOjos />
+      <DebugNucleo nucleo={nucleo} estado={estado} />
+    </>
   )
 }
