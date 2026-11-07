@@ -4,7 +4,7 @@ Parpadeo: comunicacion aumentativa para personas con ELA. Hackathon de 5 horas, 
 
 ## Reglas de trabajo en paralelo (obligatorias)
 
-- **Cada path arranca con su Fase 0 (research + grill)**, descrita al principio de su issue, antes de escribir codigo. El plan de los issues es un primer approach, no definitivo: quien toma un path puede cambiarlo si lo justifica. Hallazgos en `docs/research/<path>.md`, decisiones como comentario en el issue.
+- **Cada path arranca con su Fase 0 (research + grill)**, descrita al principio de su issue, antes de escribir codigo. El plan de los issues es un primer approach, no definitivo: quien toma un path puede cambiarlo si lo justifica. Hallazgos en `docs/research/<path>.md`, decisiones como comentario en el issue. El issue tiene label `ready-for-human` durante la Fase 0 (necesita a la persona para el grill); al cerrarla, pasarlo a `ready-for-agent`.
 - **El cimiento esta hecho pero sujeto a cambios.** Cambiar algo compartido (`src/eventos.ts`, simulador, carpetas, dependencias) se avisa al grupo antes de pushear y se deja escrito en el issue.
 - **Leer `GLOSSARY.md` antes de empezar** y usar sus palabras en codigo, nombres y mensajes (usuario, interlocutor, turno, opcion, respuesta, opciones fijas, urgencia, barrido, parpadeo largo, perfil).
 - **Cada cuenta trabaja en un solo path** (su issue de GitHub, label `path:*`). Tocar solo las carpetas que el issue lista como propias.
