@@ -155,8 +155,6 @@ function Conversacion({ onRecalibrar, onGuardar }: { onRecalibrar: (fase: Fase) 
         onRepetir={nucleo.repetir}
         onTerminarDeletreo={nucleo.terminarDeletreo}
         onCancelarDeletreo={nucleo.cancelarDeletreo}
-        onConfirmarInterlocutor={nucleo.confirmarInterlocutor}
-        onDescartarInterlocutor={nucleo.descartarInterlocutor}
         velocidadMs={nucleo.velocidad()}
         operador={
           herramientas && (

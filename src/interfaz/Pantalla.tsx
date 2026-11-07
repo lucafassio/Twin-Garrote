@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react'
 import { Deletrear } from '@/deletrear'
-import { chipInterlocutor, elementosBarrido, pedidoActual } from '@/nucleo/reductor'
+import { elementosBarrido, pedidoActual } from '@/nucleo/reductor'
 import type { Elemento, ElementoFijo, Estado } from '@/nucleo/tipos'
 
 // Pantalla principal: dibuja el estado del nucleo. No decide nada.
@@ -62,50 +62,12 @@ function Celda({ iluminada, progreso, elegible, base, children, onClick, zona }:
   )
 }
 
-// Chip "¿Habla Laura?" (#48): lo toca el interlocutor con mouse o dedo. No entra al barrido ni le
-// cuesta parpadeos al usuario; ignorarlo no cambia nada. Confirmado, queda a la vista para deshacerlo.
-type ChipProps = {
-  estado: Estado
-  onConfirmar: (nombre: string) => void
-  onDescartar: (nombre: string) => void
-}
-
-function ChipInterlocutor({ estado, onConfirmar, onDescartar }: ChipProps) {
-  const chip = chipInterlocutor(estado)
-  if (!chip) return null
-  const boton = 'min-h-14 rounded-xl px-5 text-2xl font-bold'
-  if (chip.confirmado) {
-    return (
-      <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-sky-400 bg-sky-950 py-2 pl-5 pr-2 text-3xl text-sky-100">
-        <span>Habla {chip.nombre}</span>
-        <button type="button" onClick={() => onDescartar(chip.nombre)} className={`${boton} bg-zinc-800 text-zinc-100`}>
-          No soy
-        </button>
-      </div>
-    )
-  }
-  return (
-    <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-sky-400 bg-sky-950 py-2 pl-5 pr-2 text-3xl text-white">
-      <span>¿Habla {chip.nombre}?</span>
-      <button type="button" onClick={() => onConfirmar(chip.nombre)} className={`${boton} bg-sky-300 text-zinc-950`}>
-        Sí, soy yo
-      </button>
-      <button type="button" onClick={() => onDescartar(chip.nombre)} className={`${boton} bg-zinc-800 text-zinc-100`}>
-        No
-      </button>
-    </div>
-  )
-}
-
 type Props = {
   estado: Estado
   onCortarUrgencia: () => void
   onRepetir: () => void
   onTerminarDeletreo: (texto: string) => void
   onCancelarDeletreo: () => void
-  // Chip del interlocutor: sin estos, no se muestra.
-  onConfirmarInterlocutor?: (nombre: string) => void
-  onDescartarInterlocutor?: (nombre: string) => void
   velocidadMs?: number // la del barrido del nucleo, para que Deletrear vaya al mismo ritmo
   operador?: ReactNode // herramientas de quien opera la demo (CampoTurno, debug), debajo de la franja
 }
@@ -116,8 +78,6 @@ export default function Pantalla({
   onRepetir,
   onTerminarDeletreo,
   onCancelarDeletreo,
-  onConfirmarInterlocutor,
-  onDescartarInterlocutor,
   velocidadMs,
   operador,
 }: Props) {
@@ -190,9 +150,6 @@ export default function Pantalla({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-6">
-          {onConfirmarInterlocutor && onDescartarInterlocutor && (
-            <ChipInterlocutor estado={estado} onConfirmar={onConfirmarInterlocutor} onDescartar={onDescartarInterlocutor} />
-          )}
           {estado.hablando || estado.esperandoHabla ? (
             <span className="shrink-0 text-3xl text-sky-300">Hablando…</span>
           ) : (
