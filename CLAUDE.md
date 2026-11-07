@@ -4,10 +4,12 @@ Parpadeo: comunicacion aumentativa para personas con ELA. Hackathon de 5 horas, 
 
 ## Reglas de trabajo en paralelo (obligatorias)
 
+- **Cada path arranca con su Fase 0 (research + grill)**, descrita al principio de su issue, antes de escribir codigo. El plan de los issues es un primer approach, no definitivo: quien toma un path puede cambiarlo si lo justifica. Hallazgos en `docs/research/<path>.md`, decisiones como comentario en el issue.
+- **El cimiento esta hecho pero sujeto a cambios.** Cambiar algo compartido (`src/eventos.ts`, simulador, carpetas, dependencias) se avisa al grupo antes de pushear y se deja escrito en el issue.
 - **Leer `GLOSSARY.md` antes de empezar** y usar sus palabras en codigo, nombres y mensajes (usuario, interlocutor, turno, opcion, respuesta, opciones fijas, urgencia, barrido, parpadeo largo, perfil).
 - **Cada cuenta trabaja en un solo path** (su issue de GitHub, label `path:*`). Tocar solo las carpetas que el issue lista como propias.
-- **`src/eventos.ts` es el contrato compartido.** No cambiarlo sin avisar al grupo; si hace falta un evento nuevo, agregarlo (nunca renombrar ni borrar uno existente).
-- **No tocar `package.json`.** Todas las dependencias ya estan instaladas en el cimiento. Si falta algo, pedirlo al grupo.
+- **`src/eventos.ts` es el contrato compartido.** Preferir agregar eventos antes que renombrar o borrar; cualquier cambio, avisado.
+- **`package.json`:** las dependencias base ya estan instaladas. Si un path necesita otra, avisar antes para no pisarse instalando a la vez.
 - **Cada path prueba lo suyo en su pagina propia** `src/app/prueba/<path>/page.tsx`. La pagina principal `src/app/page.tsx` es solo del path nucleo-interfaz.
 - **Git:** todos empujan directo a `main`, sin branches ni PRs. `git pull --rebase` antes de cada push. Commits chicos y seguidos.
 - Texto de UI en espanol rioplatense con voseo.
