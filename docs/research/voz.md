@@ -314,3 +314,114 @@ Para una ronda de 3-5 personas sentadas o paradas cerca: **un microfono cardioid
 - Gemini tiene un modelo `gemini-3.5-transcribe-live` y en el tier gratis usa los datos para mejorar productos.
 - Las voces "Google" de `speechSynthesis` son todas de red, incluida "Google espanol de Estados Unidos".
 - `start(audioTrack)` permite elegir microfono y aplicar AEC/NS/AGC, pero no hay ejemplo publico con getUserMedia: probar antes de depender de eso.
+
+---
+
+## Tercera tanda: OpenAI y Groq contra Google
+
+Fecha: 2026-11-07. Pregunta: "el proveedor de voz de OpenAI o Groq es mejor que Google?" Para que (escuchar, hablar), cuanto cuesta y cuanto lleva integrarlo hoy. "Google" aca es lo que usamos: Web Speech de Chrome (escuchar) y `speechSynthesis` (hablar).
+
+### 3.0 Correcciones a las tandas anteriores
+
+- **Defaults de `server_vad` / `semantic_vad` (seccion 2):** la referencia de la API ya los publica como defaults, no solo como ejemplo: `threshold` 0,5, `prefix_padding_ms` 300, `silence_duration_ms` 500; `semantic_vad` con `eagerness` `auto` (= `medium`) y **timeouts maximos de 8 s (`low`), 4 s (`medium`) y 2 s (`high`)**; `idle_timeout_ms` opcional de 5000 a 30000 (solo `server_vad`). [OpenAI, crear client secret (referencia)](https://developers.openai.com/api/reference/resources/realtime/subresources/client_secrets/methods/create.md)
+- **OpenAI TTS (seccion 4): confirmado y ampliado.** La pagina oficial de deprecaciones (entrada 2026-10-01) dice que `tts-1`, `tts-1-hd` y `gpt-4o-mini-tts` (snapshots `-2025-03-20` y `-2025-12-15`) se apagan el **6 de enero de 2027**; el reemplazo indicado es `gpt-realtime-2.1-mini`, que **no** funciona en el endpoint `/v1/audio/speech` (solo Realtime). [OpenAI deprecations](https://developers.openai.com/api/docs/deprecations), [OpenAI TTS](https://developers.openai.com/api/docs/guides/text-to-speech)
+- **Nuevo, no estaba:** tambien se apagan los transcriptores viejos de OpenAI: `whisper-1`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe` y `gpt-4o-transcribe-diarize` el **26 de febrero de 2027** (anuncio 2026-08-26); reemplazo `gpt-live-transcribe` o `gpt-transcribe`. [OpenAI deprecations](https://developers.openai.com/api/docs/deprecations)
+- **Groq rate limits (secciones 3 y 2.1):** hay contradiccion entre paginas oficiales. La de rate limits sigue mostrando 20 RPM / 2K RPD / 7,2K s de audio por hora para Whisper como "base del plan Developer"; la de modelos muestra para Developer 300 RPM (`whisper-large-v3`) y 400 RPM (`whisper-large-v3-turbo`), con 200K y 400K segundos de audio por hora, y archivo de hasta 100 MB. Probablemente los 20 RPM son los del free; los del free solo se ven en la consola. [Groq rate limits](https://console.groq.com/docs/rate-limits), [Groq models](https://console.groq.com/docs/models)
+
+### 3.1 OpenAI para ESCUCHAR
+
+#### Hallazgos
+
+- **Modelos vigentes:** `gpt-live-transcribe` (streaming, deltas de texto mientras se habla) y `gpt-transcribe` (alta precision; en Realtime transcribe cada turno ya cerrado; tambien sirve por archivo en `/v1/audio/transcriptions`). Anunciados en el foro oficial el 2026-07-29. `gpt-realtime-whisper` sigue en la lista de modelos de transcripcion. [Realtime transcription](https://developers.openai.com/api/docs/guides/realtime-transcription), [gpt-transcribe](https://developers.openai.com/api/docs/models/gpt-transcribe), [gpt-live-transcribe](https://developers.openai.com/api/docs/models/gpt-live-transcribe), [Anuncio en community.openai.com](https://community.openai.com/t/gpt-live-transcribe-and-gpt-transcribe-two-new-transcription-models-in-the-api/1388318)
+- **Precio por minuto (pagina oficial):** `gpt-live-transcribe` USD 0,017/min (~USD 1/h), `gpt-realtime-whisper` USD 0,017/min, `gpt-transcribe` USD 0,0045/min (~USD 0,27/h), `gpt-4o-transcribe` ~0,006/min, `gpt-4o-mini-transcribe` ~0,003/min (estos dos deprecados). **No hay tier gratis** para audio: hace falta cuenta con saldo. [OpenAI pricing](https://developers.openai.com/api/docs/pricing)
+- **Fin de turno: depende del modelo.**
+  - `gpt-live-transcribe` y `gpt-realtime-whisper` **no soportan VAD**: `turn_detection` tiene que ir en `null`; hay que detectar el fin de habla en el cliente (VAD propio) y mandar `input_audio_buffer.commit`. O sea, **no reemplaza nuestro silencio adaptativo**; lo seguimos necesitando (sobre audio en vez de sobre resultados). [Realtime VAD](https://developers.openai.com/api/docs/guides/realtime-vad), [Realtime transcription](https://developers.openai.com/api/docs/guides/realtime-transcription)
+  - Los modelos que si soportan VAD usan `server_vad` por defecto (en sesiones de transcripcion el VAD solo corta turnos, no genera respuesta). `semantic_vad` decide por el contenido si la frase termino, con tope de 8/4/2 s segun `eagerness`. La referencia no dice explicitamente que modelos de transcripcion soportan `semantic_vad`; que `gpt-transcribe` lo soporte es inferencia (no verificado). [Realtime VAD](https://developers.openai.com/api/docs/guides/realtime-vad), [Referencia client secrets](https://developers.openai.com/api/reference/resources/realtime/subresources/client_secrets/methods/create.md)
+  - Con `gpt-transcribe` en Realtime el texto llega **despues** del commit del turno: no hay interim en vivo mientras habla el interlocutor. [gpt-transcribe](https://developers.openai.com/api/docs/models/gpt-transcribe)
+- **Eventos:** `conversation.item.input_audio_transcription.delta` (texto incremental), `...completed` (final), `...failed`, `input_audio_buffer.committed`. Los `completed` pueden llegar desordenados: emparejar por `item_id`. [Realtime transcription](https://developers.openai.com/api/docs/guides/realtime-transcription)
+- **Configuracion util:** `languages: ["es"]` (array; con `gpt-live-transcribe` no mandar `language` singular; solo codigos ISO 639-1, no hay `es-AR`), `keywords` (nombres propios: "Roberto", etc.), `prompt` de contexto libre, `delay` (`minimal` a `xhigh`: menos delay = parciales antes, mas delay = mejor WER). Audio de entrada **solo PCM 16 bit a 24 kHz**. [Realtime transcription](https://developers.openai.com/api/docs/guides/realtime-transcription), [Referencia](https://developers.openai.com/api/reference/resources/realtime/subresources/client_secrets/methods/create.md)
+- **Ruido:** `audio.input.noise_reduction` con `type` `near_field` (microfono cerca) o `far_field` (microfono de notebook o de sala) y `strength` 0-1. Para la ronda de personas: `far_field`. Ademas, al capturar con `getUserMedia` Chrome aplica `echoCancellation`/`noiseSuppression`/`autoGainControl` al track (a diferencia de Web Speech, que abre su propio dispositivo, ver seccion 6). [Referencia](https://developers.openai.com/api/reference/resources/realtime/subresources/client_secrets/methods/create.md), [MDN MediaTrackConstraints](https://developer.mozilla.org/docs/Web/API/MediaTrackConstraints)
+- **Desde el navegador:** un route handler hace `POST /v1/realtime/client_secrets` con la key y una config de sesion `type: "transcription"`; devuelve un secreto efimero (TTL default 600 s, min 10, max 7200; solo tiene que valer al abrir la sesion). El camino documentado para transcripcion es WebSocket (`wss://api.openai.com/v1/realtime?intent=transcription`; `gpt-transcribe` "requiere WebSocket"). Como el WebSocket del navegador no manda headers, el token va por subprotocolo; ese detalle, y el camino WebRTC (`/v1/realtime/calls`) para sesiones de solo transcripcion, aparecen solo en fuentes secundarias contradictorias (una dice que WebRTC daba 401, otra que funciona). [Referencia client secrets](https://developers.openai.com/api/reference/resources/realtime/subresources/client_secrets/methods/create.md), [Zenn](https://zenn.dev/seya/scraps/a43c7c072fb33d) (fuente secundaria), [community.openai.com](https://community.openai.com/t/how-to-use-transcription-only-with-the-realtime-typescript-sdk/1357903) (fuente secundaria). **No verificado oficialmente: probar antes de comprometerse.**
+- **Calidad en espanol:** OpenAI no publica WER por idioma. Promedios propios: `gpt-live-transcribe` 19,70% en Common Voice (22 idiomas) y 9,60% en grabaciones reales (9 idiomas), apenas mejor que `gpt-realtime-whisper`. [Anuncio](https://community.openai.com/t/gpt-live-transcribe-and-gpt-transcribe-two-new-transcription-models-in-the-api/1388318). The Decoder reporta que `gpt-transcribe` mejora al anterior pero queda detras de ElevenLabs, Google y Mistral en tasa de error. [The Decoder](https://the-decoder.com/gpt-transcribe-improves-on-its-predecessor-but-cant-catch-elevenlabs-google-or-mistral-on-error-rates/) (fuente secundaria). **No hay comparacion publica contra Web Speech de Chrome en es-AR**: la afirmacion "OpenAI escucha mejor que Google" no esta respaldada por datos publicos para nuestro caso.
+- **Latencia:** sin cifras oficiales; solo "low-latency" y `delay` ajustable. Medir.
+
+### 3.2 OpenAI para HABLAR
+
+#### Hallazgos
+
+- **Vigente hasta el 2027-01-06:** `gpt-4o-mini-tts` en `/v1/audio/speech` (ver 3.0). Funciona hoy y para la demo alcanza; para produccion no, porque se apaga en dos meses y el reemplazo (`gpt-realtime-2.1-mini`) es un modelo conversacional de Realtime, no un TTS. [OpenAI TTS](https://developers.openai.com/api/docs/guides/text-to-speech), [gpt-realtime-2.1-mini](https://developers.openai.com/api/docs/models/gpt-realtime-2.1-mini)
+- **Voces:** alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer, verse, **marin y cedar (recomendadas por calidad)**. "Optimizadas para ingles"; el soporte de idiomas sigue al de Whisper (espanol incluido). [OpenAI TTS](https://developers.openai.com/api/docs/guides/text-to-speech)
+- **Acento rioplatense:** con `gpt-4o-mini-tts` el campo `instructions` controla acento, tono, entonacion y velocidad, asi que se puede pedir "espanol rioplatense, voseo, tono calido". Que suene argentino de verdad **no esta verificado** (voces de base inglesa). Probar con 2-3 frases antes de decidir. [OpenAI TTS](https://developers.openai.com/api/docs/guides/text-to-speech)
+- **Streaming y formato:** respuesta con chunked transfer (se puede reproducir antes de que termine); mp3, opus, aac, flac, wav, pcm 24 kHz; para menor latencia, wav o pcm. Sin cifra oficial de latencia de primer audio. [OpenAI TTS](https://developers.openai.com/api/docs/guides/text-to-speech)
+- **Precio:** `gpt-4o-mini-tts` USD 0,60 / 1M tokens de texto de entrada y USD 12 / 1M tokens de audio de salida; `tts-1` USD 15 / 1M caracteres; `tts-1-hd` USD 30 / 1M caracteres. Sin tier gratis. [OpenAI pricing](https://developers.openai.com/api/docs/pricing). La estimacion historica de OpenAI para `gpt-4o-mini-tts` era ~USD 0,015 por minuto de audio (hoy no figura; no verificado). Para respuestas cortas de Parpadeo, centavos por hora de demo.
+- **Camino futuro de OpenAI para voz:** `gpt-realtime-2.1-mini` (audio de salida USD 20 / 1M tokens, solo `v1/realtime`, WebRTC/WebSocket/SIP). Se le puede mandar texto y pedirle que lo lea, pero es un modelo que razona y responde: riesgo de que no lea literal. No es lo que necesitamos. [gpt-realtime-2.1-mini](https://developers.openai.com/api/docs/models/gpt-realtime-2.1-mini)
+
+### 3.3 Groq para ESCUCHAR
+
+#### Hallazgos
+
+- **Modelos vigentes (produccion):** `whisper-large-v3-turbo` (USD 0,04/h, 216x tiempo real, WER 12%) y `whisper-large-v3` (USD 0,111/h, 189x, WER 10,3%). Sin deprecacion anunciada; `distil-whisper-large-v3-en` se apago el 2025-08-23. [Groq STT](https://console.groq.com/docs/speech-to-text), [Groq models](https://console.groq.com/docs/models), [Groq deprecations](https://console.groq.com/docs/deprecations)
+- **Confirmado: no hay streaming.** Solo request por archivo (flac, mp3, mp4, m4a, ogg, wav, **webm**). **Minimo facturado 10 s por request.** Archivo max 25 MB free / 100 MB dev. `language: "es"` mejora precision y latencia. [Groq STT](https://console.groq.com/docs/speech-to-text)
+- **Latencia real por request:** Groq no publica numeros (solo el factor de velocidad). Por el factor, el computo de una frase de 5 s es de decenas de ms; el total lo domina la red Argentina-EE.UU. mas la subida del audio (estimado 300-800 ms, no verificado: medir).
+- **Uso en tiempo casi real:** capturar con `getUserMedia` (con AEC/NS/AGC), VAD en el navegador (`@ricky0123/vad-web`, ver seccion 2) que corta cada frase al detectar silencio, mandar el segmento (WAV/webm) a un route handler `POST /api/voz/transcribir` que llama a Groq con la key del server. El fin de turno lo da el VAD (sobre audio, no sobre la llegada de resultados) y el texto llega de una vez por frase, sin interim. Con frases de ~3 s se pagan 10 s cada una (~3x el nominal), igual centavos.
+- **Tier gratis:** existe, pero sus limites solo se ven en la consola de la cuenta (ver 3.0). Para una demo de minutos alcanza holgado.
+- **Riesgo conocido de Whisper:** alucina texto sobre silencio o ruido (en espanol, frases tipo "Gracias por ver"). Mitigar mandando solo segmentos con habla (VAD) y descartando textos muy cortos. (conocido en la comunidad; sin fuente primaria leida en esta tanda)
+
+### 3.4 Groq para HABLAR
+
+#### Hallazgos
+
+- `playai-tts` y `playai-tts-arabic` se apagaron el **2025-12-31**. Lo vigente es `canopylabs/orpheus-v1-english` (USD 22 / 1M caracteres) y `canopylabs/orpheus-arabic-saudi` (USD 40 / 1M caracteres), **ambos en preview** ("solo evaluacion, pueden discontinuarse sin aviso"). **No hay espanol.** Limite Developer: 10 RPM, 100 RPD. [Groq TTS](https://console.groq.com/docs/text-to-speech), [Groq models](https://console.groq.com/docs/models), [Groq deprecations](https://console.groq.com/docs/deprecations), [Groq rate limits](https://console.groq.com/docs/rate-limits)
+- **Conclusion: Groq no sirve para hablar en espanol.** Descartado.
+
+### 3.5 Tabla comparativa
+
+**Escuchar**
+
+| | Google Web Speech (actual) | OpenAI `gpt-live-transcribe` | OpenAI `gpt-transcribe` (Realtime) | Groq `whisper-large-v3-turbo` |
+|---|---|---|---|---|
+| Calidad es / es-AR | `lang='es-AR'` explicito; sin benchmark publico | solo promedios multilingues (19,7% CV); sin dato de espanol; `languages:["es"]` sin variante | "alta precision", sin dato de espanol | WER 12% promedio; sin variante regional; alucina en silencio |
+| Streaming / interim | si, pero llega en tandas con atraso (lo visto) | si, deltas | no: texto despues de cerrar el turno | no: por frase |
+| Fin de turno propio | no (silencio sobre resultados, lo nuestro) | **no** (VAD en el cliente + `commit`) | si: `server_vad` (500 ms default); `semantic_vad` probable, no verificado | no (VAD en el cliente) |
+| Eco / ruido | sin AEC (abre su propio microfono) | `getUserMedia` con AEC/NS + `noise_reduction far_field` | igual | `getUserMedia` con AEC/NS |
+| Latencia | no medida oficialmente | sin cifra oficial, `delay` ajustable | + tiempo de transcribir el turno | red + subida por frase, sin cifra oficial |
+| Costo | gratis | USD 0,017/min (~1 USD/h) | USD 0,0045/min (~0,27 USD/h) | USD 0,04/h (min 10 s por request) |
+| Tier gratis | si | no | no | si (limites en consola) |
+| Integracion | hecha | 3-4 h: route handler de client secret, AudioWorklet a PCM 24 kHz + base64, websocket, VAD propio, reconexion; auth desde navegador sin doc oficial clara | 3-4 h, igual pero sin VAD propio | 2-3 h: vad-web + route handler que reenvia el audio |
+
+**Hablar**
+
+| | `speechSynthesis` (actual) | OpenAI `gpt-4o-mini-tts` | Groq Orpheus |
+|---|---|---|---|
+| Calidad / acento | robotica; es-US de red o es-MX/es-ES local; sin es-AR | mucho mas natural (marin/cedar); acento pedible por `instructions`, rioplatense no verificado | no hay espanol |
+| Latencia | inmediata (local) | red + primer chunk, sin cifra oficial | n/a |
+| Costo | gratis | ~USD 0,015/min estimado; sin tier gratis | n/a |
+| Vigencia | estable | **se apaga 2027-01-06** | preview |
+| Integracion | hecha | 1-1,5 h: route handler `POST /api/voz/decir` que hace streaming de opus/mp3, `<audio>` en el cliente, timeout y fallback | n/a |
+
+### 3.6 Recomendacion
+
+**Respuesta corta a "OpenAI o Groq es mejor que Google":** para **hablar**, OpenAI si suena claramente mejor que `speechSynthesis` (Groq no tiene espanol). Para **escuchar**, no hay evidencia publica de que OpenAI o Groq transcriban mejor es-AR que Web Speech; lo que ganan es control (AEC/NS via `getUserMedia`, VAD sobre audio, `keywords`), a costa de 2-4 h, una key paga (OpenAI) y un punto de falla mas. Ninguno resuelve solo el fin de turno con su modelo de streaming: `gpt-live-transcribe` exige VAD propio.
+
+**Para la demo de hoy (pocas horas):**
+
+1. **Cambiar primero HABLAR, no escuchar.** `gpt-4o-mini-tts`, voz `marin` o `cedar`, `instructions` pidiendo espanol rioplatense con voseo, formato `opus` o `mp3` en streaming, via route handler con `OPENAI_API_KEY` en `.env.local`. 1-1,5 h. Requiere cuenta OpenAI con saldo (no hay tier gratis). Probar el acento con 3 frases antes de integrar; si no convence, Azure `es-AR-ElenaNeural`/`TomasNeural` (seccion 4) sigue siendo la unica opcion con rioplatense nativo y tier gratis.
+2. **Fallback de hablar:** si el route handler falla o no llega el primer audio en ~1,5 s, cancelar y decir con `speechSynthesis`. La **urgencia siempre con voz local**, nunca por red.
+3. **Escuchar: mantener Web Speech** y atacar el "refresca tarde" sin cambiar de proveedor: correr `@ricky0123/vad-web` sobre un `getUserMedia` en paralelo y usar su `onSpeechEnd` como senal de fin de turno (sobre audio, no sobre la llegada de resultados); el texto lo sigue dando Web Speech. ~1 h. (Que Chrome permita `getUserMedia` mientras Web Speech usa el microfono es lo esperable, pero no verificado: probar.)
+4. Si igual se quiere probar Groq para escuchar: es la opcion barata y rapida de integrar (vad-web + route handler), pero se pierde el interim en pantalla y aparece el riesgo de alucinaciones. No antes que 1-3.
+
+**Para "produccion":**
+
+- **Hablar:** no apostar a OpenAI TTS (se apaga 2027-01-06 y su reemplazo es un modelo conversacional). Azure Neural es-AR o ElevenLabs (voz clonada) siguen siendo mejores candidatos (secciones 4 y 5).
+- **Escuchar:** si Web Speech no alcanza, `gpt-transcribe` en Realtime con `server_vad`/`semantic_vad` + `noise_reduction far_field` + `keywords` es la opcion OpenAI con mejor relacion precio/fin de turno (~USD 0,27/h). Compararla en el mismo audio contra Deepgram Flux (fin de turno integrado, credito gratis grande, secciones 2-3) y `gemini-3.5-transcribe-live` antes de elegir.
+- **Google como fallback:** en `src/voz`, detras de `iniciarVoz`, una interfaz unica de escucha (iniciar/detener, eventos de texto y de fin de turno al bus) con dos implementaciones (`webspeech` y la de nube), elegida por perfil o variable de entorno. Pasar automaticamente a `webspeech` si falla el route handler del token, se cierra el websocket, o no llega texto en ~5 s con el VAD marcando habla. Lo mismo para decir: nube con timeout, `speechSynthesis` de respaldo.
+
+### 3.7 Lo que no se pudo verificar
+
+- Calidad real de cualquiera de los tres en es-AR con nuestro microfono y ruido: no hay benchmark publico. Medir con 10 frases grabadas.
+- Latencia de primer audio de `gpt-4o-mini-tts` y latencia de `gpt-live-transcribe` / `gpt-transcribe`: sin cifras oficiales.
+- Que `instructions` logre un acento rioplatense creible.
+- Camino oficial para autenticar desde el navegador una sesion de solo transcripcion (subprotocolo de WebSocket o WebRTC `/v1/realtime/calls`): solo fuentes secundarias contradictorias.
+- Que `gpt-transcribe` soporte `semantic_vad` en sesiones de transcripcion.
+- Limites del tier gratis de Groq (solo en consola) y la contradiccion entre sus dos paginas de limites.
+- Precio por minuto actual de `gpt-4o-mini-tts` (solo hay precio por token).
