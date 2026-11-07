@@ -66,6 +66,9 @@ export default function Prueba() {
           {escuchando ? 'Escuchando' : 'No escucha'}
         </span>
         {hablando && <span className="rounded-full bg-sky-600 px-3 py-1 text-sm">Hablando</span>}
+        <a className="ml-auto text-sm text-sky-400 underline" href="/prueba/voz/conversacion">
+          Conversacion completa
+        </a>
       </header>
 
       {!hayReconocimiento && (
