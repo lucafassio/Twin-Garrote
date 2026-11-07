@@ -78,9 +78,17 @@ _Avoid_: clasificador, filtro, gate
 Una de las 4 respuestas candidatas que propone el LLM para el ultimo turno. Llegan ordenadas por probabilidad, la mas probable primero.
 _Avoid_: sugerencia, candidata
 
+**Deletreo**:
+Modo en que el usuario escribe su propia respuesta letra por letra cuando ninguna opcion sirve. Lo escrito funciona como pista para el LLM: puede ser el comienzo de la frase o las primeras letras de la palabra importante. Lo deletreado pesa mas en la memoria que lo elegido entre opciones.
+_Avoid_: teclado, tipeo
+
 **Completado**:
-Frase entera que propone el LLM mientras el usuario deletrea, a partir de lo que lleva escrito y del contexto. Aparece como un elemento mas del barrido de deletrear.
+Una de las 4 frases enteras que propone el LLM mientras el usuario deletrea, a partir de lo escrito y del contexto. No tiene por que empezar con lo escrito ("fr" puede dar "Tengo frio"). Elegirlo lo dice directo.
 _Avoid_: autocompletado de palabra, sugerencia
+
+**Palabra predicha**:
+Una de las 4 palabras que completan la palabra que el usuario esta deletreando, segun lo escrito y el contexto ("el lunes tengo fr" da "franco", no "frio"). Siempre empieza con lo que va de la palabra.
+_Avoid_: sugerencia, autocompletado
 
 **Respuesta**:
 Opcion, Si o No que el usuario eligio y que el sistema dijo en voz alta. Responde el turno: entra al historial y limpia las opciones. "Espera" no es respuesta.
