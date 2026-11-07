@@ -65,6 +65,25 @@ function armar(respuestas: string[], memoria?: Partial<Memoria>) {
 const vaciarPromesas = () => new Promise((r) => setImmediate(r))
 
 describe('opciones', () => {
+  for (const tipoTurno of [undefined, 'abierta', 'comentario', 'saludo', 'pedido', 'otro'] as const) {
+    test(`con tipoTurno ${tipoTurno} conserva la regla de si y no`, async () => {
+      const { generar, prompts } = armar([respuesta()])
+      await generar(pedido({ tipoTurno }), T0)
+      const prompt = prompts[0].sistema + '\n' + prompts[0].usuario
+      assert.match(prompt, /una opcion.*si.*otra.*no/i)
+      assert.doesNotMatch(prompt, /ninguna opcion.*sueltos/i)
+    })
+  }
+
+  test('siNo pide matices y excluye si y no sueltos del prompt', async () => {
+    const { generar, prompts } = armar([respuesta()])
+    await generar({ ...pedido(), tipoTurno: 'siNo' }, T0)
+    const prompt = prompts[0].sistema + '\n' + prompts[0].usuario
+    assert.match(prompt, /ninguna opcion.*si.*no.*sueltos/i)
+    assert.match(prompt, /matices|condiciones/i)
+    assert.doesNotMatch(prompt, /una opcion es un si y otra es un no/i)
+  })
+
   test('devuelve exactamente 4 opciones, en el orden que devolvio el modelo', async () => {
     const { generar } = armar([respuesta()])
     const r = await generar(pedido(), T0)
