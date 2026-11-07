@@ -153,6 +153,43 @@ describe('opciones', () => {
     assert.match(prompts[0].usuario, /almuerzo/)
   })
 
+  test('los resumenes de menos de 5 h entran completos y los de 5 a 12 h solo con su primera linea', async () => {
+    const { generar, prompts } = armar([respuesta()], {
+      resumenes: [
+        { inicio: despues(-9 * 60 * MIN).toISOString(), fin: despues(-8 * 60 * MIN).toISOString(), resumen: 'Hablaron con el kinesiologo.\nLe cambio los ejercicios.\nVuelve el martes.' },
+        { inicio: despues(-4 * 60 * MIN).toISOString(), fin: despues(-3 * 60 * MIN).toISOString(), resumen: 'Marta conto lo del almuerzo.\nVa a llevar flan.\nViene con los chicos.' },
+      ],
+    })
+    await generar(pedido(), T0)
+    assert.match(prompts[0].usuario, /kinesiologo/)
+    assert.doesNotMatch(prompts[0].usuario, /ejercicios|martes/)
+    assert.match(prompts[0].usuario, /almuerzo/)
+    assert.match(prompts[0].usuario, /flan/)
+    assert.match(prompts[0].usuario, /los chicos/)
+  })
+
+  test('un resumen de justo 5 h ya entra recortado', async () => {
+    const { generar, prompts } = armar([respuesta()], {
+      resumenes: [
+        { inicio: despues(-6 * 60 * MIN).toISOString(), fin: despues(-5 * 60 * MIN).toISOString(), resumen: 'Vino el medico.\nLe ajusto la dosis.' },
+      ],
+    })
+    await generar(pedido(), T0)
+    assert.match(prompts[0].usuario, /Vino el medico/)
+    assert.doesNotMatch(prompts[0].usuario, /dosis/)
+  })
+
+  test('un resumen viejo escrito en un solo renglon se recorta a su primera oracion', async () => {
+    const { generar, prompts } = armar([respuesta()], {
+      resumenes: [
+        { inicio: despues(-9 * 60 * MIN).toISOString(), fin: despues(-8 * 60 * MIN).toISOString(), resumen: 'Hablaron con el kinesiologo. Le cambio los ejercicios.' },
+      ],
+    })
+    await generar(pedido(), T0)
+    assert.match(prompts[0].usuario, /- Hablaron con el kinesiologo\.\n/)
+    assert.doesNotMatch(prompts[0].usuario, /ejercicios/)
+  })
+
   test('los resumenes descartados quedan fuera del prompt', async () => {
     const { generar, prompts } = armar([respuesta()], {
       resumenes: [

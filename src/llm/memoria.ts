@@ -216,7 +216,7 @@ Tareas:
    - "actualizar": cambia o completa uno existente (pone el id); el texto nuevo reemplaza al viejo.
    - "invalidar": la conversacion muestra que uno existente ya no es cierto (pone el id) y no hay nada nuevo que guardar.
    - "nada": ya se sabia igual. No hace falta listarlo.
-3. Escribi un resumen de 2 o 3 lineas de la conversacion, para recordar de que se hablo.
+3. Escribi un resumen de 2 o 3 lineas de la conversacion, para recordar de que se hablo. Separa las lineas con salto de linea y pone lo mas importante en la primera: con el paso de las horas solo se recuerda esa.
 
 Reglas:
 - Solo lo que la conversacion dice. Nunca inventes ni deduzcas de mas.

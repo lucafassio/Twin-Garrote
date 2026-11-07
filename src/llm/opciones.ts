@@ -12,6 +12,7 @@ import type {
   Proveedor,
   Registro,
   ResultadoOpciones,
+  ResumenConversacion,
 } from './tipos.ts'
 import { hechosVigentes, textoConFecha } from './fechas.ts'
 import { abrirConversacion, armarCerrada, lineasDeConversacion, seguirConversacion } from './conversacion.ts'
@@ -22,6 +23,7 @@ const MINUTO = 60_000
 export const MISMA_CONVERSACION_MS = 3 * MINUTO // menos que esto: misma conversacion
 export const NUEVA_CONVERSACION_MS = 15 * MINUTO // mas que esto: conversacion nueva
 export const VENTANA_RESUMENES_MS = 12 * 60 * MINUTO // memoria corta: ~12 h
+export const RESUMEN_COMPLETO_MS = 5 * 60 * MINUTO // menos que esto: el resumen entra entero
 const MAX_HECHOS = 12
 const MAX_EJEMPLOS = 8
 
@@ -157,6 +159,24 @@ function hechosParaPrompt(hechos: Hecho[], cercania: Cercania | undefined, turno
     .map((x) => x.h)
 }
 
+// Memoria corta para el prompt: sin descartados y con fin dentro de las ultimas 12 h. Los de menos
+// de 5 h entran enteros; los mas viejos, solo con su primera linea. El recorte es de codigo, sin el modelo.
+export function seccionMemoriaCorta(resumenes: ResumenConversacion[], ahora: Date): string | null {
+  const hace = (r: ResumenConversacion) => ahora.getTime() - Date.parse(r.fin)
+  const textos = resumenes
+    .filter((r) => !r.descartado && hace(r) <= VENTANA_RESUMENES_MS)
+    .map((r) => (hace(r) < RESUMEN_COMPLETO_MS ? r.resumen.split('\n').map((l) => l.trim()).filter(Boolean).join(' ') : primeraLinea(r.resumen)))
+    .filter(Boolean)
+  return textos.length > 0 ? `# Conversaciones de hoy\n${textos.map((t) => `- ${t}`).join('\n')}` : null
+}
+
+// Un resumen escrito en un solo renglon se corta en su primera oracion.
+function primeraLinea(resumen: string): string {
+  const lineas = resumen.trim().split('\n')
+  if (lineas.length > 1) return lineas[0].trim()
+  return lineas[0].match(/^.*?[.!?](?=\s|$)/)?.[0] ?? lineas[0]
+}
+
 function renderLinea(l: LineaHistorial) {
   return `- ${l.quien === 'usuario' ? 'Usuario' : 'Interlocutor'}: ${l.texto}`
 }
@@ -185,11 +205,8 @@ function promptUsuario(p: {
     partes.push(`## Frases que dijo hace poco\n${ejemplos.map((e) => `- "${e.texto}"`).join('\n')}`)
   }
 
-  const desde = ahora.getTime() - VENTANA_RESUMENES_MS
-  const resumenes = memoria.resumenes.filter((r) => !r.descartado && Date.parse(r.fin) >= desde)
-  if (resumenes.length > 0) {
-    partes.push(`# Conversaciones de hoy\n${resumenes.map((r) => `- ${r.resumen}`).join('\n')}`)
-  }
+  const memoriaCorta = seccionMemoriaCorta(memoria.resumenes, ahora)
+  if (memoriaCorta) partes.push(memoriaCorta)
 
   partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
   partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado: no sabes quien habla, no lo nombres'}`)

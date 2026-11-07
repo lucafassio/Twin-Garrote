@@ -7,7 +7,7 @@ import type { Cercania, LineaHistorial, PedidoOpciones } from '@/eventos'
 import type { Almacen, ConversacionActual, Hecho, Proveedor, SalidaProveedor } from './tipos.ts'
 import { lineasDeConversacion } from './conversacion.ts'
 import { hechosVigentes, textoConFecha } from './fechas.ts'
-import { NUEVA_CONVERSACION_MS, VENTANA_RESUMENES_MS } from './opciones.ts'
+import { NUEVA_CONVERSACION_MS, seccionMemoriaCorta } from './opciones.ts'
 
 const MAX_HECHOS = 10
 const MAX_EJEMPLOS = 6
@@ -52,12 +52,9 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
         partes.push(`## Frases que dijo hace poco\n${ejemplos.map((e) => `- "${e.texto}"`).join('\n')}`)
       }
 
-      // La misma regla que las opciones: sin descartados y con fin dentro de las ultimas 12 h.
-      const desde = ahora.getTime() - VENTANA_RESUMENES_MS
-      const resumenes = memoria.resumenes.filter((r) => !r.descartado && Date.parse(r.fin) >= desde)
-      if (resumenes.length > 0) {
-        partes.push(`# Conversaciones de hoy\n${resumenes.map((r) => `- ${r.resumen}`).join('\n')}`)
-      }
+      // La misma memoria corta que las opciones, recortada por antiguedad.
+      const memoriaCorta = seccionMemoriaCorta(memoria.resumenes, ahora)
+      if (memoriaCorta) partes.push(memoriaCorta)
 
       partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
       partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado'}`)
