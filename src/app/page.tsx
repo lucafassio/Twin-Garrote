@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import DebugNucleo from '@/interfaz/DebugNucleo'
 import MonitorBus from '@/interfaz/MonitorBus'
+import VisionEnVivo from '@/interfaz/VisionEnVivo'
 import Pantalla from '@/interfaz/Pantalla'
 import SimuladorOjos from '@/interfaz/SimuladorOjos'
 import { useNucleo } from '@/interfaz/useNucleo'
@@ -84,22 +85,22 @@ function Conversacion() {
         onCortarUrgencia={nucleo.cortarUrgencia}
         onRepetir={nucleo.repetir}
         operador={
-          herramientas && (
-            <div className="flex items-start gap-4">
-              <div className="flex w-[28rem] flex-col gap-2">
-                <CampoTurno />
-                <ul className="text-sm leading-snug text-zinc-400">
-                  <li><b className="text-zinc-200">Espacio</b> parpadeo largo (elige lo iluminado)</li>
-                  <li><b className="text-zinc-200">Mantener O</b> ojos cerrados · al soltar elige · 2 s = urgencia</li>
-                  <li><b className="text-zinc-200">Escape</b> o click corta la urgencia · <b className="text-zinc-200">+ / −</b> velocidad</li>
-                  <li><b className="text-zinc-200">M</b> cambia el motor de voz (ahora: {motor === 'groq' ? 'Groq Whisper' : 'Chrome'})</li>
-                  <li><b className="text-zinc-200">D</b> oculta estas herramientas</li>
-                </ul>
-              </div>
-              <MonitorBus />
-              <DebugNucleo nucleo={nucleo} estado={estado} flotante={false} />
+          // Se oculta sin desmontar: la camara de vision tiene que seguir andando.
+          <div className={herramientas ? 'flex items-start gap-4' : 'h-0 overflow-hidden opacity-0'}>
+            <div className="flex w-[28rem] flex-col gap-2">
+              <CampoTurno />
+              <ul className="text-sm leading-snug text-zinc-400">
+                <li><b className="text-zinc-200">Parpadeo largo</b> elige lo iluminado (o Espacio / mantener O)</li>
+                <li><b className="text-zinc-200">C</b> calibra los ojos · <b className="text-zinc-200">Z</b> calibra la mirada (mirá cada zona que se ilumina)</li>
+                <li><b className="text-zinc-200">Escape</b> o click corta la urgencia · <b className="text-zinc-200">+ / −</b> velocidad</li>
+                <li><b className="text-zinc-200">M</b> cambia el motor de voz (ahora: {motor === 'groq' ? 'Groq Whisper' : 'Chrome'})</li>
+                <li><b className="text-zinc-200">D</b> oculta estas herramientas</li>
+              </ul>
             </div>
-          )
+            <VisionEnVivo />
+            <MonitorBus />
+            <DebugNucleo nucleo={nucleo} estado={estado} flotante={false} />
+          </div>
         }
       />
     </>

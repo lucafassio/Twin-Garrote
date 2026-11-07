@@ -35,11 +35,13 @@ type CeldaProps = {
   base: string
   children: ReactNode
   onClick?: () => void // solo para la sala (Repetir); el usuario elige con el barrido
+  zona?: string // zona para la mirada (calibracion y clasificacion)
 }
 
-function Celda({ iluminada, progreso, elegible, base, children, onClick }: CeldaProps) {
+function Celda({ iluminada, progreso, elegible, base, children, onClick, zona }: CeldaProps) {
   return (
     <div
+      data-zona={zona}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       className={[
@@ -136,6 +138,7 @@ export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador
           return (
             <Celda
               key={indice}
+              zona={`opcion${indice}`}
               iluminada={mismoElemento(iluminado, el)}
               progreso={progreso}
               elegible
@@ -148,7 +151,7 @@ export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador
       </main>
 
       {/* Abajo: franja fija, siempre visible */}
-      <footer className="grid h-36 grid-cols-6 gap-4 text-4xl font-bold">
+      <footer data-zona="franja" className="grid h-36 grid-cols-6 gap-4 text-4xl font-bold">
         {FRANJA.map(({ tipo, texto }) => {
           const el: Elemento = { tipo }
           return (

@@ -145,6 +145,59 @@ describe('ojos perdidos (vision deja de ver los ojos)', () => {
   })
 })
 
+describe('mirada por zonas', () => {
+  const mirar = (e: Estado, zona: string | null) => reducir(e, { tipo: 'zonaMirada', zona }).estado
+
+  test('mirar un cuadrante con opcion la deja como unico elemento iluminado', () => {
+    const e = mirar(conOpciones(), 'opcion2')
+    assert.deepEqual(nombres(e), ['opcion2'])
+    assert.equal(e.iluminado, 0)
+  })
+
+  test('con un solo elemento el tick no avanza ni cuenta vueltas', () => {
+    let e = mirar(conOpciones(), 'opcion1')
+    for (let i = 0; i < 10; i++) e = reducir(e, { tipo: 'tick' }).estado
+    assert.equal(e.iluminado, 0)
+    assert.equal(e.vueltas, 0)
+    assert.equal(e.pausado, false)
+  })
+
+  test('el parpadeo largo elige el cuadrante mirado', () => {
+    const r = reducir(mirar(conOpciones(), 'opcion1'), { tipo: 'parpadeoLargo' })
+    assert.deepEqual(decires(r.efectos), [{ tipo: 'decir', texto: 'No, hoy no.' }])
+  })
+
+  test('mirar la franja deja el barrido solo en la franja', () => {
+    const e = mirar(conOpciones(), 'franja')
+    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'otra'])
+  })
+
+  test('sin zona vuelve el barrido completo', () => {
+    const e = mirar(mirar(conOpciones(), 'opcion1'), null)
+    assert.equal(nombres(e).length, 9)
+  })
+
+  test('mirar un cuadrante vacio no filtra nada', () => {
+    const e = mirar(estadoInicial, 'opcion0') // todavia no hay opciones
+    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'otra'])
+  })
+
+  test('cambiar de zona reinicia el barrido y saca la pausa', () => {
+    let e = conOpciones()
+    for (let i = 0; i < 27; i++) e = reducir(e, { tipo: 'tick' }).estado
+    assert.equal(e.pausado, true)
+    e = mirar(e, 'franja')
+    assert.equal(e.pausado, false)
+    assert.equal(e.iluminado, 0)
+  })
+
+  test('con los ojos cerrados la mirada se ignora', () => {
+    let e = reducir(mirar(conOpciones(), 'opcion0'), { tipo: 'ojos', cerrados: true, progreso: 0.5 }).estado
+    e = mirar(e, 'opcion3')
+    assert.deepEqual(nombres(e), ['opcion0'])
+  })
+})
+
 describe('turnos y opciones', () => {
   test('un turno entra al historial y pide opciones', () => {
     const r = aplicar(estadoInicial, { tipo: 'turno', texto: '¿Queres empanadas?' })

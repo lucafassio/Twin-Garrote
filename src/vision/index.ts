@@ -2,6 +2,89 @@ import type { FaceLandmarker, NormalizedLandmark } from '@mediapipe/tasks-vision
 import { bus } from '../eventos'
 import { ajustarCompensacion } from './compensacion'
 import { ajustarMirada, crearDetector, puntosCalibracion, type Mirada, type Punto } from './senales'
+import { crearClasificadorZonas, extraerRasgos } from './zonas'
+
+// --- Mirada por zonas (ver zonas.ts) ---
+// Se clasifica que zona grande de la pantalla mira el usuario y se emite zonaMirada al bus.
+const clasificador = crearClasificadorZonas()
+let rasgosActuales: number[] | null = null
+const recientes: number[][] = [] // ultimos cuadros con los ojos abiertos
+let probabilidades: Record<string, number> | null = null // suavizadas entre cuadros
+let zonaActual: { zona: string; confianza: number } | null = null
+let antesDeCerrar: { zona: string; rasgos: number[][] } | null = null
+let ultimaEmisionZona = -Infinity
+const SUAVIZADO_ZONAS = 0.35 // peso del cuadro nuevo
+const EMISION_ZONAS_MS = 60
+
+export const estadoZonas = () => ({ lista: clasificador.listo(), zonas: clasificador.zonas() })
+
+function emitirZona(zona: string | null, confianza: number, ahora: number) {
+  if (ahora - ultimaEmisionZona < EMISION_ZONAS_MS) return
+  ultimaEmisionZona = ahora
+  if (!enPrueba) bus.emit('zonaMirada', { zona, confianza })
+}
+
+// Clasifica el cuadro actual. Durante un cierre no emite (se esta eligiendo lo marcado)
+// y recuerda la zona y los cuadros de antes de cerrar, para reforzar si se confirma.
+function actualizarZona(cerrados: boolean, confirmar: boolean, ahora: number) {
+  if (confirmar && antesDeCerrar) clasificador.agregar(antesDeCerrar.zona, antesDeCerrar.rasgos)
+  if (!rasgosActuales || !clasificador.listo()) {
+    probabilidades = null
+    zonaActual = null
+    emitirZona(null, 0, ahora)
+    return
+  }
+  if (cerrados) {
+    if (!antesDeCerrar && zonaActual && zonaActual.confianza >= 0.6) {
+      antesDeCerrar = { zona: zonaActual.zona, rasgos: recientes.slice(-10) }
+    }
+    return
+  }
+  antesDeCerrar = null
+  recientes.push(rasgosActuales)
+  if (recientes.length > 15) recientes.shift()
+  const c = clasificador.clasificar(rasgosActuales)
+  if (!c) return
+  const previas: Record<string, number> = probabilidades ?? c.probabilidades
+  probabilidades = Object.fromEntries(
+    Object.keys(c.probabilidades).map((z) => [
+      z,
+      (1 - SUAVIZADO_ZONAS) * (previas[z] ?? 0) + SUAVIZADO_ZONAS * c.probabilidades[z],
+    ]),
+  )
+  const [zona, confianza] = Object.entries(probabilidades).sort((a, b) => b[1] - a[1])[0]
+  zonaActual = { zona, confianza }
+  emitirZona(zona, confianza, ahora)
+}
+
+// Calibracion por zonas: se ilumina cada zona (dos pasadas, ida y vuelta) y se juntan
+// los cuadros mientras el usuario la mira. mostrar(null) al terminar o cancelar.
+export async function calibrarZonas(
+  zonas: string[],
+  mostrar: (zona: string | null, paso: number, total: number) => void,
+  señal?: AbortSignal,
+): Promise<boolean> {
+  if (!detenerActivo) throw new Error('Primero prendé la cámara.')
+  const actual = sesion
+  const orden = [...zonas, ...[...zonas].reverse()]
+  const muestras: { zona: string; rasgos: number[] }[] = []
+  try {
+    for (const [i, zona] of orden.entries()) {
+      mostrar(zona, i + 1, orden.length)
+      await new Promise((r) => window.setTimeout(r, 700))
+      if (actual !== sesion || señal?.aborted) return false
+      const capturas = await medir(1300, () => (!lectura.cerrados && rasgosActuales ? [...rasgosActuales] : null))
+      if (actual !== sesion || señal?.aborted) return false
+      if (capturas.length < 8) throw new Error('No pudimos ver tus ojos. Volvé a calibrar con más luz.')
+      muestras.push(...capturas.map((rasgos) => ({ zona, rasgos })))
+    }
+    clasificador.entrenar(muestras)
+    probabilidades = null
+    return true
+  } finally {
+    mostrar(null, 0, orden.length)
+  }
+}
 
 export type LecturaVision = {
   posturaFuera?: boolean
@@ -228,12 +311,14 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
     const ojos = { cerrados: estado.cerrados, progreso: estado.progreso, perdido: !valida }
     if (cambioOjos) bus.emit('ojos', ojos)
     if (estado.confirmar && !enPrueba) bus.emit('parpadeoLargo', {})
+    actualizarZona(estado.cerrados, estado.confirmar, ahora)
     observadores.forEach(observar => observar(lectura))
   }
 
   function perderSeguimiento(ahora: number) {
     muestraMirada = null
     posturaActual = null
+    rasgosActuales = null
     publicar(null, null, ahora)
   }
 
@@ -274,6 +359,7 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
       const aspecto = video.videoWidth / video.videoHeight
       muestraMirada = estimarMirada(cara, aspecto)
       posturaActual = medirPostura(cara, aspecto)
+      rasgosActuales = extraerRasgos(cara, categorias, resultado.facialTransformationMatrixes?.[0]?.data, aspecto)
       publicar(izquierdo, derecho, ahora)
     } catch {
       perderSeguimiento(ahora)
@@ -286,8 +372,13 @@ export async function iniciarVision(video: HTMLVideoElement): Promise<() => void
     modelo = await FaceLandmarker.createFromOptions(archivos, {
       baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task' },
       runningMode: 'VIDEO', numFaces: 1, outputFaceBlendshapes: true,
+      outputFacialTransformationMatrixes: true, // pose 3D de la cabeza para la mirada por zonas
     })
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+    // 1280x720: con 640x480 el iris mide ~10 px y el ruido de los puntos tapa la mirada.
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false,
+    })
     video.muted = true
     video.playsInline = true
     video.srcObject = stream

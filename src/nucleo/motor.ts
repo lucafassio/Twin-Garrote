@@ -1,4 +1,5 @@
 import { bus, type LineaHistorial, type Opcion, type PedidoOpciones } from '@/eventos'
+import { crearEstabilizadorMirada } from './estabilizadorMirada'
 import { leerTurnoLocal } from './lecturaLocal'
 import { estadoInicial, reducir } from './reductor'
 import type { Accion, Efecto, Estado, LecturaTurno } from './tipos'
@@ -51,6 +52,8 @@ export function crearNucleo({
   let espera: ReturnType<typeof setTimeout> | null = null
   let confirmacion: ReturnType<typeof setTimeout> | null = null
   let vencimiento: ReturnType<typeof setTimeout> | null = null
+  // La zona que manda vision cuadro a cuadro se estabiliza antes de llegar al reductor.
+  let estabilizador = crearEstabilizadorMirada()
 
   // Lee el turno con el modelo si hay, con la heuristica local como respaldo
   // (si no hay modelo, si tarda mas de LECTURA_MAXIMO_MS o si falla).
@@ -148,6 +151,7 @@ export function crearNucleo({
     iniciar() {
       if (activo) return
       activo = true
+      estabilizador = crearEstabilizadorMirada()
       offs = [
         // Lo que cierra voz es un fragmento: la lectura del turno decide si es un turno.
         bus.on('turno', ({ texto }) => despachar({ tipo: 'fragmento', texto })),
@@ -156,6 +160,10 @@ export function crearNucleo({
         bus.on('parpadeoLargo', () => despachar({ tipo: 'parpadeoLargo' })),
         bus.on('hablando', ({ activo }) => despachar({ tipo: 'hablando', activo })),
         bus.on('escuchando', ({ activo }) => despachar({ tipo: 'escuchando', activo })),
+        bus.on('zonaMirada', (lectura) => {
+          const zona = estabilizador.leer(lectura, Date.now())
+          if (zona !== undefined) despachar({ tipo: 'zonaMirada', zona })
+        }),
       ]
       reiniciarTick()
     },
