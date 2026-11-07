@@ -25,6 +25,7 @@ import {
   sumarLineas,
 } from './conversacion.ts'
 import { enFila } from './fila.ts'
+import { huellaParaPrompt } from './huella.ts'
 import { bloqueDe, describirPeriodo } from './niveles.ts'
 import { decaerSaliencia, MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
@@ -302,6 +303,12 @@ function promptUsuario(p: {
   const partes: string[] = []
 
   partes.push(`# Huella\n\n${perfil.markdown.trim()}`)
+
+  // La huella aprendida (#38), solo la aceptada: al lado de la base, marcada como aprendida.
+  const aprendida = huellaParaPrompt(memoria, pedido.cercania)
+  if (aprendida) {
+    partes.push(`## Huella aprendida (de sus conversaciones; si choca con lo de arriba, manda lo de arriba)\n${aprendida.texto.trim()}`)
+  }
 
   if (hechos.length > 0) {
     const lineas = hechos.map((h, i) => `- [${aliasHecho(i)}] ${textoConFecha(h, ahora)}`)

@@ -69,13 +69,14 @@ export function idResumen(r: ResumenConversacion): string {
 }
 
 // Los hechos intimos que un bloque cita, directo o a traves de bloques (de cualquier nivel) que los citan.
-function hechosIntimos(bloque: Bloque, memoria: Memoria): string[] {
+// Sirve para todo lo que cita fuentes (tambien la huella aprendida, #38).
+export function hechosIntimos(bloque: Pick<Bloque, 'fuentes'>, memoria: Memoria): string[] {
   const hechos = new Map(memoria.hechos.map((h) => [h.id, h]))
   const niveles = nivelesDe(memoria)
   const bloques = new Map([...niveles.dia, ...niveles.semana, ...niveles.mes].map((b) => [b.id, b]))
   const vistos = new Set<string>()
   const intimos = new Set<string>()
-  const recorrer = (b: Bloque) => {
+  const recorrer = (b: Pick<Bloque, 'fuentes'>) => {
     for (const id of b.fuentes) {
       if (hechos.get(id)?.intimo) intimos.add(id)
       const abajo = bloques.get(id)
@@ -90,7 +91,7 @@ function hechosIntimos(bloque: Bloque, memoria: Memoria): string[] {
 
 // Generico para todos los niveles: un bloque cita algo intimo si alguna fuente es un hecho intimo
 // o un bloque que a su vez cita algo intimo. Sale de las fuentes, no del modelo.
-export function citaIntimo(bloque: Bloque, memoria: Memoria): boolean {
+export function citaIntimo(bloque: Pick<Bloque, 'fuentes'>, memoria: Memoria): boolean {
   return hechosIntimos(bloque, memoria).length > 0
 }
 

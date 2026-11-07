@@ -124,6 +124,28 @@ export type Niveles = { dia: Bloque[]; semana: Bloque[]; mes: Bloque[] }
 // Cada rollup en segundo plano tiene su modelo, elegido por configuracion.
 export type NivelRollup = 'dia' | 'semana' | 'mes' | 'huella'
 
+// Huella aprendida (#38): lo que el sistema aprendio del usuario (gustos, personas y como las llama,
+// forma de hablar, temas a evitar), propuesto en segundo plano y aceptado o descartado por la familia.
+// Nunca toca la huella base (el perfil): va al lado, marcada como aprendida. Todo opcional.
+export type PropuestaHuella = {
+  texto: string
+  fuentes: string[] // ids de bloques y hechos ('frases' = los ejemplos de estilo)
+  fecha: string // ISO
+}
+
+export type HuellaAceptada = {
+  texto: string // a lo sumo TOPE_HUELLA caracteres
+  fuentes: string[]
+  fechaAceptacion: string // ISO
+}
+
+export type HuellaAprendida = {
+  propuesta?: PropuestaHuella // pendiente: no entra al prompt
+  aceptada?: HuellaAceptada // la unica que entra al prompt
+  descartadas?: string[] // textos descartados: no se vuelven a proponer iguales
+  ultimaPropuesta?: string // ISO de la ultima propuesta pedida con exito: una por corte de mes
+}
+
 export type Memoria = {
   hechos: Hecho[]
   resumenes: ResumenConversacion[]
@@ -134,6 +156,8 @@ export type Memoria = {
   cerradaPorTiempo?: ConversacionActual
   // Opcional: una memoria vieja sin niveles se lee como siempre.
   niveles?: Niveles
+  // Opcional: una memoria vieja sin huella aprendida se lee como siempre.
+  huellaAprendida?: HuellaAprendida
 }
 
 // Donde viven el perfil y la memoria. En la app: archivos. En tests: en memoria.

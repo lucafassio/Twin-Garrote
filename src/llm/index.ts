@@ -18,3 +18,5 @@ export { bloqueDe, citaIntimo, crearNiveles, describirPeriodo, ErrorNivel, idRes
 export type { BloquesDeHoy, ProveedorRollup } from './niveles.ts'
 export { periodoAnterior, periodoDe } from './periodos.ts'
 export type { Corte, Periodo } from './periodos.ts'
+export { aceptarHuella, crearHuella, descartarHuella, describirFuentes, ErrorHuella, huellaDe, huellaParaPrompt, SALIDA_HUELLA, TOPE_HUELLA } from './huella.ts'
+export type { FuenteDescrita } from './huella.ts'

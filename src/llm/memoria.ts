@@ -8,6 +8,7 @@
 // Todo en una sola llamada al proveedor. Nunca toca el perfil: el almacen no tiene como escribirlo.
 import type { LineaHistorial } from '@/eventos'
 import { enFila } from './fila.ts'
+import { crearHuella } from './huella.ts'
 import { crearNiveles, idResumen, type ProveedorRollup } from './niveles.ts'
 import { crearCierre, crearOpciones } from './opciones.ts'
 import { conservarUsosNuevos } from './saliencia.ts'
@@ -158,11 +159,19 @@ export function crearDisparadorMemoria(deps: {
   const niveles = deps.proveedorRollup
     ? crearNiveles({ almacen: deps.almacen, proveedorRollup: deps.proveedorRollup })
     : null
+  // La huella aprendida (#38) va despues de los niveles: se arma con el bloque mas reciente.
+  const huella = deps.proveedorRollup ? crearHuella({ almacen: deps.almacen, proveedorRollup: deps.proveedorRollup }) : null
 
   async function consolidar() {
     if (!niveles) return
     try {
       await niveles.alCerrar(reloj())
+    } catch (e) {
+      alFallarNivel(e)
+    }
+    // Aparte: si falla la huella, los niveles ya quedaron guardados, y al reves.
+    try {
+      await huella?.alCerrar(reloj())
     } catch (e) {
       alFallarNivel(e)
     }
@@ -216,7 +225,18 @@ export function crearDisparadorMemoria(deps: {
     return trabajo
   }
 
-  return { disparar, consolidarAhora, listo: () => cola }
+  // "Consolidar ahora" de la huella aprendida: en la misma fila, sin esperar el corte de mes.
+  function proponerHuellaAhora() {
+    if (!huella) return Promise.reject(new Error('Sin proveedorRollup no hay huella aprendida'))
+    const trabajo = cola.then(() => huella.proponerAhora(reloj()))
+    cola = trabajo.then(
+      () => {},
+      () => {},
+    )
+    return trabajo
+  }
+
+  return { disparar, consolidarAhora, proponerHuellaAhora, listo: () => cola }
 }
 
 // --- Ejemplos de estilo -------------------------------------------------------

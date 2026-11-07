@@ -4,13 +4,18 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Cercania, LineaHistorial } from '@/eventos'
 import { describirFecha } from '@/llm/fechas'
 import type { HechoListado } from '@/llm/controles-memoria'
-import type { Bloque, Hecho, Niveles } from '@/llm/tipos'
+import type { FuenteDescrita } from '@/llm/huella'
+import type { Bloque, Hecho, HuellaAceptada, Niveles, PropuestaHuella } from '@/llm/tipos'
 
 // Demo del aprendizaje (#12): "Lo que aprendí de vos" y el botón para cerrar la conversación.
 // El botón es solo para la demo: en el producto la conversación se cierra sola por el silencio.
-// Consolidar ahora (#34, #37) arma los bloques del dia y la semana de hoy sin esperar el corte.
+// Consolidar ahora (#34, #37) arma los bloques del dia y la semana de hoy sin esperar el corte, y
+// propone la huella aprendida (#38) sin esperar el corte de mes. La familia la acepta o la descarta aca.
 
 type Hechos = { activos: HechoListado[]; vencidos: HechoListado[]; invalidados: HechoListado[] }
+
+type ConFuentes<T> = T & { fuentesDescritas: FuenteDescrita[] }
+type Huella = { base: string; propuesta: ConFuentes<PropuestaHuella> | null; aceptada: ConFuentes<HuellaAceptada> | null }
 
 const ORIGEN: Record<Hecho['origen'], string> = {
   deletreo: 'lo deletreaste vos',
@@ -70,6 +75,7 @@ export function LoQueAprendi({
 }) {
   const [hechos, setHechos] = useState<Hechos | null>(null)
   const [niveles, setNiveles] = useState<Niveles | null>(null)
+  const [huella, setHuella] = useState<Huella | null>(null)
   const [ocupado, setOcupado] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -80,6 +86,7 @@ export function LoQueAprendi({
     if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
     setHechos({ activos: datos.activos, vencidos: datos.vencidos, invalidados: datos.invalidados })
     if (datos.niveles) setNiveles(datos.niveles)
+    if (datos.huella) setHuella(datos.huella)
     return datos
   }, [])
 
@@ -136,9 +143,19 @@ export function LoQueAprendi({
     const ms = Math.round(performance.now() - inicio)
     const armado = (nombre: string, b: Bloque | null, modelo: string) =>
       b ? `${nombre}: ${fuentes(b.fuentes.length)} (${modelo})` : `${nombre}: nada para resumir (${modelo})`
+    const propuesta = datos.errorHuella
+      ? `La huella aprendida fallo (${datos.modelos.huella}): ${datos.errorHuella}`
+      : datos.propuesta
+        ? `Huella aprendida propuesta (${datos.modelos.huella}).`
+        : `Huella aprendida: nada nuevo que proponer (${datos.modelos.huella}).`
     setAviso(
-      `Consolidado en ${ms} ms. ${armado('Dia', datos.dia, datos.modelos.dia)}. ${armado('Semana', datos.semana, datos.modelos.semana)}.`,
+      `Consolidado en ${ms} ms. ${armado('Dia', datos.dia, datos.modelos.dia)}. ${armado('Semana', datos.semana, datos.modelos.semana)}. ${propuesta}`,
     )
+  }
+
+  async function decidirHuella(accion: 'aceptar' | 'descartar') {
+    const datos = await enviar(accion, { accion })
+    if (datos) setAviso(accion === 'aceptar' ? 'Huella aprendida aceptada: ya entra a las opciones.' : 'Propuesta descartada: no se vuelve a proponer igual.')
   }
 
   return (
@@ -167,6 +184,51 @@ export function LoQueAprendi({
       </div>
       {aviso && <p className="text-sm">{aviso}</p>}
       {error && <p className="rounded bg-red-100 p-3 text-red-800">Error: {error}</p>}
+
+      {huella && (
+        <div className="space-y-2">
+          <p className="font-semibold">Como sos</p>
+          {huella.propuesta && (
+            <div className="rounded border-2 border-dashed border-amber-500 p-3">
+              <p className="text-sm text-amber-700">
+                Propuesta, pendiente de la familia · {fecha(huella.propuesta.fecha)} · todavia no entra a las opciones
+              </p>
+              <p className="whitespace-pre-line">{huella.propuesta.texto}</p>
+              <ListaFuentes fuentes={huella.propuesta.fuentesDescritas} />
+              <div className="mt-2 flex gap-2">
+                <button
+                  className="rounded bg-emerald-700 px-4 py-1 font-semibold text-white disabled:opacity-50"
+                  disabled={ocupado !== null}
+                  onClick={() => decidirHuella('aceptar')}
+                >
+                  Aceptar
+                </button>
+                <button
+                  className="rounded border px-4 py-1 hover:bg-gray-100 hover:text-black disabled:opacity-50"
+                  disabled={ocupado !== null}
+                  onClick={() => decidirHuella('descartar')}
+                >
+                  Descartar
+                </button>
+              </div>
+            </div>
+          )}
+          {huella.aceptada && (
+            <div className="rounded border-2 border-emerald-600 p-3">
+              <p className="text-sm text-emerald-700">
+                <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">Aprendida</span> · aceptada{' '}
+                {fecha(huella.aceptada.fechaAceptacion)}
+              </p>
+              <p className="whitespace-pre-line">{huella.aceptada.texto}</p>
+              <ListaFuentes fuentes={huella.aceptada.fuentesDescritas} />
+            </div>
+          )}
+          <details className="rounded border p-3">
+            <summary className="cursor-pointer text-sm text-gray-500">Huella base: la cargo la familia y nunca cambia</summary>
+            <pre className="mt-2 whitespace-pre-wrap text-sm">{huella.base}</pre>
+          </details>
+        </div>
+      )}
 
       {niveles &&
         (['dia', 'semana', 'mes'] as const)
@@ -259,5 +321,19 @@ export function LoQueAprendi({
         </div>
       )}
     </section>
+  )
+}
+
+function ListaFuentes({ fuentes }: { fuentes: FuenteDescrita[] }) {
+  if (fuentes.length === 0) return null
+  return (
+    <details className="mt-1 text-sm text-gray-500">
+      <summary className="cursor-pointer">{fuentes.length === 1 ? '1 fuente' : `${fuentes.length} fuentes`}</summary>
+      <ul className="ml-4 list-disc">
+        {fuentes.map((f) => (
+          <li key={f.id}>{f.texto}</li>
+        ))}
+      </ul>
+    </details>
   )
 }

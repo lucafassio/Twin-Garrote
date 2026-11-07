@@ -17,9 +17,25 @@
 // 'consolidar' (Consolidar ahora, #34, #37) arma los bloques del dia y la semana de hoy con lo que
 // haya, sin esperar el corte. GET, invalidar y cerrar tambien devuelven los niveles (dia, semana y
 // mes), para la demo.
+// Despues propone la huella aprendida (#38) sin esperar el corte de mes; si eso falla, los bloques
+// ya quedaron y se avisa en errorHuella.
+//   POST { accion: 'aceptar' }                           -> { aceptada, ...lo aprendido }
+//   POST { accion: 'descartar' }                         -> { ...lo aprendido }
+// 'aceptar' y 'descartar' deciden sobre la huella aprendida pendiente (404 si no hay). Todas las
+// respuestas traen `huella`: la base (nunca cambia), la pendiente, la aceptada y sus fuentes en palabras.
 import { connection } from 'next/server'
 import type { LineaHistorial } from '@/eventos'
-import { esEleccion, invalidarHecho, listarHechos, nivelesDe, registrarEleccion } from '@/llm'
+import {
+  aceptarHuella,
+  descartarHuella,
+  describirFuentes,
+  esEleccion,
+  huellaDe,
+  invalidarHecho,
+  listarHechos,
+  nivelesDe,
+  registrarEleccion,
+} from '@/llm'
 import type { Almacen } from '@/llm'
 import { modeloRollup } from '@/llm/proveedores'
 import { servidorLlm } from '@/llm/servidor'
@@ -30,10 +46,17 @@ function esLinea(x: unknown): x is LineaHistorial {
   return (l.quien === 'usuario' || l.quien === 'interlocutor') && typeof l.texto === 'string'
 }
 
-// Hechos y niveles: lo que muestra "Lo que aprendi de vos".
+// Hechos, niveles y huella: lo que muestra "Lo que aprendi de vos".
 async function loAprendido(almacen: Almacen) {
-  const [hechos, memoria] = await Promise.all([listarHechos(almacen), almacen.leerMemoria()])
-  return { ...hechos, niveles: nivelesDe(memoria) }
+  const [hechos, memoria, perfil] = await Promise.all([listarHechos(almacen), almacen.leerMemoria(), almacen.leerPerfil()])
+  const { propuesta, aceptada } = huellaDe(memoria)
+  const conFuentes = <T extends { fuentes: string[] }>(x: T | undefined) =>
+    x ? { ...x, fuentesDescritas: describirFuentes(x.fuentes, memoria) } : null
+  return {
+    ...hechos,
+    niveles: nivelesDe(memoria),
+    huella: { base: perfil.markdown, propuesta: conFuentes(propuesta), aceptada: conFuentes(aceptada) },
+  }
 }
 
 export async function GET() {
@@ -91,16 +114,41 @@ export async function POST(request: Request) {
   }
 
   if (cuerpo.accion === 'consolidar') {
-    const modelos = { dia: modeloRollup('dia'), semana: modeloRollup('semana') }
+    const modelos = { dia: modeloRollup('dia'), semana: modeloRollup('semana'), huella: modeloRollup('huella') }
+    let consolidado
     try {
-      const { dia, semana } = await memoria.consolidarAhora()
-      return Response.json({ dia, semana, modelos, ...(await loAprendido(almacen)) })
+      consolidado = await memoria.consolidarAhora()
     } catch (e) {
       console.error('[api/memoria] consolidar', e)
       const mensaje = e instanceof Error ? e.message : String(e)
       return Response.json({ error: `No se pudo consolidar: ${mensaje}`, modelos }, { status: 502 })
     }
+    let propuesta = null
+    let errorHuella: string | null = null
+    try {
+      propuesta = await memoria.proponerHuellaAhora()
+    } catch (e) {
+      console.error('[api/memoria] huella', e)
+      errorHuella = e instanceof Error ? e.message : String(e)
+    }
+    return Response.json({ ...consolidado, modelos, propuesta, errorHuella, ...(await loAprendido(almacen)) })
   }
 
-  return Response.json({ error: "accion tiene que ser 'invalidar', 'cerrar', 'elegir' o 'consolidar'" }, { status: 400 })
+  if (cuerpo.accion === 'aceptar') {
+    const aceptada = await aceptarHuella(almacen)
+    if (!aceptada) return Response.json({ error: 'No hay una huella aprendida pendiente' }, { status: 404 })
+    return Response.json({ aceptada, ...(await loAprendido(almacen)) })
+  }
+
+  if (cuerpo.accion === 'descartar') {
+    if (!(await descartarHuella(almacen))) {
+      return Response.json({ error: 'No hay una huella aprendida pendiente' }, { status: 404 })
+    }
+    return Response.json(await loAprendido(almacen))
+  }
+
+  return Response.json(
+    { error: "accion tiene que ser 'invalidar', 'cerrar', 'elegir', 'consolidar', 'aceptar' o 'descartar'" },
+    { status: 400 },
+  )
 }
