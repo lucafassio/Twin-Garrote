@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { bus } from '@/eventos'
-import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz } from '@/voz'
+import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz, mensajeUrgencia } from '@/voz'
 import { depuracionEscucha } from '@/voz/escuchar'
 import { cargarVoces, elegirVoz } from '@/voz/hablar'
 
@@ -18,6 +18,7 @@ export default function Prueba() {
   const [silencio, setSilencio] = useState(ajustesVoz.silencioMs)
   const [extra, setExtra] = useState(ajustesVoz.extraSinFinalMs)
   const [resultados, setResultados] = useState<string[]>([])
+  const [vistaPrevia, setVistaPrevia] = useState('')
   const [frase, setFrase] = useState('Si, dale, me encantaria.')
   const [voces, setVoces] = useState<SpeechSynthesisVoice[]>([])
   const [hayReconocimiento, setHayReconocimiento] = useState(true)
@@ -151,7 +152,11 @@ export default function Prueba() {
           <button className="rounded bg-zinc-700 px-4" onClick={() => bus.emit('detenerUrgencia', { falsaAlarma: true })}>
             Falsa alarma
           </button>
+          <button className="rounded bg-zinc-800 px-4" onClick={() => setVistaPrevia(mensajeUrgencia(ajustesVoz.nombre))}>
+            Ver mensaje (sin mandar)
+          </button>
         </div>
+        {vistaPrevia && <pre className="whitespace-pre-wrap rounded bg-zinc-900 p-3 text-sm">{vistaPrevia}</pre>}
       </section>
 
       <div className="grid gap-6 md:grid-cols-2">

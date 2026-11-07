@@ -2,7 +2,8 @@
 // Escucha al interlocutor y emite transcripcionParcial / turno / escuchando.
 // Dice en voz alta cada decir (con aviso antes), repite la ultima respuesta y maneja la urgencia.
 
-import { bus, type LineaHistorial } from '@/eventos'
+import { bus } from '@/eventos'
+import { anotarEnCurso, anotarLinea, contextoCharla } from './charla'
 import { crearEscucha } from './escuchar'
 import { callar, cargarVoces, hablar } from './hablar'
 import { cortarSonidos, sonarAlarma, sonarAviso } from './sonidos'
@@ -31,7 +32,6 @@ function esperaFinDeTurno(texto: string, final: boolean): number {
 
 const REABRIR_MS = 500 // espera despues de hablar antes de volver a escuchar
 const PAUSA_URGENCIA_MS = 1500
-const LINEAS_CONTEXTO = 5
 
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -39,7 +39,6 @@ export function iniciarVoz(): () => void {
   let generacion = 0 // cada decir o urgencia nueva invalida lo que estaba sonando
   let enUrgencia = false
   let ultimaRespuesta: string | null = null
-  const charla: LineaHistorial[] = []
   let reabrir: ReturnType<typeof setTimeout> | null = null
 
   const escucha = crearEscucha({
@@ -51,11 +50,6 @@ export function iniciarVoz(): () => void {
   const soltarCierre = registrarCierre(escucha.cerrarTurno)
   void cargarVoces()
   escucha.abrir()
-
-  function anotar(linea: LineaHistorial) {
-    charla.push(linea)
-    if (charla.length > LINEAS_CONTEXTO) charla.shift()
-  }
 
   // Half-duplex: sin escucha desde el aviso hasta REABRIR_MS despues de hablar.
   function empezarHabla(): number {
@@ -82,9 +76,10 @@ export function iniciarVoz(): () => void {
   }
 
   async function urgencia(texto: string) {
+    const mensaje = mensajeUrgencia(ajustesVoz.nombre) // antes de cortar la escucha, que descarta la frase en curso
     const g = empezarHabla()
     enUrgencia = true
-    avisarContacto(mensajeUrgencia())
+    avisarContacto(mensaje)
     while (g === generacion) {
       await sonarAlarma()
       if (g !== generacion) return
@@ -94,15 +89,9 @@ export function iniciarVoz(): () => void {
     }
   }
 
-  function mensajeUrgencia(): string {
-    const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-    const lineas = charla.map((l) => `- ${l.quien === 'usuario' ? ajustesVoz.nombre : 'Interlocutor'}: ${l.texto}`)
-    const contexto = lineas.length ? `\n\nLo ultimo de la charla:\n${lineas.join('\n')}` : ''
-    return `${ajustesVoz.nombre} pidio ayuda a las ${hora}.${contexto}`
-  }
-
   const offs = [
-    bus.on('turno', ({ texto }) => anotar({ quien: 'interlocutor', texto })),
+    bus.on('turno', ({ texto }) => anotarLinea({ quien: 'interlocutor', texto })),
+    bus.on('transcripcionParcial', ({ texto }) => anotarEnCurso(texto)),
     bus.on('decir', ({ texto, urgencia: esUrgencia }) => {
       if (esUrgencia) {
         if (!enUrgencia) void urgencia(texto)
@@ -110,7 +99,7 @@ export function iniciarVoz(): () => void {
       }
       if (enUrgencia) return // la urgencia no la corta una respuesta comun
       ultimaRespuesta = texto
-      anotar({ quien: 'usuario', texto })
+      anotarLinea({ quien: 'usuario', texto })
       void decir(texto)
     }),
     bus.on('repetir', () => {
@@ -140,6 +129,12 @@ export function iniciarVoz(): () => void {
     cortarSonidos()
     soltarCierre()
   }
+}
+
+export function mensajeUrgencia(nombre: string): string {
+  const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  const contexto = contextoCharla(nombre)
+  return `${nombre} pidio ayuda a las ${hora}.${contexto ? `\n\nLo ultimo de la charla:\n${contexto}` : ''}`
 }
 
 // Manda el mensaje al contacto por /api/urgencia. Un reintento si falla la red.
