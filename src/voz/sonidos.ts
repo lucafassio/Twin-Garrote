@@ -75,10 +75,11 @@ export function cortarSonidos() {
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 // Campanita de cancha antes de un anuncio: do-mi-sol que suben.
-// Espera a que se apague la cola de la ultima nota: la voz no se pisa con la campanita.
+// La voz entra 1 s despues del golpe de la ultima nota: para entonces su cola ya bajo
+// unos 37 dB y no se oye debajo de la voz.
 export async function sonarAviso(): Promise<void> {
-  ;[523, 659, 784].forEach((f, i) => campana(f, i * 0.5, 2, 0.45))
-  await esperar(3050)
+  ;[523, 659, 784].forEach((f, i) => campana(f, i * 0.5, 1.6, 0.45))
+  await esperar(2000)
 }
 
 // Sirena de ~1,2 s, alternando dos tonos.
