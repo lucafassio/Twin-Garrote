@@ -100,10 +100,11 @@
   "98": "Community 98",
   "99": "correr.ts",
   "100": "Community 100",
+  "101": "Community 101",
   "102": "voz/index.ts",
   "103": "completar/route.ts",
+  "104": "Community 104",
   "111": "5. Banco de voz y clonacion para ELA",
-  "116": "reductor.test.ts",
   "119": "eventos.ts",
   "120": "2.2 Privacidad: alternativas locales para espanol",
   "128": "CLAUDE.md",
@@ -112,7 +113,6 @@
   "131": "Agent skills",
   "132": "Agent skills",
   "133": "Agent skills",
-  "134": "crearNucleo",
   "136": "1. Web Speech API en Chrome con es-AR",
   "137": "6. Eco y barge-in"
 }
