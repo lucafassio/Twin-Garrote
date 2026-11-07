@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import type { Cercania, LineaHistorial } from '@/eventos'
+import { describirFecha } from '@/llm/fechas'
+import type { HechoListado } from '@/llm/controles-memoria'
 import type { Hecho } from '@/llm/tipos'
 
 // Demo del aprendizaje (#12): "Lo que aprendí de vos" y el botón para cerrar la conversación.
 // El botón es solo para la demo: en el producto la conversación se cierra sola por el silencio.
 
-type Hechos = { activos: Hecho[]; invalidados: Hecho[] }
+type Hechos = { activos: HechoListado[]; vencidos: HechoListado[]; invalidados: HechoListado[] }
 
 const ORIGEN: Record<Hecho['origen'], string> = {
   deletreo: 'lo deletreaste vos',
@@ -15,6 +17,11 @@ const ORIGEN: Record<Hecho['origen'], string> = {
   fija: 'opción fija',
   interlocutor: 'lo dijo el interlocutor',
   familia: 'lo cargó la familia',
+}
+
+// "el jueves 12/11, en 2 dias": la fecha del evento, si el hecho la tiene.
+function fechaDelEvento(h: Hecho) {
+  return h.fechaEvento ? describirFecha(h.fechaEvento, new Date()) : null
 }
 
 function fecha(iso: string | null) {
@@ -40,7 +47,7 @@ export function LoQueAprendi({
     const r = await fetch('/api/memoria', init)
     const datos = await r.json()
     if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
-    setHechos({ activos: datos.activos, invalidados: datos.invalidados })
+    setHechos({ activos: datos.activos, vencidos: datos.vencidos, invalidados: datos.invalidados })
     return datos
   }, [])
 
@@ -109,29 +116,62 @@ export function LoQueAprendi({
       {aviso && <p className="text-sm">{aviso}</p>}
       {error && <p className="rounded bg-red-100 p-3 text-red-800">Error: {error}</p>}
 
-      {hechos && hechos.activos.length === 0 && <p className="text-sm text-gray-500">Todavía no aprendí nada.</p>}
+      {hechos && hechos.activos.length === 0 && hechos.vencidos.length === 0 && (
+        <p className="text-sm text-gray-500">Todavía no aprendí nada.</p>
+      )}
       {hechos && hechos.activos.length > 0 && (
         <ul className="space-y-2">
-          {hechos.activos.map((h) => (
-            <li key={h.id} className="flex items-start justify-between gap-4 rounded border p-3">
-              <div>
-                <p className="text-lg">{h.texto}</p>
-                <p className="text-sm text-gray-500">
-                  {ORIGEN[h.origen]} · interlocutor: {h.interlocutor ?? 'no se sabe'} · {fecha(h.fecha)} · importancia{' '}
-                  {h.importancia}
-                  {h.intimo ? ' · íntimo' : ''}
-                </p>
-              </div>
-              <button
-                className="shrink-0 rounded border px-3 py-1 text-sm hover:bg-gray-100 hover:text-black disabled:opacity-50"
-                disabled={ocupado !== null}
-                onClick={() => enviar('invalidar', { accion: 'invalidar', id: h.id })}
-              >
-                Invalidar
-              </button>
-            </li>
-          ))}
+          {hechos.activos.map((h) => {
+            const evento = fechaDelEvento(h)
+            return (
+              <li key={h.id} className="flex items-start justify-between gap-4 rounded border p-3">
+                <div>
+                  <p className="text-lg">{h.texto}</p>
+                  <p className="text-sm text-gray-500">
+                    {ORIGEN[h.origen]} · interlocutor: {h.interlocutor ?? 'no se sabe'} · {fecha(h.fecha)} · importancia{' '}
+                    {h.importancia}
+                    {h.intimo ? ' · íntimo' : ''}
+                  </p>
+                  {evento && <p className="text-sm text-amber-700">Evento: {evento}</p>}
+                </div>
+                <button
+                  className="shrink-0 rounded border px-3 py-1 text-sm hover:bg-gray-100 hover:text-black disabled:opacity-50"
+                  disabled={ocupado !== null}
+                  onClick={() => enviar('invalidar', { accion: 'invalidar', id: h.id })}
+                >
+                  Invalidar
+                </button>
+              </li>
+            )
+          })}
         </ul>
+      )}
+
+      {hechos && hechos.vencidos.length > 0 && (
+        <div>
+          <p className="text-sm font-semibold">Ya pasó ({hechos.vencidos.length})</p>
+          {/* Siguen activos en la memoria: conservan el Invalidar que ya tenían, sin botón nuevo. */}
+          <ul className="space-y-1 text-sm text-gray-500">
+            {hechos.vencidos.map((h) => {
+              const evento = fechaDelEvento(h)
+              return (
+                <li key={h.id} className="flex items-start justify-between gap-4">
+                  <span>
+                    {h.texto}
+                    {evento ? ` · ${evento}` : ''}
+                  </span>
+                  <button
+                    className="shrink-0 rounded border px-3 py-1 text-sm hover:bg-gray-100 hover:text-black disabled:opacity-50"
+                    disabled={ocupado !== null}
+                    onClick={() => enviar('invalidar', { accion: 'invalidar', id: h.id })}
+                  >
+                    Invalidar
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       )}
 
       {hechos && hechos.invalidados.length > 0 && (

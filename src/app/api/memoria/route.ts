@@ -1,8 +1,10 @@
 // Ruta de memoria del path llm: capa fina sobre el path llm del servidor (servidor.ts), para la demo
 // y para el nucleo.
-//   GET                                                  -> { activos, invalidados }
-//   POST { accion: 'invalidar', id }                     -> { hecho, activos, invalidados }
-//   POST { accion: 'cerrar', historial?, esperar? }      -> { cerrada, lineas, activos, invalidados }
+//   GET                                                  -> { activos, vencidos, invalidados }
+//   POST { accion: 'invalidar', id }                     -> { hecho, activos, vencidos, invalidados }
+//   POST { accion: 'cerrar', historial?, esperar? }      -> { cerrada, lineas, activos, vencidos, invalidados }
+// Cada hecho trae su fechaEvento (si tiene) y `vencido`, calculado a la hora del pedido. Los vencidos
+// siguen activos en la memoria; solo van en su propio grupo, aparte de los activos y de los invalidados.
 // 'cerrar' cierra la conversacion actual y dispara el agente de memoria, igual que el cierre por
 // tiempo. La cerrada lleva las lineas guardadas en el servidor mas las nuevas del historial, si lo
 // manda, y la cercania y el interlocutor de la propia conversacion. Por defecto espera a que el agente

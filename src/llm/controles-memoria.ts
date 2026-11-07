@@ -2,17 +2,23 @@
 // Listar hechos e invalidar uno a mano. El cierre de la conversacion esta en opciones (crearCierre).
 // Un hecho invalidado nunca se borra: queda con su fecha de invalidacion.
 import type { Almacen, Hecho } from './tipos.ts'
+import { estaVencido } from './fechas.ts'
 import { enFila } from './fila.ts'
 
-export type HechosListados = { activos: Hecho[]; invalidados: Hecho[] }
+// Cada hecho trae su fecha de evento (si tiene, en el propio hecho) y si esta vencido a la hora del pedido.
+export type HechoListado = Hecho & { vencido: boolean }
+// Los vencidos van aparte: siguen activos en la memoria, pero ya no entran a las opciones.
+export type HechosListados = { activos: HechoListado[]; vencidos: HechoListado[]; invalidados: HechoListado[] }
 
-// Los mas nuevos primero.
-export async function listarHechos(almacen: Almacen): Promise<HechosListados> {
+// Los mas nuevos primero. Vencido = paso su validoHasta a la hora `ahora` (un invalidado nunca cuenta como vencido).
+export async function listarHechos(almacen: Almacen, ahora: Date = new Date()): Promise<HechosListados> {
   const { hechos } = await almacen.leerMemoria()
   const porFecha = (a: Hecho, b: Hecho) => Date.parse(b.fecha) - Date.parse(a.fecha)
+  const marcados = hechos.map((h): HechoListado => ({ ...h, vencido: h.estado === 'activo' && estaVencido(h, ahora) }))
   return {
-    activos: hechos.filter((h) => h.estado === 'activo').sort(porFecha),
-    invalidados: hechos
+    activos: marcados.filter((h) => h.estado === 'activo' && !h.vencido).sort(porFecha),
+    vencidos: marcados.filter((h) => h.vencido).sort(porFecha),
+    invalidados: marcados
       .filter((h) => h.estado === 'invalidado')
       .sort((a, b) => Date.parse(b.fechaInvalidacion ?? b.fecha) - Date.parse(a.fechaInvalidacion ?? a.fecha)),
   }
