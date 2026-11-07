@@ -1,12 +1,13 @@
 // Ruta de opciones del path llm: capa fina sobre el modulo de opciones.
 // POST con PedidoOpciones -> { opciones, registro, nuevaConversacion, proveedor, ms }.
 import type { PedidoOpciones } from '@/eventos'
-import { crearAlmacenEnMemoria, crearOpciones, ErrorOpciones } from '@/llm'
+import { crearAlmacenEnArchivos, crearOpcionesConMemoria, ErrorOpciones } from '@/llm'
 import { elegirProveedor } from '@/llm/proveedores'
 
-// Una instancia por proceso. El almacen en archivos llega con #11.
+// Una instancia por proceso. La huella y la memoria viven en .data/ (fuera de git).
+// Al cerrarse una conversacion, el agente de memoria (#11) aprende en segundo plano.
 const proveedor = elegirProveedor()
-const generarOpciones = crearOpciones({ proveedor, almacen: crearAlmacenEnMemoria() })
+const { generarOpciones } = crearOpcionesConMemoria({ proveedor, almacen: crearAlmacenEnArchivos() })
 
 function esPedido(x: unknown): x is PedidoOpciones {
   if (typeof x !== 'object' || x === null) return false
