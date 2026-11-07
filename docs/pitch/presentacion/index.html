@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parpadeo · Pitch</title>
+<style>
+  :root {
+    --fondo: #0b0b0c;
+    --texto: #f5f3ef;
+    --suave: #a8a39b;
+    --acento: #f2b134;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--fondo); color: var(--texto); overflow: hidden; }
+  body { font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor: none; }
+  body.con-cursor { cursor: default; }
+
+  .diapo {
+    position: fixed; inset: 0;
+    opacity: 0; pointer-events: none;
+    transition: opacity .6s ease;
+  }
+  .diapo.activa { opacity: 1; pointer-events: auto; }
+
+  /* --- 1. Roberto --- */
+  .roberto-foto {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center 28%;
+    transition: filter 3s ease, transform 8s ease;
+  }
+  .d1.paso-1 .roberto-foto,
+  .d1.paso-2 .roberto-foto { filter: grayscale(1) brightness(.55); transform: scale(1.04); }
+  .d1.paso-2 .roberto-foto { filter: grayscale(1) brightness(.3); }
+
+  .cifra {
+    position: absolute; left: 7vw; bottom: 9vh; max-width: 80vw;
+    opacity: 0; transform: translateY(2vh);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  .d1.paso-2 .cifra { opacity: 1; transform: none; }
+  .cifra .numero { font-size: 11vw; font-weight: 800; line-height: .95; letter-spacing: -.03em; color: var(--acento); }
+  .cifra .detalle { font-size: 3.2vw; font-weight: 600; margin-top: 1.5vh; }
+  .cifra .remate { font-size: 3.2vw; font-weight: 400; color: var(--suave); margin-top: .6vh; font-style: italic; }
+
+  /* --- 2. El estandar de hoy --- */
+  .d2 { display: grid; place-items: center; }
+  .d2 .contenido { display: flex; flex-direction: column; align-items: center; gap: 4vh; }
+  .d2 h2 { font-size: 3vw; font-weight: 600; color: var(--suave); letter-spacing: .02em; }
+  .personas { display: flex; gap: 4vw; align-items: flex-end; }
+  .persona { display: flex; flex-direction: column; align-items: center; gap: 1.6vh; }
+  .persona img {
+    height: 52vh; aspect-ratio: 3 / 4; object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+    border-radius: 6px;
+  }
+  .persona .nombre { font-size: 1.9vw; font-weight: 600; }
+  .bullrich img { object-position: 97% 25%; }
+  .hawking img { object-position: center 20%; }
+
+  .precio { font-size: 5vw; font-weight: 800; color: var(--acento); letter-spacing: -.02em; }
+
+  .persona.roberto {
+    opacity: 0; transform: translateX(3vw);
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  .persona.roberto img { height: 30vh; filter: grayscale(1) brightness(.75); }
+  .persona.roberto .nombre { color: var(--suave); }
+  .d2.paso-1 .persona.roberto { opacity: 1; transform: none; }
+  .no-puede {
+    font-size: 2.8vw; font-weight: 600; height: 1.4em;
+    opacity: 0; transition: opacity .8s ease .3s;
+  }
+  .d2.paso-1 .no-puede { opacity: 1; }
+  .d2.paso-1 .precio { opacity: .35; transition: opacity .8s ease; }
+
+  .credito { position: absolute; right: 2vw; bottom: 1.5vh; font-size: .9vw; color: #6c6861; }
+
+  /* --- 3. Video --- */
+  .d3 { background: #000; display: grid; place-items: center; }
+  .d3 video { width: 100%; height: 100%; object-fit: contain; }
+
+  .ayuda {
+    position: fixed; left: 50%; bottom: 2vh; transform: translateX(-50%);
+    font-size: 13px; color: #8b867e; background: rgba(0,0,0,.6);
+    padding: 6px 12px; border-radius: 6px;
+    transition: opacity .6s ease;
+  }
+  .ayuda.oculta { opacity: 0; }
+</style>
+</head>
+<body>
+
+<!-- 1. Roberto: foto a color -> se apaga la chispa (blanco y negro) -> la cifra -->
+<section class="diapo d1" data-pasos="3">
+  <img class="roberto-foto" src="media/roberto.jpg" alt="Roberto">
+  <div class="cifra">
+    <div class="numero">3.000 a 4.000</div>
+    <div class="detalle">personas con ELA en Argentina</div>
+    <div class="remate">Muchísimos Robertos.</div>
+  </div>
+</section>
+
+<!-- 2. El estandar de hoy: Hawking y Bullrich -> aparece Roberto -->
+<section class="diapo d2" data-pasos="2">
+  <div class="contenido">
+    <h2>El estándar de hoy</h2>
+    <div class="personas">
+      <div class="persona hawking">
+        <img src="media/hawking.jpg" alt="Stephen Hawking">
+        <div class="nombre">Stephen Hawking</div>
+      </div>
+      <div class="persona bullrich">
+        <img src="media/bullrich.jpg" alt="Esteban Bullrich">
+        <div class="nombre">Esteban Bullrich</div>
+      </div>
+      <div class="persona roberto">
+        <img src="media/roberto.jpg" alt="Roberto">
+        <div class="nombre">Roberto</div>
+      </div>
+    </div>
+    <div class="precio">Miles de dólares</div>
+    <div class="no-puede">Roberto no se lo puede permitir.</div>
+  </div>
+  <div class="credito">Fotos: NASA (Hawking, dominio público) · [medio] (Bullrich)</div>
+</section>
+
+<!-- 3. Video de la app -->
+<section class="diapo d3" data-pasos="1">
+  <video src="media/demo.mp4" preload="auto" playsinline></video>
+</section>
+
+<div class="ayuda" id="ayuda">→ o espacio: avanzar · ← volver · F pantalla completa · V pausa el video</div>
+
+<script>
+  const diapos = [...document.querySelectorAll('.diapo')]
+  let d = 0, p = 0
+
+  function mostrar() {
+    diapos.forEach((el, i) => {
+      el.classList.toggle('activa', i === d)
+      const pasos = +el.dataset.pasos
+      for (let k = 1; k < pasos; k++) el.classList.toggle('paso-' + k, i === d && p >= k)
+    })
+    const video = diapos[d].querySelector('video')
+    document.querySelectorAll('video').forEach((v) => { if (v !== video) { v.pause(); v.currentTime = 0 } })
+    if (video) video.play().catch(() => {})
+    try { location.hash = (d + 1) + '.' + p } catch (e) {}
+  }
+
+  function avanzar() {
+    const pasos = +diapos[d].dataset.pasos
+    if (p < pasos - 1) p++
+    else if (d < diapos.length - 1) { d++; p = 0 }
+    mostrar()
+  }
+
+  function volver() {
+    if (p > 0) p--
+    else if (d > 0) { d--; p = +diapos[d].dataset.pasos - 1 }
+    mostrar()
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); avanzar() }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); volver() }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen()
+      else document.documentElement.requestFullscreen().catch(() => {})
+    } else if (e.key === 'v' || e.key === 'V') {
+      const v = diapos[d].querySelector('video')
+      if (v) v.paused ? v.play() : v.pause()
+    } else if (e.key === 'Home') { d = 0; p = 0; mostrar() }
+    ocultarAyuda()
+  })
+  document.addEventListener('click', avanzar)
+
+  let tiempoCursor
+  document.addEventListener('mousemove', () => {
+    document.body.classList.add('con-cursor')
+    clearTimeout(tiempoCursor)
+    tiempoCursor = setTimeout(() => document.body.classList.remove('con-cursor'), 1500)
+  })
+
+  function ocultarAyuda() { document.getElementById('ayuda').classList.add('oculta') }
+  setTimeout(ocultarAyuda, 4000)
+
+  // Arranca donde diga el hash (#2.1 = diapo 2, paso 1), util para ensayar.
+  function irAlHash() {
+    const m = /^#(\d+)\.(\d+)$/.exec(location.hash)
+    if (!m) return false
+    const nd = Math.min(Math.max(+m[1] - 1, 0), diapos.length - 1)
+    const np = Math.min(+m[2], +diapos[nd].dataset.pasos - 1)
+    if (nd === d && np === p) return false
+    d = nd; p = np
+    return true
+  }
+  window.addEventListener('hashchange', () => { if (irAlHash()) mostrar() })
+  irAlHash()
+  mostrar()
+</script>
+</body>
+</html>
