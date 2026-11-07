@@ -1,13 +1,15 @@
 // Completado: la frase entera que propone el LLM mientras el usuario deletrea (ver GLOSSARY).
 // Recibe lo que lleva deletreado y el PedidoOpciones actual (turno, historial, cercania),
 // y devuelve una sola frase en la voz del usuario que empieza con lo deletreado.
+// Ve el mismo contexto que las opciones: la conversacion actual y los resumenes de las ultimas 12 h.
 // Nunca falla: si el modelo falla o devuelve algo invalido, devuelve el prefijo tal cual.
 import type { Cercania, LineaHistorial, PedidoOpciones } from '@/eventos'
-import type { Almacen, Hecho, Proveedor, SalidaProveedor } from './tipos.ts'
+import type { Almacen, ConversacionActual, Hecho, Proveedor, SalidaProveedor } from './tipos.ts'
+import { lineasDeConversacion } from './conversacion.ts'
+import { NUEVA_CONVERSACION_MS, VENTANA_RESUMENES_MS } from './opciones.ts'
 
 const MAX_HECHOS = 10
 const MAX_EJEMPLOS = 6
-const MAX_LINEAS = 8
 const MAX_PALABRAS = 20
 
 // Salida estructurada propia para los proveedores reales. Tiene que coincidir con interpretar().
@@ -27,10 +29,11 @@ export type DependenciasCompletado = {
   almacen: Almacen
 }
 
-export type CompletarFrase = (prefijo: string, pedido: PedidoOpciones) => Promise<string>
+// ahora es inyectable, como en las opciones; la ruta no lo pasa.
+export type CompletarFrase = (prefijo: string, pedido: PedidoOpciones, ahora?: Date) => Promise<string>
 
 export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
-  return async function completar(prefijo, pedido) {
+  return async function completar(prefijo, pedido, ahora = new Date()) {
     if (normalizar(prefijo) === '') return prefijo
     try {
       const [perfil, memoria] = await Promise.all([deps.almacen.leerPerfil(), deps.almacen.leerMemoria()])
@@ -46,11 +49,18 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
         partes.push(`## Frases que dijo hace poco\n${ejemplos.map((e) => `- "${e.texto}"`).join('\n')}`)
       }
 
+      // La misma regla que las opciones: sin descartados y con fin dentro de las ultimas 12 h.
+      const desde = ahora.getTime() - VENTANA_RESUMENES_MS
+      const resumenes = memoria.resumenes.filter((r) => !r.descartado && Date.parse(r.fin) >= desde)
+      if (resumenes.length > 0) {
+        partes.push(`# Conversaciones de hoy\n${resumenes.map((r) => `- ${r.resumen}`).join('\n')}`)
+      }
+
       partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
       partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado'}`)
 
-      const lineas = pedido.historial.slice(-MAX_LINEAS)
-      if (lineas.length > 0) partes.push(`# Conversacion reciente\n${lineas.map(renderLinea).join('\n')}`)
+      const lineas = lineasDeLaConversacionActual(memoria.conversacion, pedido.historial, ahora)
+      if (lineas.length > 0) partes.push(`# Conversacion actual\n${lineas.map(renderLinea).join('\n')}`)
 
       partes.push(
         pedido.ultimoTurno === null
@@ -102,6 +112,18 @@ function hechosParaCompletado(hechos: Hecho[], cercania: Cercania | undefined): 
     .filter((h) => !(cercania === 'formal' && h.intimo))
     .sort((a, b) => b.importancia - a.importancia || Date.parse(b.fecha) - Date.parse(a.fecha))
     .slice(0, MAX_HECHOS)
+}
+
+// Las mismas lineas que verian las opciones: sin conversacion actual, o con mas de 15 min de silencio,
+// lo que haya en el historial es de una conversacion anterior.
+function lineasDeLaConversacionActual(
+  conversacion: ConversacionActual | null,
+  historial: LineaHistorial[],
+  ahora: Date,
+): LineaHistorial[] {
+  if (!conversacion) return []
+  if (ahora.getTime() - Date.parse(conversacion.ultimaActividad) > NUEVA_CONVERSACION_MS) return []
+  return lineasDeConversacion(conversacion, historial)
 }
 
 function renderLinea(l: LineaHistorial) {

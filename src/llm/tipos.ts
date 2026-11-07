@@ -64,11 +64,20 @@ export type ResumenConversacion = {
   descartado?: string
 }
 
-// La conversacion en curso, para detectar cuando empieza una nueva.
+// La conversacion en curso, para detectar cuando empieza una nueva y para cerrarla con lo suyo.
+// cercania, interlocutor y lineas son opcionales: una memoria vieja sin ellos se sigue leyendo.
 export type ConversacionActual = {
   inicio: string // ISO
   ultimaActividad: string // ISO del ultimo pedido de opciones
-  desdeLinea: number // indice del historial donde empezo esta conversacion
+  // Indice del historial del cliente desde donde vienen las lineas de esta conversacion. Al abrirse,
+  // donde empezo; despues de una recarga (historial mas corto), se corre al final del historial nuevo.
+  desdeLinea: number
+  // La del pedido que la abrio; la reemplaza un pedido posterior que traiga una aclarada.
+  cercania?: Cercania | null
+  // Igual que la cercania.
+  interlocutor?: string | null
+  // Las lineas de esta conversacion guardadas en el servidor: una recarga del cliente no las pierde.
+  lineas?: LineaHistorial[]
 }
 
 export type Memoria = {

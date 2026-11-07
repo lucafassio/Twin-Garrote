@@ -231,6 +231,100 @@ describe('deteccion de conversacion', () => {
   })
 })
 
+describe('conversacion actual con su contexto y sus lineas', () => {
+  const historial = [
+    { quien: 'interlocutor' as const, texto: '¿Como dormiste?' },
+    { quien: 'usuario' as const, texto: 'Bien, che.' },
+  ]
+
+  test('la cerrada usa la cercania y el interlocutor con que se abrio, no los del pedido siguiente', async () => {
+    const { generar, cerradas } = armar([respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?', cercania: 'familia', interlocutor: 'Marta' }), T0)
+    await generar(pedido({ historial, cercania: 'formal', interlocutor: 'el medico' }), despues(20 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.equal(cerradas[0].cercania, 'familia')
+    assert.equal(cerradas[0].interlocutor, 'Marta')
+  })
+
+  test('una cercania y un interlocutor aclarados a mitad de la conversacion reemplazan a los anteriores', async () => {
+    const { generar, cerradas } = armar([respuesta(), respuesta(), respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?', cercania: 'conocido' }), T0)
+    await generar(pedido({ historial: historial.slice(0, 1), cercania: 'familia', interlocutor: 'Laura' }), despues(1 * MIN))
+    await generar(pedido({ historial }), despues(2 * MIN)) // sin aclarar: no borra lo aclarado
+    await generar(pedido({ historial, cercania: 'formal', interlocutor: 'el medico' }), despues(20 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas[0].cercania, 'familia')
+    assert.equal(cerradas[0].interlocutor, 'Laura')
+  })
+
+  test('las lineas se guardan en el servidor con cada pedido, sin duplicarse', async () => {
+    const { generar, almacen } = armar([respuesta(), respuesta(), respuesta(), respuesta()])
+    const previa = [{ quien: 'usuario' as const, texto: 'De otra charla.' }]
+    await generar(pedido({ historial: previa, ultimoTurno: '¿Como dormiste?' }), T0)
+    await generar(pedido({ historial: [...previa, ...historial] }), despues(1 * MIN))
+    await generar(pedido({ historial: [...previa, ...historial] }), despues(2 * MIN)) // el mismo historial otra vez
+    assert.deepEqual(almacen.memoria().conversacion?.lineas, historial)
+    // Una linea igual a una anterior, dicha de nuevo, si es nueva.
+    const conRepetida = [...previa, ...historial, { quien: 'interlocutor' as const, texto: '¿Como dormiste?' }]
+    await generar(pedido({ historial: conRepetida }), despues(2.5 * MIN))
+    assert.deepEqual(almacen.memoria().conversacion?.lineas, conRepetida.slice(1))
+  })
+
+  test('con el historial vacio despues de una recarga, el cierre dispara al agente con las lineas guardadas', async () => {
+    const { generar, cerradas } = armar([respuesta(), respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?', cercania: 'familia' }), T0)
+    await generar(pedido({ historial }), despues(1 * MIN))
+    await generar(pedido({ historial: [] }), despues(20 * MIN)) // recargo la pagina
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.deepEqual(cerradas[0].lineas, historial)
+    assert.equal(cerradas[0].cercania, 'familia')
+  })
+
+  test('lo que se habla despues de una recarga se suma a lo guardado, sin perder lineas', async () => {
+    const { generar, almacen } = armar([respuesta(), respuesta(), respuesta(), respuesta(), respuesta()])
+    const previa = [
+      { quien: 'interlocutor' as const, texto: 'Hola.' },
+      { quien: 'usuario' as const, texto: 'Hola, ¿todo bien?' },
+    ]
+    await generar(pedido({ historial: previa, ultimoTurno: '¿Como dormiste?' }), T0) // empieza en la linea 2
+    await generar(pedido({ historial: [...previa, ...historial] }), despues(1 * MIN))
+    await generar(pedido({ historial: [], ultimoTurno: '¿Vemos a River?' }), despues(2 * MIN)) // recarga
+    const despuesDeRecargar = [
+      { quien: 'interlocutor' as const, texto: '¿Vemos a River?' },
+      { quien: 'usuario' as const, texto: 'Obvio.' },
+    ]
+    await generar(pedido({ historial: despuesDeRecargar.slice(0, 1) }), despues(3 * MIN))
+    await generar(pedido({ historial: despuesDeRecargar }), despues(4 * MIN))
+    assert.deepEqual(almacen.memoria().conversacion?.lineas, [...historial, ...despuesDeRecargar])
+  })
+
+  test('dentro de los 3 minutos, un pedido con el historial vacio usa las lineas guardadas como contexto', async () => {
+    const { generar, prompts, cerradas } = armar([respuesta(), respuesta(), respuesta()])
+    await generar(pedido({ ultimoTurno: '¿Como dormiste?' }), T0)
+    await generar(pedido({ historial }), despues(1 * MIN))
+    const r = await generar(pedido({ historial: [], ultimoTurno: '¿Vemos a River?' }), despues(2 * MIN)) // recargo
+    assert.equal(r.nuevaConversacion, false)
+    assert.match(prompts[2].usuario, /# Conversacion actual\n- Interlocutor: ¿Como dormiste\?\n- Usuario: Bien, che\./)
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 0)
+  })
+
+  test('una memoria vieja, sin cercania, interlocutor ni lineas en la conversacion, se sigue leyendo', async () => {
+    const vieja = { inicio: T0.toISOString(), ultimaActividad: T0.toISOString(), desdeLinea: 0 }
+    const { generar, prompts, cerradas, almacen } = armar([respuesta(), respuesta()], { conversacion: vieja })
+    await generar(pedido({ historial: historial.slice(0, 1) }), despues(1 * MIN))
+    assert.match(prompts[0].usuario, /¿Como dormiste\?/)
+    await generar(pedido({ historial, cercania: 'formal' }), despues(20 * MIN))
+    await vaciarPromesas()
+    assert.deepEqual(cerradas[0].lineas, historial)
+    assert.equal(cerradas[0].cercania, null)
+    assert.equal(cerradas[0].interlocutor, null)
+    assert.equal(almacen.memoria().conversacion?.cercania, 'formal')
+  })
+})
+
 describe('proveedor falso', () => {
   test('devuelve 4 opciones al instante, con y sin turno', async () => {
     const generar = crearOpciones({ proveedor: crearProveedorFalso(), almacen: crearAlmacenEnMemoria() })

@@ -3,6 +3,7 @@
 // Un hecho invalidado nunca se borra: queda con su fecha de invalidacion.
 import type { Cercania, LineaHistorial } from '@/eventos'
 import type { Almacen, ConversacionCerrada, Hecho } from './tipos.ts'
+import { armarCerrada } from './conversacion.ts'
 
 export type HechosListados = { activos: Hecho[]; invalidados: Hecho[] }
 
@@ -36,9 +37,10 @@ export async function invalidarHecho(almacen: Almacen, id: string, ahora: Date =
 }
 
 // Cierra la conversacion actual como si hubiera pasado el silencio largo: arma la
-// ConversacionCerrada con las lineas del historial desde que empezo, y deja la memoria sin
+// ConversacionCerrada con las lineas guardadas en el servidor mas las nuevas del historial y con
+// el contexto de la conversacion (la misma regla que opciones), y deja la memoria sin
 // conversacion actual, asi el proximo pedido de opciones arranca una nueva (sin volver a cerrar).
-// El historial lo manda el cliente: el servidor solo guarda desde que linea empezo.
+// La cercania del pedido solo vale si el servidor no tenia conversacion actual.
 // Devuelve null si no habia conversacion o no tenia lineas (no hay nada que aprender).
 export async function cerrarConversacion(
   almacen: Almacen,
@@ -49,14 +51,8 @@ export async function cerrarConversacion(
   const memoria = await almacen.leerMemoria()
   const actual = memoria.conversacion
   if (!actual && historial.length === 0) return null
-  const desde = actual && actual.desdeLinea <= historial.length ? actual.desdeLinea : 0
-  const lineas = historial.slice(desde)
   await almacen.guardarMemoria({ ...memoria, conversacion: null })
-  if (lineas.length === 0) return null
-  return {
-    inicio: actual?.inicio ?? ahora.toISOString(),
-    fin: actual?.ultimaActividad ?? ahora.toISOString(),
-    lineas,
-    cercania,
-  }
+  if (actual) return armarCerrada(actual, historial)
+  const iso = ahora.toISOString()
+  return { inicio: iso, fin: iso, lineas: historial, cercania, interlocutor: null }
 }
