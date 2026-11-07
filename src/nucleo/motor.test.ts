@@ -128,6 +128,16 @@ describe('motor', () => {
     assert.equal(repetido, true)
   })
 
+  test('ojos perdidos del bus cancelan la eleccion pendiente', async () => {
+    bus.emit('turno', { texto: '¿Qué querés tomar?' })
+    await vaciarPromesas()
+    await vaciarPromesas()
+    bus.emit('ojos', { cerrados: true, progreso: 1 })
+    bus.emit('parpadeoLargo', {})
+    bus.emit('ojos', { cerrados: false, progreso: 0, perdido: true })
+    assert.deepEqual(dichos, [])
+  })
+
   test('el evento escuchando llega al estado', () => {
     bus.emit('escuchando', { activo: true })
     assert.equal(nucleo.obtener().escuchando, true)

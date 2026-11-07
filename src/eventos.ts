@@ -34,7 +34,9 @@ export type PedidoOpciones = {
 
 export type Eventos = {
   // vision -> nucleo
-  ojos: { cerrados: boolean; progreso: number } // progreso 0..1 hacia el parpadeo largo
+  // progreso 0..1 hacia el parpadeo largo. perdido: vision dejo de ver los ojos durante
+  // el cierre (se manda con cerrados: false); el nucleo cancela la eleccion pendiente.
+  ojos: { cerrados: boolean; progreso: number; perdido?: boolean }
   parpadeoLargo: Record<string, never>
   // voz -> nucleo
   transcripcionParcial: { texto: string } // lo que va diciendo el interlocutor, en vivo

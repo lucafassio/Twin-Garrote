@@ -242,6 +242,8 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
         e.ojosCerrados = false
         e.progreso = 0
         c.efectos.push({ tipo: 'desarmarGestoUrgencia' })
+        // Si vision perdio los ojos durante el cierre, el intento se cancela (no se elige).
+        if (accion.perdido) e.eleccionPendiente = null
         if (e.eleccionPendiente) {
           const el = e.eleccionPendiente
           e.eleccionPendiente = null

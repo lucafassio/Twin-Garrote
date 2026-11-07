@@ -114,6 +114,37 @@ describe('barrido', () => {
   })
 })
 
+describe('ojos perdidos (vision deja de ver los ojos)', () => {
+  test('si se pierden los ojos durante el cierre, se cancela la eleccion pendiente', () => {
+    const cerrado = aplicar(conOpciones(), { tipo: 'ojos', cerrados: true, progreso: 1 }, { tipo: 'parpadeoLargo' })
+    assert.ok(cerrado.estado.eleccionPendiente)
+    const r = reducir(cerrado.estado, { tipo: 'ojos', cerrados: false, progreso: 0, perdido: true })
+    assert.equal(decires(r.efectos).length, 0)
+    assert.equal(r.estado.eleccionPendiente, null)
+    assert.equal(r.estado.ojosCerrados, false)
+  })
+
+  test('perder los ojos desarma el gesto de urgencia', () => {
+    const e = reducir(estadoInicial, { tipo: 'ojos', cerrados: true, progreso: 0 }).estado
+    const r = reducir(e, { tipo: 'ojos', cerrados: false, progreso: 0, perdido: true })
+    assert.ok(tipos(r.efectos).includes('desarmarGestoUrgencia'))
+    assert.equal(reducir(r.estado, { tipo: 'gestoUrgencia' }).estado.urgencia, false)
+  })
+
+  test('perder los ojos libera el turno que esperaba', () => {
+    const e = aplicar(conOpciones(), { tipo: 'ojos', cerrados: true, progreso: 0.3 }, { tipo: 'turno', texto: 'Otra cosa' }).estado
+    const r = reducir(e, { tipo: 'ojos', cerrados: false, progreso: 0, perdido: true })
+    assert.equal(r.estado.ultimoTurno, 'Otra cosa')
+  })
+
+  test('el barrido sigue despues de perder los ojos', () => {
+    let e = aplicar(conOpciones(), { tipo: 'ojos', cerrados: true, progreso: 0.5 }, { tipo: 'ojos', cerrados: false, progreso: 0, perdido: true }).estado
+    const antes = e.iluminado
+    e = reducir(e, { tipo: 'tick' }).estado
+    assert.equal(e.iluminado, antes + 1)
+  })
+})
+
 describe('turnos y opciones', () => {
   test('un turno entra al historial y pide opciones', () => {
     const r = aplicar(estadoInicial, { tipo: 'turno', texto: '¿Queres empanadas?' })

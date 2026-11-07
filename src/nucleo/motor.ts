@@ -152,7 +152,7 @@ export function crearNucleo({
         // Lo que cierra voz es un fragmento: la lectura del turno decide si es un turno.
         bus.on('turno', ({ texto }) => despachar({ tipo: 'fragmento', texto })),
         bus.on('transcripcionParcial', ({ texto }) => despachar({ tipo: 'parcial', texto })),
-        bus.on('ojos', ({ cerrados, progreso }) => despachar({ tipo: 'ojos', cerrados, progreso })),
+        bus.on('ojos', ({ cerrados, progreso, perdido }) => despachar({ tipo: 'ojos', cerrados, progreso, perdido })),
         bus.on('parpadeoLargo', () => despachar({ tipo: 'parpadeoLargo' })),
         bus.on('hablando', ({ activo }) => despachar({ tipo: 'hablando', activo })),
         bus.on('escuchando', ({ activo }) => despachar({ tipo: 'escuchando', activo })),

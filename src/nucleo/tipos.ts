@@ -53,7 +53,7 @@ export type Accion =
   | { tipo: 'lectura'; lecturaId: number; lectura: LecturaTurno }
   | { tipo: 'venceAcumulado' }
   | { tipo: 'parcial'; texto: string }
-  | { tipo: 'ojos'; cerrados: boolean; progreso: number }
+  | { tipo: 'ojos'; cerrados: boolean; progreso: number; perdido?: boolean } // perdido: vision dejo de ver los ojos
   | { tipo: 'parpadeoLargo' }
   | { tipo: 'tick' }
   | { tipo: 'opcionesRecibidas'; pedidoId: number; opciones: Opcion[] }
