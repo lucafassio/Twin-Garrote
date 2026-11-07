@@ -12,6 +12,7 @@ import { crearHuella } from './huella.ts'
 import { crearNiveles, idResumen, type ProveedorRollup } from './niveles.ts'
 import { crearCierre, crearOpciones } from './opciones.ts'
 import { conservarUsosNuevos } from './saliencia.ts'
+import { nombreUsuario } from './interlocutor.ts'
 import { DIAS_SEMANA, describirDia, describirFecha, estaVencido, finDelDia, resolverFecha } from './fechas.ts'
 import type { TiempoEstructurado } from './fechas.ts'
 import type {
@@ -267,11 +268,6 @@ function sumarEjemplos(actuales: EjemploEstilo[], conversacion: ConversacionCerr
 
 // --- Prompt ------------------------------------------------------------------
 
-// El nombre del usuario sale del primer titulo de la huella ("# Roberto").
-export function nombreUsuario(perfil: PerfilHuella): string | null {
-  const m = perfil.markdown.match(/^#\s+(.+?)\s*$/m)
-  return m ? m[1] : null
-}
 
 function normalizar(s: string) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase()

@@ -26,6 +26,8 @@ import {
 } from './conversacion.ts'
 import { enFila } from './fila.ts'
 import { huellaParaPrompt } from './huella.ts'
+import { validarInterlocutorProbable } from './interlocutor.ts'
+import { REGISTROS } from './tipos.ts'
 import { bloqueDe, describirPeriodo } from './niveles.ts'
 import { decaerSaliencia, MAX_MOSTRADAS, pesoDe } from './saliencia.ts'
 // Re-exportada: el completado (#22) arma la conversacion actual con la misma regla.
@@ -77,7 +79,10 @@ export function crearOpciones(deps: DependenciasOpciones): GenerarOpciones {
     await actualizarConversacion(deps, memoria, pedido, ahora, nuevaConversacion, mostradas)
 
     const opciones = respuesta.opciones.map((o) => ({ intencion: o.intencion, texto: o.texto }))
-    return { opciones, registro: respuesta.registro, nuevaConversacion }
+    // Solo una propuesta para el chip: no se guarda en la conversacion ni nombra a nadie. Confirmado,
+    // llega en pedido.interlocutor.
+    const interlocutorProbable = validarInterlocutorProbable(respuesta.interlocutorProbable, perfil, memoria)
+    return { opciones, registro: respuesta.registro, nuevaConversacion, interlocutorProbable }
   }
 }
 
@@ -240,9 +245,10 @@ Reglas:
 12. Si te dicen los minutos de silencio desde el ultimo turno, decidi si es una conversacion nueva (nuevaConversacion).
 13. Quien habla: si la seccion Interlocutor lo dice, podes nombrarlo y adaptar el tono a esa persona. Si no lo dice, no sabes quien es: no lo nombres ni asumas que es alguien de la huella. Las personas de la huella son de quienes se habla, no quien habla.
 14. En cada opcion, hechos lista los ids (h1, h2...) de los hechos que usaste para escribirla, como mucho 3. Si no usaste ninguno, va vacia.
+15. En interlocutorProbable decis quien crees que habla: el nombre, tal como figura en la huella, de una persona de la huella si la conversacion da pistas (como le dice al usuario, "papa" o "abuelo", o algo que solo esa persona diria), o "desconocido". Nunca el usuario. Alguien de quien se habla en tercera persona ("Laura dijo que viene") no es quien habla. Si la seccion Interlocutor lo dice, es esa persona. Confianza alta solo si es claro; sin pistas, "desconocido". Es solo una suposicion para preguntar: no cambia la regla 13, las opciones no lo nombran ni le hablan por su nombre.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
-{"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"...","hechos":["h1"]}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false}`
+{"opciones":[{"intencion":"aceptar|rechazar|preguntar|otra","texto":"...","hechos":["h1"]}, ... 4 en total],"registro":"formal|casual|intimo","nuevaConversacion":true|false,"interlocutorProbable":{"nombre":"Laura|desconocido","confianza":"alta|media|baja"}}`
 }
 
 // Fuera los invalidados y los vencidos a la hora del pedido (vencido no es invalidado: sigue en la memoria).
@@ -363,7 +369,12 @@ const peso = (origen: 'deletreo' | 'opcion') => (origen === 'deletreo' ? 2 : 1)
 // --- Respuesta del modelo ----------------------------------------------------
 
 type OpcionConHechos = Opcion & { hechos: string[] } // ids reales de los hechos que uso
-type RespuestaModelo = { opciones: OpcionConHechos[]; registro: Registro; nuevaConversacion: boolean }
+type RespuestaModelo = {
+  opciones: OpcionConHechos[]
+  registro: Registro
+  nuevaConversacion: boolean
+  interlocutorProbable: unknown // crudo: lo valida validarInterlocutorProbable contra la huella
+}
 
 const MAX_HECHOS_POR_OPCION = 3
 
@@ -383,7 +394,6 @@ async function pedirConReintento(
 }
 
 const INTENCIONES: Intencion[] = ['aceptar', 'rechazar', 'preguntar', 'otra']
-const REGISTROS: Registro[] = ['formal', 'casual', 'intimo']
 
 // Los ids de hechos que no estaban entre los mandados al modelo se ignoran; sin la lista, ninguno.
 function interpretarHechos(valor: unknown, idsPorAlias: Map<string, string>): string[] {
@@ -426,5 +436,6 @@ function interpretarRespuesta(texto: string, idsPorAlias: Map<string, string>): 
     })),
     registro: REGISTROS.includes(d.registro as Registro) ? (d.registro as Registro) : 'casual',
     nuevaConversacion: d.nuevaConversacion === true,
+    interlocutorProbable: d.interlocutorProbable,
   }
 }

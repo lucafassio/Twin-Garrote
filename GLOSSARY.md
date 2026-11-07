@@ -11,8 +11,12 @@ Persona con ELA que habla a traves del sistema. En la demo, "Roberto".
 _Avoid_: paciente, persona, enfermo
 
 **Interlocutor**:
-Quien le habla al usuario en voz alta (familiar, medico, jurado). Puede haber varios a la vez; el sistema no distingue quien es quien.
+Quien le habla al usuario en voz alta (familiar, medico, jurado). Puede haber varios a la vez; el sistema no distingue quien es quien por la voz. Solo sabe quien es si lo aclaran (confirmado) o lo adivina como **interlocutor probable**.
 _Avoid_: hablante, otro
+
+**Interlocutor probable**:
+La persona de la huella que el LLM cree que habla, o "desconocido", con una confianza (alta, media o baja; no es la cercania). Es solo una propuesta para que el interlocutor la confirme tocando el chip "¿Habla Laura?". Sin confirmar no se usa para nombrar en las opciones ni para atribuir hechos.
+_Avoid_: interlocutor detectado, hablante adivinado
 
 **Perfil**:
 Datos del usuario y su forma de hablar (familia, gustos, tono, frases tipicas, temas a evitar) que carga un familiar en el onboarding. Es la base de la huella: el aprendizaje no lo modifica.

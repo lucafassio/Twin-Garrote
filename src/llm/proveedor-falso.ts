@@ -1,5 +1,6 @@
 // Proveedor falso: responde al instante con opciones fijas, sin claves. Para los demas paths.
 import type { Proveedor } from './tipos.ts'
+import { SIN_INTERLOCUTOR_PROBABLE } from './tipos.ts'
 
 const CON_TURNO = [
   [
@@ -38,7 +39,12 @@ export function crearProveedorFalso(): Proveedor {
       if (salida?.nombre === 'huella') return JSON.stringify({ texto: '', fuentes: [] })
       const sinTurno = usuario.includes('SIN_TURNO')
       const opciones = sinTurno ? SIN_TURNO : CON_TURNO[vuelta++ % CON_TURNO.length]
-      return JSON.stringify({ opciones, registro: 'casual', nuevaConversacion: false })
+      return JSON.stringify({
+        opciones,
+        registro: 'casual',
+        nuevaConversacion: false,
+        interlocutorProbable: SIN_INTERLOCUTOR_PROBABLE,
+      })
     },
   }
 }

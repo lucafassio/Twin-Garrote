@@ -588,6 +588,121 @@ describe('cierre de la conversacion', () => {
   })
 })
 
+describe('interlocutor probable', () => {
+  const probable = (nombre: string, confianza = 'alta') => respuesta({ interlocutorProbable: { nombre, confianza } })
+  const hola = [{ quien: 'interlocutor' as const, texto: 'Hola papa, ¿como dormiste?' }]
+
+  test('un nombre de la huella pasa con su confianza', async () => {
+    const { generar } = armar([probable('Laura', 'media')])
+    const r = await generar(pedido(), T0)
+    assert.deepEqual(r.interlocutorProbable, { nombre: 'Laura', confianza: 'media' })
+  })
+
+  test('un nombre de la huella pasa aunque venga con otras mayusculas o tildes', async () => {
+    const { generar } = armar([probable('  marta ')])
+    const r = await generar(pedido(), T0)
+    assert.equal(r.interlocutorProbable.nombre, 'Marta')
+  })
+
+  test('una persona que solo esta en los hechos activos tambien es de la huella', async () => {
+    const memoria = { hechos: [hecho({ texto: 'Sergio, el kinesiologo, viene los martes' })] }
+    const { generar } = armar([probable('Sergio')], memoria)
+    const r = await generar(pedido(), T0)
+    assert.equal(r.interlocutorProbable.nombre, 'Sergio')
+  })
+
+  test('una persona de la huella aprendida aceptada cuenta; de la propuesta pendiente, no', async () => {
+    const aceptada = { texto: 'Los martes lo visita Sergio, el kinesiologo.', fuentes: [], fechaAceptacion: T0.toISOString() }
+    const conAceptada = armar([probable('Sergio')], { huellaAprendida: { aceptada } })
+    assert.equal((await conAceptada.generar(pedido(), T0)).interlocutorProbable.nombre, 'Sergio')
+    const propuesta = { texto: aceptada.texto, fuentes: [], fecha: T0.toISOString() }
+    const conPropuesta = armar([probable('Sergio')], { huellaAprendida: { propuesta } })
+    assert.equal((await conPropuesta.generar(pedido(), T0)).interlocutorProbable.nombre, 'desconocido')
+  })
+
+  test('una persona de un hecho invalidado ya no cuenta', async () => {
+    const memoria = {
+      hechos: [hecho({ texto: 'Sergio, el kinesiologo, viene los martes', estado: 'invalidado' as const, fechaInvalidacion: T0.toISOString() })],
+    }
+    const { generar } = armar([probable('Sergio')], memoria)
+    const r = await generar(pedido(), T0)
+    assert.equal(r.interlocutorProbable.nombre, 'desconocido')
+  })
+
+  test('un nombre que no esta en la huella queda desconocido', async () => {
+    const { generar } = armar([probable('Jorge')])
+    const r = await generar(pedido(), T0)
+    assert.deepEqual(r.interlocutorProbable, { nombre: 'desconocido', confianza: 'baja' })
+  })
+
+  test('una palabra suelta dentro de otra no cuenta como nombre de la huella', async () => {
+    const { generar } = armar([probable('Mar')])
+    const r = await generar(pedido(), T0)
+    assert.equal(r.interlocutorProbable.nombre, 'desconocido')
+  })
+
+  test('una palabra de la huella que no esta escrita como nombre propio no pasa', async () => {
+    const { generar } = armar([probable('tango'), probable('asado')])
+    assert.equal((await generar(pedido(), T0)).interlocutorProbable.nombre, 'desconocido')
+    assert.equal((await generar(pedido(), despues(1 * MIN))).interlocutorProbable.nombre, 'desconocido')
+  })
+
+  test('el primer nombre del usuario tambien queda desconocido', async () => {
+    const { proveedor } = guionado([probable('Roberto')])
+    const almacen = crearAlmacenEnMemoria({ perfil: { origen: 'familia', markdown: '# Roberto Fernandez\n\n- Esposa: Marta.' } })
+    const r = await crearOpciones({ proveedor, almacen })(pedido(), T0)
+    assert.equal(r.interlocutorProbable.nombre, 'desconocido')
+  })
+
+  test('el nombre del usuario queda desconocido', async () => {
+    const { generar } = armar([probable('Roberto')])
+    const r = await generar(pedido({ historial: hola }), T0)
+    assert.deepEqual(r.interlocutorProbable, { nombre: 'desconocido', confianza: 'baja' })
+  })
+
+  test('desconocido del modelo conserva su confianza', async () => {
+    const { generar } = armar([probable('desconocido', 'alta')])
+    const r = await generar(pedido(), T0)
+    assert.deepEqual(r.interlocutorProbable, { nombre: 'desconocido', confianza: 'alta' })
+  })
+
+  test('sin el campo, o con una confianza rara, no se cae: desconocido o confianza baja', async () => {
+    const { generar } = armar([respuesta(), respuesta({ interlocutorProbable: { nombre: 'Laura', confianza: 'segura' } })])
+    assert.deepEqual((await generar(pedido(), T0)).interlocutorProbable, { nombre: 'desconocido', confianza: 'baja' })
+    assert.deepEqual((await generar(pedido(), despues(1 * MIN))).interlocutorProbable, { nombre: 'Laura', confianza: 'baja' })
+  })
+
+  test('el prompt pide el interlocutor probable sin nombrarlo en las opciones', async () => {
+    const { generar, prompts } = armar([probable('Laura')])
+    await generar(pedido(), T0)
+    assert.match(prompts[0].sistema, /interlocutorProbable/)
+    assert.match(prompts[0].usuario, /# Interlocutor\nno aclarado/)
+  })
+
+  test('sin confirmar no llega a la conversacion ni a la cerrada, ni al prompt siguiente', async () => {
+    const respuestaUsuario = [...hola, { quien: 'usuario' as const, texto: 'Bien, che.' }]
+    const { generar, prompts, almacen, cerradas } = armar([probable('Laura'), probable('Laura'), respuesta()])
+    await generar(pedido({ ultimoTurno: hola[0].texto }), T0)
+    await generar(pedido({ historial: respuestaUsuario, ultimoTurno: '¿Queres algo?' }), despues(1 * MIN))
+    assert.equal(almacen.memoria().conversacion?.interlocutor, null)
+    assert.match(prompts[1].usuario, /# Interlocutor\nno aclarado/)
+    await generar(pedido({ historial: respuestaUsuario }), despues(30 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas.length, 1)
+    assert.equal(cerradas[0].interlocutor, null)
+  })
+
+  test('confirmado, viaja en interlocutor y llega a la cerrada', async () => {
+    const respuestaUsuario = [...hola, { quien: 'usuario' as const, texto: 'Bien, che.' }]
+    const { generar, cerradas } = armar([probable('Laura'), probable('Laura'), respuesta()])
+    await generar(pedido({ ultimoTurno: hola[0].texto }), T0)
+    await generar(pedido({ historial: respuestaUsuario, interlocutor: 'Laura' }), despues(1 * MIN))
+    await generar(pedido({ historial: respuestaUsuario }), despues(30 * MIN))
+    await vaciarPromesas()
+    assert.equal(cerradas[0].interlocutor, 'Laura')
+  })
+})
+
 describe('proveedor falso', () => {
   test('devuelve 4 opciones al instante, con y sin turno', async () => {
     const generar = crearOpciones({ proveedor: crearProveedorFalso(), almacen: crearAlmacenEnMemoria() })
@@ -595,5 +710,6 @@ describe('proveedor falso', () => {
     const arranques = await generar(pedido({ ultimoTurno: null }), T0)
     assert.equal(arranques.opciones.length, 4)
     assert.match(arranques.opciones[0].texto, /River/)
+    assert.deepEqual(arranques.interlocutorProbable, { nombre: 'desconocido', confianza: 'baja' })
   })
 })

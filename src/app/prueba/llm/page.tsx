@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { registrarEleccion } from '@/llm/cliente'
 import type { Eleccion, ResumenElecciones } from '@/llm/elecciones'
+import type { InterlocutorProbable } from '@/llm/cliente'
+import { INTERLOCUTOR_DESCONOCIDO } from '@/llm/tipos'
 import type { Cercania, LineaHistorial, Opcion, PedidoOpciones, TipoTurno } from '@/eventos'
 import PruebaCompletado from './PruebaCompletado'
 import PruebaCorte from './PruebaCorte'
@@ -32,6 +34,7 @@ type Respuesta = {
   opciones: Opcion[]
   registro: string
   nuevaConversacion: boolean
+  interlocutorProbable?: InterlocutorProbable // una ruta vieja no lo trae
   proveedor: string
   ms: number
 }
@@ -256,6 +259,22 @@ export default function Prueba() {
             <strong>{msTotal} ms</strong> en total ({respuesta.ms} ms en el servidor) · {respuesta.proveedor} ·
             registro {respuesta.registro} · {respuesta.nuevaConversacion ? 'conversación nueva' : 'misma conversación'}
           </p>
+          {respuesta.interlocutorProbable && (
+            <p className="flex flex-wrap items-center gap-2 text-sm">
+              Interlocutor probable: <strong>{respuesta.interlocutorProbable.nombre}</strong> (confianza{' '}
+              {respuesta.interlocutorProbable.confianza})
+              {respuesta.interlocutorProbable.nombre !== INTERLOCUTOR_DESCONOCIDO &&
+                respuesta.interlocutorProbable.nombre !== interlocutor && (
+                  <button
+                    className="rounded-full border px-3 py-0.5 hover:bg-gray-100 hover:text-black"
+                    onClick={() => setInterlocutor(respuesta.interlocutorProbable!.nombre)}
+                    title="Lo toca el interlocutor: pasa a Quién habla en los pedidos siguientes"
+                  >
+                    ¿Habla {respuesta.interlocutorProbable.nombre}?
+                  </button>
+                )}
+            </p>
+          )}
           <ol className="space-y-2">
             {respuesta.opciones.map((o, i) => (
               <li key={i}>

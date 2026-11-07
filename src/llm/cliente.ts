@@ -2,6 +2,9 @@ import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 import type { Eleccion } from './saliencia.ts'
 export type { Eleccion } from './saliencia.ts'
 import type { PedidoEleccion, ResumenElecciones } from './elecciones.ts'
+import type { Confianza, InterlocutorProbable, Registro } from './tipos.ts'
+import { CONFIANZAS, REGISTROS, SIN_INTERLOCUTOR_PROBABLE } from './tipos.ts'
+export type { Confianza, InterlocutorProbable } from './tipos.ts'
 
 // Opcional: llamar al elegir, sin esperar para avanzar el turno. Nunca rechaza.
 export async function registrarEleccion(pedido: PedidoEleccion): Promise<ResumenElecciones | null> {
@@ -46,6 +49,43 @@ let opcionesEnVuelo: AbortController | null = null
 // Pide las opciones a /api/opciones. Si falla, tira error y el nucleo queda "sin conexion" con las
 // opciones fijas. Si lo cancela un pedido mas nuevo, tira PedidoCancelado.
 export async function pedirOpciones(pedido: PedidoOpciones): Promise<Opcion[]> {
+  return (await pedirDatosOpciones(pedido)).opciones
+}
+
+// Lo que devuelve pedirOpcionesConInterlocutor (#46).
+export type RespuestaOpciones = {
+  opciones: Opcion[]
+  // Quien habla probablemente: una persona de la huella o 'desconocido', con su confianza. Es para
+  // el chip "¿Habla Laura?": sin confirmar no se manda como interlocutor. Confirmado (el interlocutor
+  // toco el chip), va en PedidoOpciones.interlocutor de los pedidos siguientes.
+  interlocutorProbable: InterlocutorProbable
+  registro: Registro
+}
+
+// Igual que pedirOpciones, mas el interlocutor probable y el registro. Comparte el corte con
+// pedirOpciones: un pedido de cualquiera de las dos cancela el anterior de cualquiera de las dos.
+export async function pedirOpcionesConInterlocutor(pedido: PedidoOpciones): Promise<RespuestaOpciones> {
+  const datos = await pedirDatosOpciones(pedido)
+  return {
+    opciones: datos.opciones,
+    // Una ruta vieja, sin el campo: desconocido.
+    interlocutorProbable: esInterlocutorProbable(datos.interlocutorProbable)
+      ? datos.interlocutorProbable
+      : SIN_INTERLOCUTOR_PROBABLE,
+    registro: REGISTROS.includes(datos.registro as Registro) ? (datos.registro as Registro) : 'casual',
+  }
+}
+
+function esInterlocutorProbable(x: unknown): x is InterlocutorProbable {
+  if (typeof x !== 'object' || x === null) return false
+  const v = x as Record<string, unknown>
+  return typeof v.nombre === 'string' && CONFIANZAS.includes(v.confianza as Confianza)
+}
+
+// El cuerpo crudo de /api/opciones, con el corte de pedidos viejos. Lo usan las dos funciones de opciones.
+async function pedirDatosOpciones(
+  pedido: PedidoOpciones,
+): Promise<{ opciones: Opcion[]; interlocutorProbable?: unknown; registro?: unknown }> {
   opcionesEnVuelo?.abort()
   const control = new AbortController()
   opcionesEnVuelo = control
@@ -61,7 +101,7 @@ export async function pedirOpciones(pedido: PedidoOpciones): Promise<Opcion[]> {
     if (!respuesta.ok || !datos || !Array.isArray(datos.opciones)) {
       throw new Error(datos?.error ?? `Fallo /api/opciones (${respuesta.status})`)
     }
-    return datos.opciones as Opcion[]
+    return datos
   } catch (error) {
     if (control.signal.aborted || esAbortado(error)) throw new PedidoCancelado()
     throw error

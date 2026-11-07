@@ -19,8 +19,18 @@ export const ESQUEMA_RESPUESTA = {
     },
     registro: { type: 'string', enum: ['formal', 'casual', 'intimo'] },
     nuevaConversacion: { type: 'boolean' },
+    // Quien habla probablemente: una persona de la huella o 'desconocido'. El codigo lo valida.
+    interlocutorProbable: {
+      type: 'object',
+      properties: {
+        nombre: { type: 'string' },
+        confianza: { type: 'string', enum: ['alta', 'media', 'baja'] },
+      },
+      required: ['nombre', 'confianza'],
+      additionalProperties: false,
+    },
   },
-  required: ['opciones', 'registro', 'nuevaConversacion'],
+  required: ['opciones', 'registro', 'nuevaConversacion', 'interlocutorProbable'],
   additionalProperties: false,
 } as const
 

@@ -1,5 +1,6 @@
 // Ruta de opciones del path llm: capa fina sobre el modulo de opciones.
-// POST con PedidoOpciones -> { opciones, registro, nuevaConversacion, proveedor, ms }.
+// POST con PedidoOpciones -> { opciones, registro, nuevaConversacion, interlocutorProbable, proveedor, ms }.
+// interlocutorProbable (#46) es un campo mas: quien solo lee opciones no se entera.
 import { esPedido } from '@/llm/pedido'
 import { ErrorOpciones } from '@/llm'
 import { servidorLlm } from '@/llm/servidor'

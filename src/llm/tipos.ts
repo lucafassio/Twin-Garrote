@@ -170,11 +170,27 @@ export type Almacen = {
 // --- Resultado de opciones ---------------------------------------------------
 
 export type Registro = 'formal' | 'casual' | 'intimo'
+export const REGISTROS: Registro[] = ['formal', 'casual', 'intimo']
+
+// Que tan seguro esta el modelo del interlocutor probable. No es la cercania.
+export type Confianza = 'alta' | 'media' | 'baja'
+export const CONFIANZAS: Confianza[] = ['alta', 'media', 'baja']
+
+// Quien habla probablemente, segun el modelo (#46). nombre: una persona de la huella (validado por
+// codigo, nunca el usuario) o 'desconocido'. Es solo una propuesta para el chip "¿Habla Laura?": sin
+// confirmar no se usa para nombrar ni para atribuir hechos. Confirmado, viaja en
+// PedidoOpciones.interlocutor.
+export type InterlocutorProbable = { nombre: string; confianza: Confianza }
+
+export const INTERLOCUTOR_DESCONOCIDO = 'desconocido'
+// Lo que queda cuando no hay un nombre valido: sin campo, fuera de la huella o el del usuario.
+export const SIN_INTERLOCUTOR_PROBABLE: InterlocutorProbable = { nombre: INTERLOCUTOR_DESCONOCIDO, confianza: 'baja' }
 
 export type ResultadoOpciones = {
   opciones: Opcion[] // exactamente 4, la mas probable primero
   registro: Registro
   nuevaConversacion: boolean
+  interlocutorProbable: InterlocutorProbable
 }
 
 // Lo que recibe el agente de memoria cuando se cierra una conversacion.

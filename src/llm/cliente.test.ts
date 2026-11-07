@@ -3,7 +3,7 @@
 import { after, beforeEach, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { PedidoOpciones } from '@/eventos'
-import { cerrarConversacion, completarFrase, esPedidoCancelado, pedirOpciones } from './cliente.ts'
+import { cerrarConversacion, completarFrase, esPedidoCancelado, pedirOpciones, pedirOpcionesConInterlocutor } from './cliente.ts'
 
 type Llamada = {
   url: string
@@ -73,6 +73,63 @@ describe('pedirOpciones', () => {
     const p = pedirOpciones(pedido('¿Como estas?'))
     llamadas[0].fallar(new TypeError('Failed to fetch'))
     await assert.rejects(p, (e) => !esPedidoCancelado(e))
+  })
+})
+
+describe('pedirOpcionesConInterlocutor', () => {
+  const conProbable = (texto: string) => ({
+    ...opciones(texto),
+    registro: 'intimo',
+    nuevaConversacion: false,
+    interlocutorProbable: { nombre: 'Laura', confianza: 'alta' },
+  })
+
+  test('entrega las opciones con el interlocutor probable y el registro', async () => {
+    const p = pedirOpcionesConInterlocutor(pedido('Hola papa'))
+    assert.equal(llamadas[0].url, '/api/opciones')
+    llamadas[0].responder(200, conProbable('Hola, Laurita'))
+    assert.deepEqual(await p, {
+      opciones: [{ intencion: 'otra', texto: 'Hola, Laurita' }],
+      interlocutorProbable: { nombre: 'Laura', confianza: 'alta' },
+      registro: 'intimo',
+    })
+  })
+
+  test('sin interlocutor probable en la respuesta, queda desconocido', async () => {
+    const p = pedirOpcionesConInterlocutor(pedido('Hola'))
+    llamadas[0].responder(200, opciones('Hola'))
+    const r = await p
+    assert.deepEqual(r.interlocutorProbable, { nombre: 'desconocido', confianza: 'baja' })
+    assert.equal(r.registro, 'casual')
+  })
+
+  test('comparte el corte con pedirOpciones: el mas nuevo cancela al otro, en los dos sentidos', async () => {
+    const viejo = pedirOpciones(pedido('¿Tenes hambre?'))
+    const nuevo = pedirOpcionesConInterlocutor(pedido('¿Queres agua?'))
+    const masNuevo = pedirOpciones(pedido('¿Y cafe?'))
+    assert.deepEqual(
+      llamadas.map((l) => l.signal.aborted),
+      [true, true, false],
+    )
+    llamadas[2].responder(200, opciones('Cafe'))
+    await assert.rejects(viejo, (e) => esPedidoCancelado(e))
+    await assert.rejects(nuevo, (e) => esPedidoCancelado(e))
+    assert.deepEqual(await masNuevo, [{ intencion: 'otra', texto: 'Cafe' }])
+  })
+
+  test('si la respuesta vieja ya llego al cancelarse, igual no se entrega', async () => {
+    const viejo = pedirOpcionesConInterlocutor(pedido('¿Tenes hambre?'))
+    llamadas[0].responder(200, conProbable('Vieja'))
+    const nuevo = pedirOpcionesConInterlocutor(pedido('¿Queres agua?'))
+    await assert.rejects(viejo, (e) => esPedidoCancelado(e))
+    llamadas[1].responder(200, conProbable('Nueva'))
+    assert.equal((await nuevo).opciones[0].texto, 'Nueva')
+  })
+
+  test('una falla real no se reporta como cancelada', async () => {
+    const p = pedirOpcionesConInterlocutor(pedido('¿Como estas?'))
+    llamadas[0].responder(500, { error: 'se cayo' })
+    await assert.rejects(p, (e) => e instanceof Error && !esPedidoCancelado(e) && e.message === 'se cayo')
   })
 })
 

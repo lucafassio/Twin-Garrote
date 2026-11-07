@@ -109,13 +109,15 @@ async function main() {
   await llamar('/api/completar', { prefijo: '', pedido: armarPedido('Hola', 'familia') })
   if (BASE) await fetch(`${BASE}/api/memoria`)
 
-  const filas: { turno: string; total: number; servidor: number; opciones: string[] }[] = []
+  const filas: { turno: string; total: number; servidor: number; opciones: string[]; probable: string }[] = []
   let proveedor = ''
   for (const t of TURNOS) {
     const { datos, ms } = await llamar('/api/opciones', armarPedido(t.turno, t.cercania))
     proveedor = String(datos.proveedor)
     const opciones = (datos.opciones as { texto: string }[]).map((o) => o.texto)
-    filas.push({ turno: t.turno, total: ms, servidor: Number(datos.ms ?? ms), opciones })
+    const p = datos.interlocutorProbable as { nombre?: string; confianza?: string } | undefined
+    const probable = p ? `${p.nombre} (${p.confianza})` : 'sin campo'
+    filas.push({ turno: t.turno, total: ms, servidor: Number(datos.ms ?? ms), opciones, probable })
   }
 
   const completado = await llamar('/api/completar', {
@@ -140,9 +142,9 @@ async function main() {
   const totales = filas.map((f) => f.total)
   const promedio = Math.round(totales.reduce((s, x) => s + x, 0) / totales.length)
   console.log(`## ${proveedor}\n`)
-  console.log('| # | Turno | Total | Servidor |')
-  console.log('|---|---|---|---|')
-  filas.forEach((f, i) => console.log(`| ${i + 1} | ${f.turno} | ${f.total} ms | ${f.servidor} ms |`))
+  console.log('| # | Turno | Total | Servidor | Interlocutor probable |')
+  console.log('|---|---|---|---|---|')
+  filas.forEach((f, i) => console.log(`| ${i + 1} | ${f.turno} | ${f.total} ms | ${f.servidor} ms | ${f.probable} |`))
   console.log(
     `\nOpciones: promedio ${promedio} ms, mediana ${mediana(totales)} ms, max ${Math.max(...totales)} ms` +
       ` (${totales.filter((x) => x > LIMITE_MS).length}/${TURNOS.length} pasan de ${LIMITE_MS} ms)`,
