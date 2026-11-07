@@ -31,6 +31,8 @@ export type Nucleo = {
   suscribir(fn: () => void): () => void
   cortarUrgencia(): void
   repetir(): void
+  terminarDeletreo(texto: string): void
+  cancelarDeletreo(): void
   setVelocidad(ms: number): void
   velocidad(): number
 }
@@ -174,6 +176,8 @@ export function crearNucleo({
     },
     cortarUrgencia: () => despachar({ tipo: 'cortarUrgencia' }),
     repetir: () => despachar({ tipo: 'repetir' }),
+    terminarDeletreo: (texto) => despachar({ tipo: 'terminarDeletreo', texto }),
+    cancelarDeletreo: () => despachar({ tipo: 'cancelarDeletreo' }),
     setVelocidad(ms) {
       velocidad = Math.max(400, ms)
       if (activo) reiniciarTick()

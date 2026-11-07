@@ -1,4 +1,4 @@
-import type { LineaHistorial } from '@/eventos'
+import type { LineaHistorial, PedidoOpciones } from '@/eventos'
 import type { Accion, Efecto, Elemento, Estado, Resultado } from './tipos'
 
 // Reglas del nucleo (issue #5). Funcion pura: sin timers, sin red, sin React.
@@ -38,6 +38,7 @@ export const estadoInicial: Estado = {
   ultimaLectura: null,
   descartado: null,
   tipoTurno: null,
+  deletreando: false,
 }
 
 // Umbrales de la lectura del turno.
@@ -57,6 +58,8 @@ export function elementosBarrido(estado: Estado): Elemento[] {
   if (!siNoPrimero) lista.push({ tipo: 'si' }, { tipo: 'no' })
   lista.push({ tipo: 'espera' })
   if (estado.conversacion !== 'pensando') lista.push({ tipo: 'otra' })
+  // Recurso cuando ni Otra sirve: no depende de las opciones del LLM.
+  lista.push({ tipo: 'deletrear' })
   if (estado.hayParaRepetir) lista.push({ tipo: 'repetir' })
   return lista
 }
@@ -68,6 +71,11 @@ function historialPrevio(e: Estado): LineaHistorial[] {
     return e.historial.slice(0, -1)
   }
   return e.historial
+}
+
+// Pedido del turno actual. Lo usan pedirOpciones y Deletrear (que no repite lo ya mostrado).
+export function pedidoActual(e: Estado): PedidoOpciones {
+  return { historial: historialPrevio(e), ultimoTurno: e.ultimoTurno, yaMostradas: [] }
 }
 
 // Helpers que mutan una copia del estado y acumulan efectos.
@@ -87,7 +95,7 @@ function pedirOpciones(c: Ctx) {
   c.efectos.push({
     tipo: 'pedirOpciones',
     pedidoId: c.e.pedidoId,
-    pedido: { historial: historialPrevio(c.e), ultimoTurno: c.e.ultimoTurno, yaMostradas: c.e.yaMostradas },
+    pedido: { ...pedidoActual(c.e), yaMostradas: c.e.yaMostradas },
   })
   reiniciarBarrido(c)
 }
@@ -123,7 +131,7 @@ function repetir(c: Ctx) {
 }
 
 // Respuesta al turno: se dice, entra al historial y limpia las opciones.
-function responder(c: Ctx, texto: string, origen: 'opcion' | 'fija') {
+function responder(c: Ctx, texto: string, origen: NonNullable<LineaHistorial['origen']>) {
   decir(c, texto)
   c.e.historial = [...c.e.historial, { quien: 'usuario', texto, origen }]
   c.e.conversacion = 'escuchando'
@@ -179,11 +187,14 @@ function ejecutar(c: Ctx, el: Elemento) {
       return pedirOpciones(c)
     case 'urgencia':
       return activarUrgencia(c)
+    case 'deletrear':
+      c.e.deletreando = true
+      return
   }
 }
 
 function barridoDetenido(e: Estado) {
-  return e.urgencia || e.hablando || e.esperandoHabla || e.pausado || e.ojosCerrados
+  return e.urgencia || e.deletreando || e.hablando || e.esperandoHabla || e.pausado || e.ojosCerrados
 }
 
 export function reducir(estado: Estado, accion: Accion): Resultado {
@@ -277,6 +288,8 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
         }
         break
       }
+      // Deletrear maneja su propio barrido; la urgencia de arriba sigue andando.
+      if (e.deletreando) break
       if (e.hablando || e.esperandoHabla) break
       if (e.pausado) {
         reiniciarBarrido(c)
@@ -357,6 +370,18 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
 
     case 'repetir':
       if (e.hayParaRepetir && !e.urgencia && !e.hablando && !e.esperandoHabla) repetir(c)
+      break
+
+    case 'terminarDeletreo':
+      if (!e.deletreando || e.urgencia) break
+      e.deletreando = false
+      responder(c, accion.texto, 'deletreo')
+      break
+
+    case 'cancelarDeletreo':
+      if (!e.deletreando || e.urgencia) break
+      e.deletreando = false
+      reiniciarBarrido(c)
       break
   }
 

@@ -63,6 +63,17 @@ describe('motor', () => {
     assert.deepEqual(dichos, [{ texto: 'Dale.' }])
   })
 
+  test('Deletrear frena el barrido y lo que devuelve se dice en el bus', () => {
+    mock.timers.tick(5000) // urgencia, si, no, espera, otra, deletrear
+    bus.emit('parpadeoLargo', {})
+    assert.equal(nucleo.obtener().deletreando, true)
+    mock.timers.tick(3000)
+    assert.equal(nucleo.obtener().iluminado, 5)
+    nucleo.terminarDeletreo('Hola.')
+    assert.equal(nucleo.obtener().deletreando, false)
+    assert.deepEqual(dichos, [{ texto: 'Hola.' }])
+  })
+
   test('2 s con los ojos cerrados disparan la urgencia', () => {
     bus.emit('ojos', { cerrados: true, progreso: 0 })
     mock.timers.tick(1999)

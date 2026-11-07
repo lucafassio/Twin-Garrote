@@ -83,6 +83,9 @@ function Conversacion() {
         estado={estado}
         onCortarUrgencia={nucleo.cortarUrgencia}
         onRepetir={nucleo.repetir}
+        onTerminarDeletreo={nucleo.terminarDeletreo}
+        onCancelarDeletreo={nucleo.cancelarDeletreo}
+        velocidadMs={nucleo.velocidad()}
         operador={
           herramientas && (
             <div className="flex items-start gap-4">

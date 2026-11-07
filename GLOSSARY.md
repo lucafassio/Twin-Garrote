@@ -99,7 +99,7 @@ Sonido corto que suena siempre antes de que el sistema diga algo en voz alta, pa
 _Avoid_: chime, campana, alerta
 
 **Opciones fijas**:
-Si, No, Espera, Otra y Repetir: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial. "Repetir" vuelve a decir la ultima respuesta sin que entre de nuevo al historial; tambien la puede pedir cualquiera de la sala.
+Si, No, Espera, Otra, Deletrear y Repetir: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial. "Repetir" vuelve a decir la ultima respuesta sin que entre de nuevo al historial; tambien la puede pedir cualquiera de la sala. "Deletrear" abre el **deletreo** cuando ni "Otra" sirve.
 _Avoid_: botones rapidos, atajos
 
 **Urgencia**:

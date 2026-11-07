@@ -13,7 +13,13 @@ export default function Prueba() {
   const { nucleo, estado } = useNucleo()
   return (
     <>
-      <Pantalla estado={estado} onCortarUrgencia={nucleo.cortarUrgencia} onRepetir={nucleo.repetir} />
+      <Pantalla
+        estado={estado}
+        onCortarUrgencia={nucleo.cortarUrgencia}
+        onRepetir={nucleo.repetir}
+        onTerminarDeletreo={nucleo.terminarDeletreo}
+        onCancelarDeletreo={nucleo.cancelarDeletreo}
+      />
       <Simulador />
       <SimuladorOjos />
       <DebugNucleo nucleo={nucleo} estado={estado} />

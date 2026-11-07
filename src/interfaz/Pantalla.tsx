@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, type ReactNode } from 'react'
-import { elementosBarrido } from '@/nucleo/reductor'
+import { Deletrear } from '@/deletrear'
+import { elementosBarrido, pedidoActual } from '@/nucleo/reductor'
 import type { Elemento, ElementoFijo, Estado } from '@/nucleo/tipos'
 
 // Pantalla principal: dibuja el estado del nucleo. No decide nada.
@@ -13,6 +14,7 @@ const FRANJA: { tipo: ElementoFijo; texto: string }[] = [
   { tipo: 'no', texto: 'No' },
   { tipo: 'espera', texto: 'Espera' },
   { tipo: 'otra', texto: 'Otra' },
+  { tipo: 'deletrear', texto: 'Deletrear' },
   { tipo: 'repetir', texto: 'Repetir' },
 ]
 
@@ -62,10 +64,21 @@ type Props = {
   estado: Estado
   onCortarUrgencia: () => void
   onRepetir: () => void
+  onTerminarDeletreo: (texto: string) => void
+  onCancelarDeletreo: () => void
+  velocidadMs?: number // la del barrido del nucleo, para que Deletrear vaya al mismo ritmo
   operador?: ReactNode // herramientas de quien opera la demo (CampoTurno, debug), debajo de la franja
 }
 
-export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador }: Props) {
+export default function Pantalla({
+  estado,
+  onCortarUrgencia,
+  onRepetir,
+  onTerminarDeletreo,
+  onCancelarDeletreo,
+  velocidadMs,
+  operador,
+}: Props) {
   const elementos = elementosBarrido(estado)
   const iluminado = estado.pausado ? undefined : elementos[estado.iluminado]
   const progreso = estado.ojosCerrados ? estado.progreso : 0
@@ -95,6 +108,24 @@ export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador
         </span>
         <span className="text-3xl">Escape o click para cortar</span>
       </button>
+    )
+  }
+
+  // Deletrear a pantalla completa. Se desmonta durante la urgencia (arriba): si siguiera montado,
+  // los parpadeos de "Fue sin querer" le elegirian letras. El borrador lo guarda deletrear.
+  if (estado.deletreando) {
+    return (
+      <div className="flex h-screen flex-col bg-zinc-950 text-zinc-50">
+        <div className="min-h-0 flex-1">
+          <Deletrear
+            pedido={pedidoActual(estado)}
+            onTerminar={onTerminarDeletreo}
+            onCancelar={onCancelarDeletreo}
+            velocidadMs={velocidadMs}
+          />
+        </div>
+        {operador && <div className="px-4 pb-4">{operador}</div>}
+      </div>
     )
   }
 
@@ -148,7 +179,7 @@ export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador
       </main>
 
       {/* Abajo: franja fija, siempre visible */}
-      <footer className="grid h-36 grid-cols-6 gap-4 text-4xl font-bold">
+      <footer className="grid h-36 grid-cols-7 gap-4 text-4xl font-bold">
         {FRANJA.map(({ tipo, texto }) => {
           const el: Elemento = { tipo }
           return (
