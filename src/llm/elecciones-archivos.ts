@@ -1,11 +1,11 @@
 import { appendFile, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { CARPETA_DATOS } from './almacen-archivos.ts'
+import { carpetaDatos } from './almacen-archivos.ts'
 import type { AlmacenElecciones, RegistroEleccion } from './elecciones.ts'
 
 // Un registro por linea; agregar nunca reescribe las elecciones anteriores. Solo la purga de vencidos
 // reescribe el archivo, y solo si hay algo que sacar.
-export function crearAlmacenEleccionesEnArchivos(carpeta = join(process.cwd(), CARPETA_DATOS)): AlmacenElecciones {
+export function crearAlmacenEleccionesEnArchivos(carpeta = carpetaDatos()): AlmacenElecciones {
   const ruta = join(carpeta, 'elecciones.jsonl')
   let escrituras: Promise<void> = Promise.resolve()
   async function leerArchivo(): Promise<RegistroEleccion[]> {

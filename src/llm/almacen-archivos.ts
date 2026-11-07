@@ -4,6 +4,7 @@
 //   .data/memoria.json hechos, resumenes, ejemplos de estilo y la conversacion actual.
 // El perfil solo se lee: este almacen no tiene como escribirlo despues de crearlo.
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { Almacen, Memoria } from './tipos.ts'
 import { memoriaVacia } from './almacen.ts'
@@ -11,7 +12,12 @@ import { PERFIL_ROBERTO } from './perfil-roberto.ts'
 
 export const CARPETA_DATOS = '.data'
 
-export function crearAlmacenEnArchivos(carpeta: string = join(process.cwd(), CARPETA_DATOS)): Almacen {
+// En Vercel el proyecto es de solo lectura: solo /tmp se puede escribir (y no dura entre instancias).
+export function carpetaDatos(): string {
+  return join(process.env.VERCEL ? tmpdir() : process.cwd(), CARPETA_DATOS)
+}
+
+export function crearAlmacenEnArchivos(carpeta: string = carpetaDatos()): Almacen {
   const rutaPerfil = join(carpeta, 'huella.md')
   const rutaMemoria = join(carpeta, 'memoria.json')
   // Las escrituras van en fila para que dos guardados no se pisen a mitad de archivo.
