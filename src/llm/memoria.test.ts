@@ -84,6 +84,21 @@ describe('agente de memoria', () => {
     assert.match(prompts[0].usuario, /Mandale un beso grande/)
   })
 
+  test('el nombre del usuario nunca queda como interlocutor', async () => {
+    const lineas: LineaHistorial[] = [{ quien: 'interlocutor', texto: 'Che, Roberto, te cuento que Laura se opera el jueves.' }]
+    const { proveedor, prompts } = guionado([
+      respuesta([
+        { accion: 'agregar', texto: 'Laura se opera el jueves.', linea: 1, interlocutor: 'Roberto', importancia: 8, intimo: true },
+        { accion: 'agregar', texto: 'El asado se paso al sabado.', linea: 1, interlocutor: 'marta', importancia: 4 },
+      ]),
+    ])
+    const r = await crearAgenteMemoria({ proveedor })(cerrada(lineas), memoria(), PERFIL_ROBERTO)
+
+    assert.equal(r.hechos[0].interlocutor, null)
+    assert.equal(r.hechos[1].interlocutor, 'marta')
+    assert.match(prompts[0].sistema, /se llama Roberto/)
+  })
+
   test('el origen sale de la linea: deletreo si el usuario lo deletreo', async () => {
     const { proveedor } = guionado([
       respuesta([{ accion: 'agregar', texto: 'Roberto le manda un beso a Laura.', linea: 4, importancia: 3 }]),

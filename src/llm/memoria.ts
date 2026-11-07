@@ -84,11 +84,16 @@ export function crearAgenteMemoria(deps: DependenciasMemoria): ActualizarMemoria
     memoria.ejemplosEstilo = sumarEjemplos(memoria.ejemplosEstilo, conversacion)
 
     const activos = memoria.hechos.filter((h) => h.estado === 'activo')
-    const sistema = promptSistema()
+    const nombre = nombreUsuario(perfil)
+    const sistema = promptSistema(nombre)
     const usuario = promptUsuario(conversacion, activos, perfil)
     const respuesta = await pedirConReintento(deps.proveedor, sistema, usuario)
     if (!respuesta) {
       throw new ErrorMemoria(`El proveedor ${deps.proveedor.nombre} devolvio JSON invalido dos veces`, memoria)
+    }
+    // El nombre del usuario nunca es el interlocutor: el interlocutor suele nombrarlo al hablarle.
+    for (const c of respuesta.hechos) {
+      if (nombre && c.interlocutor && normalizar(c.interlocutor) === normalizar(nombre)) c.interlocutor = null
     }
 
     memoria.hechos = reconciliar(memoria.hechos, respuesta.hechos, conversacion)
@@ -165,8 +170,19 @@ function sumarEjemplos(actuales: EjemploEstilo[], conversacion: ConversacionCerr
 
 // --- Prompt ------------------------------------------------------------------
 
-function promptSistema(): string {
-  return `Sos el agente de memoria de un sistema de comunicacion aumentativa para una persona con ELA (el usuario). Al terminar una conversacion, lees la transcripcion cruda y actualizas lo que el sistema sabe de su vida. No hablas con nadie.
+// El nombre del usuario sale del primer titulo de la huella ("# Roberto").
+export function nombreUsuario(perfil: PerfilHuella): string | null {
+  const m = perfil.markdown.match(/^#\s+(.+?)\s*$/m)
+  return m ? m[1] : null
+}
+
+function normalizar(s: string) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase()
+}
+
+function promptSistema(nombre: string | null): string {
+  const usuario = nombre ? `el usuario, que se llama ${nombre}` : 'el usuario'
+  return `Sos el agente de memoria de un sistema de comunicacion aumentativa para una persona con ELA (${usuario}). Al terminar una conversacion, lees la transcripcion cruda y actualizas lo que el sistema sabe de su vida. No hablas con nadie.
 
 Tareas:
 1. Extrae hechos nuevos o cambiados sobre la vida del usuario y su entorno: planes con fecha, personas, gustos, novedades. Un hecho por item, corto, en tercera persona y autocontenido (que se entienda sin la conversacion; con fechas concretas si las hay).
@@ -183,7 +199,8 @@ Reglas:
 - importancia de 1 a 10: 9-10 salud o eventos familiares grandes; 5-7 planes y personas; 1-3 detalles menores.
 - intimo es true si es salud, familia, plata o algo privado.
 - linea es el numero de la linea de la transcripcion de donde sale el hecho.
-- interlocutor es el nombre de quien hablaba con el usuario si aparece en la conversacion; si no, vacio.
+- interlocutor es quien le hablaba al usuario, solo si se sabe: porque se presenta ("soy Laura"), porque el usuario lo nombra al responderle, o por su rol ("doctor"). Si no, vacio.
+- El nombre del usuario${nombre ? ` (${nombre})` : ''} nunca es el interlocutor. Cuando el interlocutor dice un nombre al hablar ("Che, ${nombre ?? 'Roberto'}..."), casi siempre es el del usuario. Las personas de la huella tampoco son el interlocutor salvo que la conversacion lo muestre.
 - La huella la cargo la familia: no repitas hechos que ya esten ahi.
 
 Respondes solo JSON, sin texto alrededor, con esta forma:
