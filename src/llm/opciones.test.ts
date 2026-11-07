@@ -5,6 +5,7 @@ import type { PedidoOpciones } from '@/eventos'
 import { crearCierre, crearOpciones, ErrorOpciones } from './opciones.ts'
 import { crearAlmacenEnMemoria } from './almacen.ts'
 import { crearProveedorFalso } from './proveedor-falso.ts'
+import { crearAgenteMemoria } from './memoria.ts'
 import type { ConversacionCerrada, Hecho, Memoria, Proveedor } from './tipos.ts'
 
 const MIN = 60_000
@@ -130,6 +131,54 @@ describe('opciones', () => {
     await generar(pedido({ yaMostradas: ['Si, dale.', 'Dejame pensarlo.'] }), T0)
     assert.match(prompts[0].usuario, /Si, dale\./)
     assert.match(prompts[0].usuario, /Dejame pensarlo\./)
+    assert.match(prompts[0].usuario, /cambien de intencion, largo o registro/i)
+    assert.match(prompts[0].usuario, /no parafrasees ni repitas su idea/i)
+    assert.match(prompts[0].usuario, /4 intenciones distintas/i)
+    assert.match(prompts[0].usuario, /no.*aprendizaje/i)
+  })
+
+  test('dos Otra conservan todos los rechazos sin aprenderlos como voz ni hechos', async () => {
+    const rejected = ['Prefiero hablar del partido.', 'Mejor cambiemos de tema.', 'Contame algo nuevo.', 'Hoy quiero escuchar.']
+    const { generar, prompts, almacen, cerradas } = armar([
+      respuesta(), respuesta({ opciones: CUATRO.map((o, i) => ({ ...o, texto: rejected[i] })) }), respuesta(), respuesta(),
+    ], {
+      ejemplosEstilo: [{ texto: 'Vamos todavia.', origen: 'deletreo', fecha: T0.toISOString() }],
+      hechos: [hecho({ texto: 'Le gusta el tango', importancia: 7 })],
+    })
+    const profile = await almacen.leerPerfil()
+    const before = await almacen.leerMemoria()
+    const first = await generar(pedido(), T0)
+    const firstRejected = first.opciones.map((o) => o.texto)
+    const second = await generar(pedido({ yaMostradas: firstRejected }), despues(MIN))
+    const allRejected = [...firstRejected, ...second.opciones.map((o) => o.texto)]
+    await generar(pedido({ yaMostradas: allRejected }), despues(2 * MIN))
+
+    for (const text of allRejected) {
+      assert.ok(prompts[2].usuario.includes(`- ${text}`))
+      assert.ok(!prompts[2].usuario.split('# Opciones rechazadas')[0].includes(text))
+    }
+    assert.match(prompts[2].sistema, /4 opciones tienen intenciones distintas/i)
+    assert.match(prompts[2].usuario, /no parafrasees ni repitas su idea/i)
+    assert.deepEqual((await almacen.leerMemoria()).ejemplosEstilo, before.ejemplosEstilo)
+    assert.deepEqual((await almacen.leerMemoria()).hechos, before.hechos)
+    assert.deepEqual(await almacen.leerPerfil(), profile)
+
+    const history = [
+      { quien: 'interlocutor' as const, texto: pedido().ultimoTurno! },
+      { quien: 'usuario' as const, texto: 'Hablemos de musica.', origen: 'deletreo' as const },
+    ]
+    await generar(pedido({ historial: history }), despues(20 * MIN))
+    await vaciarPromesas()
+    assert.deepEqual(cerradas[0].lineas, history)
+    const memoryProvider = guionado([JSON.stringify({ hechos: [], resumen: 'Hablaron de musica.' })])
+    const learn = crearAgenteMemoria({ proveedor: memoryProvider.proveedor })
+    const learned = await learn(cerradas[0], await almacen.leerMemoria(), profile)
+    assert.ok(learned.ejemplosEstilo.some((e) => e.texto === 'Hablemos de musica.'))
+    for (const text of allRejected) {
+      assert.ok(!JSON.stringify({ hechos: learned.hechos, ejemplos: learned.ejemplosEstilo, resumenes: learned.resumenes }).includes(text))
+      assert.ok(!memoryProvider.prompts[0].usuario.includes(text))
+    }
+    assert.deepEqual(learned.hechos, before.hechos)
   })
 
   test('el perfil de Roberto y el turno llegan al prompt', async () => {

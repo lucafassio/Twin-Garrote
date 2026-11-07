@@ -337,7 +337,7 @@ function promptUsuario(p: {
   )
 
   if (pedido.yaMostradas.length > 0) {
-    partes.push(`# Ya mostradas (no las repitas)\n${pedido.yaMostradas.map((t) => `- ${t}`).join('\n')}`)
+    partes.push(`# Opciones rechazadas al pedir Otra\n${pedido.yaMostradas.map((t) => `- ${t}`).join('\n')}\n\nPropone 4 opciones nuevas que cambien de intencion, largo o registro respecto de todas las rechazadas: no parafrasees ni repitas su idea. Mantene 4 intenciones distintas dentro de las nuevas opciones y respeta la huella, la cercania y el limite de palabras. Las rechazadas no son frases dichas por el usuario ni ejemplos de estilo: no las uses como senal de aprendizaje ni infieras cambios en su forma de hablar.`)
   }
 
   return partes.join('\n\n')
