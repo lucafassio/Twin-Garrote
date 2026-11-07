@@ -15,3 +15,20 @@ export async function pedirOpciones(pedido: PedidoOpciones): Promise<Opcion[]> {
   }
   return datos.opciones as Opcion[]
 }
+
+// Completado para deletrear (avisado en #6): una frase entera a partir de lo que lleva deletreado.
+// No cambiar la firma. Nunca tira: si falla el fetch o la ruta, devuelve el prefijo tal cual.
+export async function completarFrase(prefijo: string, pedido: PedidoOpciones): Promise<string> {
+  try {
+    const respuesta = await fetch('/api/completar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefijo, pedido }),
+    })
+    const datos = await respuesta.json().catch(() => null)
+    if (!respuesta.ok || !datos || typeof datos.frase !== 'string' || datos.frase.trim() === '') return prefijo
+    return datos.frase
+  } catch {
+    return prefijo
+  }
+}

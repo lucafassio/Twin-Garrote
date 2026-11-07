@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Cercania, LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
+import PruebaCompletado from './PruebaCompletado'
 
 // Pagina de prueba del path llm. Solo la toca ese path.
 // Se escribe un turno (o se elige uno de los 10 de prueba), se piden las opciones y se mide la latencia.
@@ -203,6 +204,10 @@ export default function Prueba() {
           </ul>
         </section>
       )}
+
+      <PruebaCompletado
+        pedido={{ historial, ultimoTurno: sinTurno ? null : turno, yaMostradas: [], ...(cercania ? { cercania } : {}) }}
+      />
 
       {mediciones.length > 0 && (
         <section>
