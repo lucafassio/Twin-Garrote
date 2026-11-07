@@ -55,15 +55,17 @@ export function crearNucleo({
   // Lee el turno con el modelo si hay, con la heuristica local como respaldo
   // (si no hay modelo, si tarda mas de LECTURA_MAXIMO_MS o si falla).
   function leer(texto: string, historial: LineaHistorial[]): Promise<LecturaTurno> {
-    const local = () =>
-      leerTurnoLocal(texto, { nombreUsuario, usuarioAcabaDeHablar: historial.at(-1)?.quien === 'usuario' })
+    const local = (): LecturaTurno => ({
+      ...leerTurnoLocal(texto, { nombreUsuario, usuarioAcabaDeHablar: historial.at(-1)?.quien === 'usuario' }),
+      fuente: 'local',
+    })
     if (!leerTurno) return Promise.resolve(local())
     let limite: ReturnType<typeof setTimeout> | null = null
     const tarde = new Promise<null>((r) => {
       limite = setTimeout(() => r(null), LECTURA_MAXIMO_MS)
     })
     return Promise.race([leerTurno(texto, historial), tarde])
-      .then((l) => l ?? local())
+      .then((l): LecturaTurno => (l ? { ...l, fuente: 'modelo' } : local()))
       .catch(() => local())
       .finally(() => {
         if (limite) clearTimeout(limite)

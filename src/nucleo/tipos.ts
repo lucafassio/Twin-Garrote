@@ -3,7 +3,12 @@ import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 // Lectura del turno: que es lo que se escucho, antes de pedir opciones.
 // paraUsuario y completo son probabilidades 0..1 (de un modelo o de la heuristica local).
 export type TipoTurno = 'siNo' | 'abierta' | 'comentario' | 'saludo' | 'pedido' | 'otro'
-export type LecturaTurno = { paraUsuario: number; completo: number; tipo: TipoTurno }
+export type LecturaTurno = {
+  paraUsuario: number
+  completo: number
+  tipo: TipoTurno
+  fuente?: 'modelo' | 'local' // de donde salio (lo completa el motor, para el debug)
+}
 
 export type ElementoFijo = 'urgencia' | 'si' | 'no' | 'espera' | 'otra' | 'repetir'
 export type Elemento = { tipo: 'opcion'; indice: number } | { tipo: ElementoFijo }
