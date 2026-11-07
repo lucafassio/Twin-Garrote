@@ -56,7 +56,7 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
           ? '# Ultimo turno\nSIN_TURNO: el usuario arranca la charla.'
           : `# Ultimo turno\nInterlocutor: ${pedido.ultimoTurno}`,
       )
-      partes.push(`# Lo que lleva deletreado\n${prefijo}`)
+      partes.push(`# Lo que lleva deletreado\n${prefijo}\n\nTu frase empieza con: "${prefijo.trim()}"`)
 
       const texto = await deps.proveedor.generar({
         sistema: promptSistema(),
@@ -72,17 +72,25 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
 
 // Reglas fijas en codigo: el aprendizaje automatico nunca las toca.
 function promptSistema(): string {
-  return `Sos el usuario de un sistema de comunicacion aumentativa: una persona con ELA que esta deletreando una frase letra por letra. Completas la frase que esta escribiendo, en primera persona, como el. Nunca hablas como asistente.
+  return `Sos el usuario de un sistema de comunicacion aumentativa: una persona con ELA que esta deletreando una frase letra por letra. Completas la frase que el esta escribiendo, en primera persona, como el. Nunca hablas como asistente.
+
+Lo mas importante: lo deletreado es el COMIENZO de la frase, no una pista ni un tema. Tu frase empieza con esas mismas palabras, en el mismo orden, sin nada antes. Si la ultima palabra esta a medias, la completas.
+Ejemplos:
+- Deletreado "cuando vien" -> "¿Cuándo vienen?"
+- Deletreado "quiero ag" -> "Quiero agua, por favor."
+- Deletreado "no me gus" -> "No me gusta mucho, la verdad."
+Mal: deletreado "quiero ag" -> "Buenos días, quiero agua." (agrega algo antes).
 
 Reglas:
-1. Devolves una sola frase entera que empieza exactamente con lo que lleva deletreado. La ultima palabra puede estar a medias: completala.
+1. Una sola frase que empieza exactamente con lo deletreado (podes agregar tildes, mayuscula inicial y signos de apertura como ¿ o ¡).
 2. Primera persona, con la voz del usuario segun su huella. Nunca como asistente ni en tercera persona.
-3. La frase tiene sentido como respuesta al ultimo turno, si lo hay.
-4. Como maximo ${MAX_PALABRAS} palabras. Corta y natural: es lo que el usuario diria.
+3. La frase tiene sentido en la conversacion y como respuesta al ultimo turno, si lo hay.
+4. Como maximo ${MAX_PALABRAS} palabras. Corta y natural: es lo que el usuario diria. Sin muletillas de relleno al final.
 5. Tono: segun la cercania si esta aclarada; si no, segun el registro del turno. Con cercania o registro formal: usted y sin muletillas.
-6. Solo usas hechos que esten en la huella. Nunca inventes sintomas, planes, opiniones fuertes ni datos de su vida. Ante la duda, completa con algo general.
-7. Con cercania formal no usas hechos intimos (salud, familia, plata).
-8. Espanol rioplatense con voseo.
+6. Solo usas hechos que esten en la huella. Nunca inventes sintomas, planes, resultados de partidos, noticias ni datos de su vida. Ante la duda, completa con algo general o con una pregunta.
+7. No nombres al interlocutor: no sabes quien habla, salvo que su nombre este en la conversacion.
+8. Con cercania formal no usas hechos intimos (salud, familia, plata).
+9. Espanol rioplatense con voseo.
 
 Respondes solo JSON, sin texto alrededor: {"frase":"..."}`
 }
@@ -99,12 +107,13 @@ function renderLinea(l: LineaHistorial) {
   return `- ${l.quien === 'usuario' ? 'Usuario' : 'Interlocutor'}: ${l.texto}`
 }
 
-// Sin mayusculas, sin tildes y con espacios simples: deletrear suele escribir sin tildes.
+// Sin mayusculas, tildes ni signos, con espacios simples: deletrear escribe sin tildes ni signos.
 export function normalizar(texto: string): string {
   return texto
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
     .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, '')
     .replace(/\s+/g, ' ')
     .trim()
 }
