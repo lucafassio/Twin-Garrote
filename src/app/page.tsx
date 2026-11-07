@@ -1,57 +1,123 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { cargarCalibracion, guardarCalibracion, type CalibracionGuardada } from '@/interfaz/calibracionGuardada'
+import type { Encuadre } from '@/interfaz/encuadre'
 import DebugNucleo from '@/interfaz/DebugNucleo'
 import MonitorBus from '@/interfaz/MonitorBus'
 import Pantalla from '@/interfaz/Pantalla'
+import { PasoCamara, PasoMirada, PasoParpadeo } from '@/interfaz/Preparacion'
 import SimuladorOjos from '@/interfaz/SimuladorOjos'
+import { useCamara } from '@/interfaz/useCamara'
 import { useNucleo } from '@/interfaz/useNucleo'
-import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz, type Motor } from '@/voz'
+import { estadoInicial } from '@/nucleo/reductor'
+import { exportarCalibracion, importarCalibracion, LARGO_RASGOS } from '@/vision'
+import DebugVision from '@/vision/DebugVision'
+import { ajustesVoz, CampoTurno, iniciarVoz, type Motor } from '@/voz'
 
 // Pagina principal: solo la toca el path nucleo-interfaz.
-// "Empezar" hace falta: Chrome no deja hablar, sonar audio ni abrir el microfono sin un click previo.
-export default function Home() {
-  const [iniciado, setIniciado] = useState(false)
-  if (!iniciado) return <Inicio onEmpezar={() => setIniciado(true)} />
-  return <Conversacion />
-}
+// Arranca con la preparacion (camara, parpadeo, mirada) y despues la conversacion.
+// Los clicks de la preparacion habilitan el audio y el microfono en Chrome.
+type Fase = 'camara' | 'parpadeo' | 'mirada' | 'conversacion'
 
-function Inicio({ onEmpezar }: { onEmpezar: () => void }) {
-  const [sinVoz, setSinVoz] = useState(false)
-  useEffect(() => {
-    // Solo se puede saber en el navegador; en el servidor se asume que hay.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSinVoz(!escuchaDisponible())
+const nada = () => {}
+
+export default function Home() {
+  const video = useRef<HTMLVideoElement>(null)
+  const camara = useCamara(video)
+  const [fase, setFase] = useState<Fase>('camara')
+  // Ultima calibracion de este navegador (en el servidor no hay: se lee en el cliente).
+  const [guardada, setGuardada] = useState<CalibracionGuardada | null>(() =>
+    typeof window === 'undefined' ? null : cargarCalibracion(LARGO_RASGOS),
+  )
+  // Donde estaba la cara al calibrar: se guarda con la calibracion.
+  const encuadreCalibrado = useRef<Encuadre | null>(guardada?.encuadre ?? null)
+  const fechaCalibracion = useRef<number>(guardada?.fecha ?? 0)
+
+  // Guarda la calibracion actual (si la mirada esta calibrada). Tambien lo que la mirada
+  // aprende sola con cada eleccion confirmada.
+  const guardar = useCallback(() => {
+    const vision = exportarCalibracion()
+    if (!Object.keys(vision.zonas).length) return
+    const c: CalibracionGuardada = {
+      version: 1,
+      fecha: fechaCalibracion.current || Date.now(),
+      vision,
+      largoRasgos: LARGO_RASGOS,
+      encuadre: encuadreCalibrado.current,
+    }
+    guardarCalibracion(c)
+    setGuardada(c)
   }, [])
 
   return (
-    <main className="flex h-screen flex-col items-center justify-center gap-10 bg-zinc-950 text-zinc-50">
-      <h1 className="text-7xl font-black">Parpadeo</h1>
-      <button
-        type="button"
-        onClick={onEmpezar}
-        autoFocus
-        className="rounded-2xl bg-yellow-300 px-16 py-8 text-5xl font-bold text-zinc-950"
-      >
-        Empezar
-      </button>
-      {sinVoz ? (
-        <p className="max-w-3xl text-center text-3xl text-amber-300">
-          Este navegador no reconoce voz. Usá Chrome, o escribí lo que dice el interlocutor en el campo de abajo.
-        </p>
-      ) : (
-        // Arc y Brave traen la API pero no transcriben: no se puede detectar antes de probar.
-        <p className="max-w-3xl text-center text-2xl text-zinc-400">
-          Para escuchar hace falta Google Chrome (Arc y Brave no transcriben).
-        </p>
+    <>
+      {/* Un solo <video> para toda la pagina: grande en el paso de camara, invisible despues. */}
+      <video
+        ref={video}
+        muted
+        playsInline
+        className={
+          fase === 'camara'
+            ? 'fixed left-1/2 top-[13.5rem] z-10 aspect-video w-[44rem] max-w-[calc(100%-4rem)] -translate-x-1/2 -scale-x-100 rounded-3xl object-cover'
+            : 'pointer-events-none fixed bottom-0 right-0 h-px w-px opacity-0'
+        }
+      />
+      {fase === 'camara' && (
+        <PasoCamara
+          camara={camara}
+          guardada={guardada}
+          onListo={(encuadre) => {
+            encuadreCalibrado.current = encuadre
+            setFase('parpadeo')
+          }}
+          onUsarGuardada={() => {
+            if (!guardada) return
+            importarCalibracion(guardada.vision)
+            encuadreCalibrado.current = guardada.encuadre
+            fechaCalibracion.current = guardada.fecha
+            setFase('conversacion')
+          }}
+          onSaltear={() => setFase('conversacion')}
+        />
       )}
-    </main>
+      {fase === 'parpadeo' && <PasoParpadeo onListo={() => setFase('mirada')} onVolver={() => setFase('camara')} />}
+      {fase === 'mirada' && (
+        <>
+          {/* La mirada se calibra sobre la pantalla real: mismas zonas, mismos lugares. */}
+          <Pantalla estado={estadoInicial} onCortarUrgencia={nada} onRepetir={nada} onTerminarDeletreo={nada} onCancelarDeletreo={nada} />
+          <PasoMirada
+            onListo={() => {
+              fechaCalibracion.current = Date.now()
+              guardar()
+              setFase('conversacion')
+            }}
+          />
+        </>
+      )}
+      {fase === 'conversacion' && <Conversacion onRecalibrar={setFase} onGuardar={guardar} />}
+    </>
   )
 }
 
-function Conversacion() {
+function Conversacion({ onRecalibrar, onGuardar }: { onRecalibrar: (fase: Fase) => void; onGuardar: () => void }) {
   const { nucleo, estado } = useNucleo()
-  const [herramientas, setHerramientas] = useState(true)
+
+  // Guarda lo que la mirada aprendio sola al ocultar o cerrar la pestana, y cada 2 minutos.
+  useEffect(() => {
+    const alOcultar = () => document.visibilityState === 'hidden' && onGuardar()
+    document.addEventListener('visibilitychange', alOcultar)
+    window.addEventListener('pagehide', onGuardar)
+    const reloj = setInterval(onGuardar, 120_000)
+    return () => {
+      document.removeEventListener('visibilitychange', alOcultar)
+      window.removeEventListener('pagehide', onGuardar)
+      clearInterval(reloj)
+      onGuardar()
+    }
+  }, [onGuardar])
+  // Herramientas de quien opera la demo: ocultas; la tecla D las muestra.
+  const [herramientas, setHerramientas] = useState(false)
   // Groq Whisper por defecto (si falta la clave o la red, voz vuelve sola a Chrome). Tecla M cambia.
   const [motor, setMotor] = useState<Motor>('groq')
 
@@ -61,23 +127,27 @@ function Conversacion() {
     return iniciarVoz()
   }, [motor])
 
-  // TODO vision (#3): cuando exista iniciarVision(video), montar aca un <video> oculto,
-  // iniciarVision(video) en un useEffect, DebugVision dentro de las herramientas y la tecla C para calibrar.
-
-  // Tecla D: mostrar u ocultar las herramientas del operador.
+  // Teclas del operador: D herramientas, M motor de voz, Z recalibrar la mirada,
+  // C recalibrar el parpadeo, + / - velocidad del barrido.
   useEffect(() => {
     const alTeclear = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return
-      if (e.key === 'd' || e.key === 'D') setHerramientas((v) => !v)
-      if (e.key === 'm' || e.key === 'M') setMotor((m) => (m === 'groq' ? 'google' : 'groq'))
+      const k = e.key.toLowerCase()
+      if (k === 'd') setHerramientas((v) => !v)
+      else if (k === 'm') setMotor((m) => (m === 'groq' ? 'google' : 'groq'))
+      else if (k === 'z') onRecalibrar('mirada')
+      else if (k === 'c') onRecalibrar('parpadeo')
+      // Con las herramientas visibles, + / - los maneja DebugNucleo.
+      else if (!herramientas && (k === '+' || k === '=')) nucleo.setVelocidad(nucleo.velocidad() - 100)
+      else if (!herramientas && k === '-') nucleo.setVelocidad(nucleo.velocidad() + 100)
     }
     window.addEventListener('keydown', alTeclear)
     return () => window.removeEventListener('keydown', alTeclear)
-  }, [])
+  }, [nucleo, onRecalibrar, herramientas])
 
   return (
     <>
-      {/* Hasta que exista vision: Espacio = parpadeo largo, mantener O = ojos cerrados */}
+      {/* Respaldo de teclado de vision: Espacio = parpadeo largo, mantener O = ojos cerrados */}
       <SimuladorOjos espacio />
       <Pantalla
         estado={estado}
@@ -93,14 +163,12 @@ function Conversacion() {
             <div className="flex items-start gap-4">
               <div className="flex w-[28rem] flex-col gap-2">
                 <CampoTurno />
-                <ul className="text-sm leading-snug text-zinc-400">
-                  <li><b className="text-zinc-200">Espacio</b> parpadeo largo (elige lo iluminado)</li>
-                  <li><b className="text-zinc-200">Mantener O</b> ojos cerrados · al soltar elige · 2 s = urgencia</li>
-                  <li><b className="text-zinc-200">Escape</b> o click corta la urgencia · <b className="text-zinc-200">+ / −</b> velocidad</li>
-                  <li><b className="text-zinc-200">M</b> cambia el motor de voz (ahora: {motor === 'groq' ? 'Groq Whisper' : 'Chrome'})</li>
-                  <li><b className="text-zinc-200">D</b> oculta estas herramientas</li>
-                </ul>
+                <p className="text-sm leading-snug text-zinc-400">
+                  D oculta · M voz ({motor === 'groq' ? 'Groq' : 'Chrome'}) · Z recalibra mirada · C recalibra parpadeo · + / −
+                  velocidad · Espacio o mantener O simulan el parpadeo
+                </p>
               </div>
+              <DebugVision />
               <MonitorBus />
               <DebugNucleo nucleo={nucleo} estado={estado} flotante={false} />
             </div>

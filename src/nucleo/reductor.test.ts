@@ -145,6 +145,79 @@ describe('ojos perdidos (vision deja de ver los ojos)', () => {
   })
 })
 
+describe('mirada por zonas', () => {
+  const mirar = (e: Estado, zona: string | null) => reducir(e, { tipo: 'zonaMirada', zona }).estado
+
+  test('mirar un cuadrante con opcion la deja como unico elemento iluminado', () => {
+    const e = mirar(conOpciones(), 'opcion2')
+    assert.deepEqual(nombres(e), ['opcion2'])
+    assert.equal(e.iluminado, 0)
+  })
+
+  test('con un solo elemento el tick no avanza ni cuenta vueltas', () => {
+    let e = mirar(conOpciones(), 'opcion1')
+    for (let i = 0; i < 10; i++) e = reducir(e, { tipo: 'tick' }).estado
+    assert.equal(e.iluminado, 0)
+    assert.equal(e.vueltas, 0)
+    assert.equal(e.pausado, false)
+  })
+
+  test('el parpadeo largo elige el cuadrante mirado', () => {
+    const r = reducir(mirar(conOpciones(), 'opcion1'), { tipo: 'parpadeoLargo' })
+    assert.deepEqual(decires(r.efectos), [{ tipo: 'decir', texto: 'No, hoy no.' }])
+  })
+
+  test('mirar la franja deja el barrido solo en la franja', () => {
+    const e = mirar(conOpciones(), 'franja')
+    assert.deepEqual(nombres(e), ['urgencia', 'si', 'no', 'espera', 'otra', 'deletrear'])
+  })
+
+  test('sin zona vuelve el barrido completo', () => {
+    const e = mirar(mirar(conOpciones(), 'opcion1'), null)
+    assert.deepEqual(nombres(e), nombres(conOpciones()))
+  })
+
+  test('mirar un cuadrante vacio no filtra nada', () => {
+    const e = mirar(estadoInicial, 'opcion0') // todavia no hay opciones
+    assert.deepEqual(nombres(e), nombres(estadoInicial))
+  })
+
+  test('cambiar de zona reinicia el barrido y saca la pausa', () => {
+    let e = conOpciones()
+    const vueltas3 = nombres(e).length * 3
+    for (let i = 0; i < vueltas3; i++) e = reducir(e, { tipo: 'tick' }).estado
+    assert.equal(e.pausado, true)
+    e = mirar(e, 'franja')
+    assert.equal(e.pausado, false)
+    assert.equal(e.iluminado, 0)
+  })
+
+  test('si se pierde la zona, el barrido sigue en el mismo elemento (no vuelve al principio)', () => {
+    let e = iluminar(mirar(conOpciones(), 'franja'), 'otra')
+    e = mirar(e, null)
+    assert.deepEqual(elementosBarrido(e)[e.iluminado], { tipo: 'otra' })
+  })
+
+  test('volver a la franja desde sin zona sigue en el mismo elemento', () => {
+    let e = iluminar(conOpciones(), 'no')
+    e = mirar(e, 'franja')
+    assert.deepEqual(elementosBarrido(e)[e.iluminado], { tipo: 'no' })
+  })
+
+  test('si el elemento iluminado no esta en la zona nueva, arranca por el primero', () => {
+    let e = iluminar(mirar(conOpciones(), 'franja'), 'espera')
+    e = mirar(e, 'opcion2')
+    assert.deepEqual(nombres(e), ['opcion2'])
+    assert.equal(e.iluminado, 0)
+  })
+
+  test('con los ojos cerrados la mirada se ignora', () => {
+    let e = reducir(mirar(conOpciones(), 'opcion0'), { tipo: 'ojos', cerrados: true, progreso: 0.5 }).estado
+    e = mirar(e, 'opcion3')
+    assert.deepEqual(nombres(e), ['opcion0'])
+  })
+})
+
 describe('turnos y opciones', () => {
   test('un turno entra al historial y pide opciones', () => {
     const r = aplicar(estadoInicial, { tipo: 'turno', texto: '¿Queres empanadas?' })

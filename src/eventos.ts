@@ -41,6 +41,9 @@ export type Eventos = {
   // el cierre (se manda con cerrados: false); el nucleo cancela la eleccion pendiente.
   ojos: { cerrados: boolean; progreso: number; perdido?: boolean }
   parpadeoLargo: Record<string, never>
+  // Zona de la pantalla que mira el usuario, cuadro a cuadro ('opcion0'..'opcion3', 'franja'),
+  // con la probabilidad del clasificador de vision. null: sin cara o sin calibrar.
+  zonaMirada: { zona: string | null; confianza: number }
   // voz -> nucleo
   transcripcionParcial: { texto: string } // lo que va diciendo el interlocutor, en vivo
   turno: { texto: string } // turno completo (fin de turno detectado o tipeado)

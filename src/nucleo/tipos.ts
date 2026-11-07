@@ -47,6 +47,9 @@ export type Estado = {
   ultimaLectura: LecturaTurno | null // del acumulado actual
   descartado: string | null // ultimo texto que no parecia para el usuario (se muestra en gris)
   tipoTurno: TipoTurno | null // del turno que se esta respondiendo
+  // Mirada: zona estable que mira el usuario ('opcion0'..'opcion3' o 'franja'), o null.
+  // Filtra el barrido: un cuadrante queda solo; la franja se recorre sola.
+  zonaMirada: string | null
   deletreando: boolean // Deletrear esta montado y maneja su propio barrido
   // Chip "¿Habla Laura?" (#48). Lo toca el interlocutor, nunca entra al barrido.
   interlocutorProbable: string | null // propuesta del LLM sin confirmar: nunca viaja en el pedido
@@ -59,6 +62,7 @@ export type Accion =
   | { tipo: 'fragmento'; texto: string } // lo que cerro voz: todavia hay que leerlo
   | { tipo: 'lectura'; lecturaId: number; lectura: LecturaTurno }
   | { tipo: 'venceAcumulado' }
+  | { tipo: 'zonaMirada'; zona: string | null } // ya estabilizada
   | { tipo: 'parcial'; texto: string }
   | { tipo: 'ojos'; cerrados: boolean; progreso: number; perdido?: boolean } // perdido: vision dejo de ver los ojos
   | { tipo: 'parpadeoLargo' }

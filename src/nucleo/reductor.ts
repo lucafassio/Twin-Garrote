@@ -40,6 +40,7 @@ export const estadoInicial: Estado = {
   ultimaLectura: null,
   descartado: null,
   tipoTurno: null,
+  zonaMirada: null,
   deletreando: false,
   interlocutorProbable: null,
   interlocutorConfirmado: null,
@@ -50,9 +51,25 @@ export const estadoInicial: Estado = {
 export const UMBRAL_PARA_USUARIO = 0.4 // menos: no era para el usuario, se descarta
 export const UMBRAL_COMPLETO = 0.6 // mas: el turno termino, se piden opciones
 
+// Elementos que recorre el barrido. Si el usuario mira una zona, se filtra:
+// un cuadrante con opcion queda solo; la franja se recorre sola. Sin zona, todo.
+export function elementosBarrido(estado: Estado): Elemento[] {
+  const todos = todosLosElementos(estado)
+  const zona = estado.zonaMirada
+  if (!zona) return todos
+  const filtrados = todos.filter((el) =>
+    zona === 'franja' ? el.tipo !== 'opcion' : el.tipo === 'opcion' && `opcion${el.indice}` === zona,
+  )
+  return filtrados.length ? filtrados : todos
+}
+
+function mismoElementoBarrido(a: Elemento, b: Elemento) {
+  return a.tipo === b.tipo && (a.tipo !== 'opcion' || (b.tipo === 'opcion' && a.indice === b.indice))
+}
+
 // Orden del barrido: opciones (por probabilidad) y despues la franja fija.
 // En una pregunta de si o no, Si y No van primero: se puede contestar sin esperar al LLM.
-export function elementosBarrido(estado: Estado): Elemento[] {
+function todosLosElementos(estado: Estado): Elemento[] {
   const lista: Elemento[] = []
   const siNoPrimero = estado.tipoTurno === 'siNo'
   if (siNoPrimero) lista.push({ tipo: 'si' }, { tipo: 'no' })
@@ -363,6 +380,7 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
     case 'tick': {
       if (barridoDetenido(e)) break
       const total = elementosBarrido(e).length
+      if (total <= 1) break // mirando un cuadrante: queda iluminado, sin vueltas
       e.iluminado += 1
       if (e.iluminado >= total) {
         e.iluminado = 0
@@ -398,6 +416,20 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
     case 'escuchando':
       e.escuchando = accion.activo
       break
+
+    case 'zonaMirada': {
+      // Con los ojos cerrados la mirada no vale: se esta eligiendo lo que estaba iluminado.
+      if (e.ojosCerrados || accion.zona === e.zonaMirada) break
+      const antes = elementosBarrido(e)[e.iluminado]
+      e.zonaMirada = accion.zona
+      e.pausado = false
+      // Si lo iluminado sigue en la lista nueva, sigue iluminado: los ojos siguen al
+      // barrido por la franja y un cambio de zona no lo tiene que mandar al principio.
+      const sigue = antes ? elementosBarrido(e).findIndex((el) => mismoElementoBarrido(el, antes)) : -1
+      if (sigue >= 0) e.iluminado = sigue
+      else reiniciarBarrido(c)
+      break
+    }
 
     case 'finEsperaHabla':
       if (e.esperandoHabla) {

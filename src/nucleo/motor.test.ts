@@ -19,7 +19,7 @@ let dichos: { texto: string; urgencia?: boolean }[]
 let offDecir: () => void
 
 beforeEach(() => {
-  mock.timers.enable({ apis: ['setInterval', 'setTimeout'] })
+  mock.timers.enable({ apis: ['setInterval', 'setTimeout', 'Date'] })
   pedidos = []
   dichos = []
   offDecir = bus.on('decir', (d) => dichos.push(d))
@@ -148,6 +148,14 @@ describe('motor', () => {
     bus.emit('parpadeoLargo', {})
     bus.emit('ojos', { cerrados: false, progreso: 0, perdido: true })
     assert.deepEqual(dichos, [])
+  })
+
+  test('la zona mirada llega al estado despues de 300 ms firme', () => {
+    bus.emit('zonaMirada', { zona: 'franja', confianza: 0.9 })
+    assert.equal(nucleo.obtener().zonaMirada, null)
+    mock.timers.tick(300)
+    bus.emit('zonaMirada', { zona: 'franja', confianza: 0.9 })
+    assert.equal(nucleo.obtener().zonaMirada, 'franja')
   })
 
   test('el evento escuchando llega al estado', () => {
