@@ -29,15 +29,15 @@ Una de las 4 respuestas candidatas que propone el LLM para el ultimo turno.
 _Avoid_: sugerencia, candidata
 
 **Respuesta**:
-Opcion u opcion fija que el usuario eligio y que el sistema dijo en voz alta.
+Opcion, Si o No que el usuario eligio y que el sistema dijo en voz alta. Responde el turno: entra al historial y limpia las opciones. "Espera" no es respuesta.
 _Avoid_: output, salida
 
 **Opciones fijas**:
-Si, No, Espera y Otra: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno.
+Si, No, Espera y Otra: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial.
 _Avoid_: botones rapidos, atajos
 
 **Urgencia**:
-Pedido de ayuda siempre visible y elegible, que no pasa por el LLM.
+Pedido de ayuda siempre disponible, que no pasa por el LLM. Se dispara eligiendola en el barrido o con el gesto de urgencia.
 _Avoid_: alarma, panico, emergencia
 
 ### Seleccion
@@ -47,5 +47,13 @@ Recorrido automatico que ilumina de a un elemento elegible por vez para que el u
 _Avoid_: scan, recorrido, ciclo
 
 **Parpadeo largo**:
-Ojos cerrados al menos 500 ms; unico gesto que elige el elemento iluminado por el barrido. Los parpadeos normales se ignoran.
+Ojos cerrados al menos 500 ms; gesto que elige el elemento iluminado por el barrido. La eleccion se confirma al abrir los ojos. Los parpadeos normales se ignoran.
 _Avoid_: seleccion, click, blink
+
+**Gesto de urgencia**:
+Ojos cerrados 2 s seguidos. Dispara la urgencia desde cualquier estado, aunque el barrido este en pausa. Reemplaza a la eleccion del parpadeo largo que lo inicio.
+_Avoid_: parpadeo de emergencia, panico
+
+**Pausa del barrido**:
+El barrido se detiene solo despues de 3 vueltas sin eleccion. Se reanuda con un parpadeo largo o con un turno nuevo.
+_Avoid_: stop, timeout
