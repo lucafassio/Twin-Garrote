@@ -13,6 +13,7 @@ const FRANJA: { tipo: ElementoFijo; texto: string }[] = [
   { tipo: 'no', texto: 'No' },
   { tipo: 'espera', texto: 'Espera' },
   { tipo: 'otra', texto: 'Otra' },
+  { tipo: 'repetir', texto: 'Repetir' },
 ]
 
 const AVISO_CUADRANTE = {
@@ -33,12 +34,16 @@ type CeldaProps = {
   elegible: boolean
   base: string
   children: ReactNode
+  onClick?: () => void // solo para la sala (Repetir); el usuario elige con el barrido
 }
 
-function Celda({ iluminada, progreso, elegible, base, children }: CeldaProps) {
+function Celda({ iluminada, progreso, elegible, base, children, onClick }: CeldaProps) {
   return (
     <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
       className={[
+        onClick ? 'cursor-pointer' : '',
         'relative flex items-center justify-center overflow-hidden rounded-2xl p-6 text-center',
         base,
         iluminada ? 'outline outline-[10px] -outline-offset-[10px] outline-yellow-300' : 'border-2 border-zinc-700',
@@ -56,9 +61,10 @@ function Celda({ iluminada, progreso, elegible, base, children }: CeldaProps) {
 type Props = {
   estado: Estado
   onCortarUrgencia: () => void
+  onRepetir: () => void
 }
 
-export default function Pantalla({ estado, onCortarUrgencia }: Props) {
+export default function Pantalla({ estado, onCortarUrgencia, onRepetir }: Props) {
   const elementos = elementosBarrido(estado)
   const iluminado = estado.pausado ? undefined : elementos[estado.iluminado]
   const progreso = estado.ojosCerrados ? estado.progreso : 0
@@ -82,6 +88,10 @@ export default function Pantalla({ estado, onCortarUrgencia }: Props) {
         className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-red-700 text-white"
       >
         <span className="text-8xl font-black">NECESITO AYUDA</span>
+        {/* Unico elemento del barrido en urgencia: el usuario la corta con dos parpadeos largos */}
+        <span className="rounded-2xl bg-zinc-900 px-12 py-6 text-5xl outline outline-[10px] -outline-offset-[10px] outline-yellow-300">
+          {estado.urgenciaPaso === 'aviso' ? 'Fue sin querer' : '¿Seguro? Fue sin querer'}
+        </span>
         <span className="text-3xl">Escape o click para cortar</span>
       </button>
     )
@@ -96,8 +106,10 @@ export default function Pantalla({ estado, onCortarUrgencia }: Props) {
         <p className={`text-5xl leading-tight ${estado.parcial ? 'text-zinc-400 italic' : ''}`}>
           {textoArriba ?? <span className="text-zinc-500">Esperando que alguien hable…</span>}
         </p>
-        {(estado.hablando || estado.esperandoHabla) && (
+        {estado.hablando || estado.esperandoHabla ? (
           <span className="shrink-0 text-3xl text-sky-300">Hablando…</span>
+        ) : (
+          estado.escuchando && <span className="shrink-0 text-3xl text-emerald-300">● Escuchando</span>
         )}
       </header>
 
@@ -127,7 +139,7 @@ export default function Pantalla({ estado, onCortarUrgencia }: Props) {
       </main>
 
       {/* Abajo: franja fija, siempre visible */}
-      <footer className="grid h-36 grid-cols-5 gap-4 text-4xl font-bold">
+      <footer className="grid h-36 grid-cols-6 gap-4 text-4xl font-bold">
         {FRANJA.map(({ tipo, texto }) => {
           const el: Elemento = { tipo }
           return (
@@ -137,6 +149,7 @@ export default function Pantalla({ estado, onCortarUrgencia }: Props) {
               progreso={progreso}
               elegible={esElegible(el)}
               base={tipo === 'urgencia' ? 'bg-red-700' : 'bg-zinc-800'}
+              onClick={tipo === 'repetir' ? onRepetir : undefined}
             >
               {texto}
             </Celda>

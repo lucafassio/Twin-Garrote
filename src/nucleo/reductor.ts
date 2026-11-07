@@ -23,8 +23,11 @@ export const estadoInicial: Estado = {
   vueltas: 0,
   pausado: false,
   urgencia: false,
+  urgenciaPaso: 'aviso',
   pedirAlCortarUrgencia: false,
+  hayParaRepetir: false,
   hablando: false,
+  escuchando: false,
   esperandoHabla: false,
   ojosCerrados: false,
   progreso: 0,
@@ -40,6 +43,7 @@ export function elementosBarrido(estado: Estado): Elemento[] {
   }
   lista.push({ tipo: 'urgencia' }, { tipo: 'si' }, { tipo: 'no' }, { tipo: 'espera' })
   if (estado.conversacion !== 'pensando') lista.push({ tipo: 'otra' })
+  if (estado.hayParaRepetir) lista.push({ tipo: 'repetir' })
   return lista
 }
 
@@ -87,16 +91,27 @@ function recibirTurno(c: Ctx, texto: string) {
   pedirOpciones(c)
 }
 
-function decir(c: Ctx, texto: string) {
-  c.efectos.push({ tipo: 'decir', texto })
+function esperarHabla(c: Ctx) {
   c.e.esperandoHabla = true
   c.efectos.push({ tipo: 'armarEsperaHabla' })
 }
 
+function decir(c: Ctx, texto: string) {
+  c.efectos.push({ tipo: 'decir', texto })
+  c.e.hayParaRepetir = true
+  esperarHabla(c)
+}
+
+function repetir(c: Ctx) {
+  c.efectos.push({ tipo: 'repetir' })
+  esperarHabla(c)
+  reiniciarBarrido(c)
+}
+
 // Respuesta al turno: se dice, entra al historial y limpia las opciones.
-function responder(c: Ctx, texto: string) {
+function responder(c: Ctx, texto: string, origen: 'opcion' | 'fija') {
   decir(c, texto)
-  c.e.historial = [...c.e.historial, { quien: 'usuario', texto }]
+  c.e.historial = [...c.e.historial, { quien: 'usuario', texto, origen }]
   c.e.conversacion = 'escuchando'
   c.e.opciones = []
   c.e.ultimoTurno = null
@@ -106,6 +121,7 @@ function responder(c: Ctx, texto: string) {
 
 function activarUrgencia(c: Ctx) {
   c.e.urgencia = true
+  c.e.urgenciaPaso = 'aviso'
   c.e.eleccionPendiente = null
   c.efectos.push({ tipo: 'decir', texto: TEXTO_URGENCIA, urgencia: true })
 }
@@ -114,13 +130,15 @@ function ejecutar(c: Ctx, el: Elemento) {
   switch (el.tipo) {
     case 'opcion': {
       const opcion = c.e.opciones[el.indice]
-      if (opcion) responder(c, opcion.texto)
+      if (opcion) responder(c, opcion.texto, 'opcion')
       return
     }
     case 'si':
-      return responder(c, TEXTO_SI)
+      return responder(c, TEXTO_SI, 'fija')
     case 'no':
-      return responder(c, TEXTO_NO)
+      return responder(c, TEXTO_NO, 'fija')
+    case 'repetir':
+      return repetir(c)
     case 'espera':
       decir(c, TEXTO_ESPERA)
       return reiniciarBarrido(c)
@@ -147,7 +165,8 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       break
 
     case 'parcial':
-      e.parcial = accion.texto
+      // Voz manda texto vacio cuando cierra o descarta un turno.
+      e.parcial = accion.texto.trim() ? accion.texto : null
       break
 
     case 'ojos':
@@ -173,7 +192,26 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       break
 
     case 'parpadeoLargo': {
-      if (e.urgencia || e.hablando || e.esperandoHabla) break
+      // En la urgencia el unico elemento es "Fue sin querer", con confirmacion.
+      // Anda aunque la voz este diciendo la alarma.
+      if (e.urgencia) {
+        if (e.urgenciaPaso === 'aviso') {
+          e.urgenciaPaso = 'confirmar'
+          c.efectos.push({ tipo: 'armarConfirmacion' })
+        } else {
+          e.urgencia = false
+          e.urgenciaPaso = 'aviso'
+          c.efectos.push({ tipo: 'detenerUrgencia', falsaAlarma: true })
+          if (e.pedirAlCortarUrgencia) {
+            e.pedirAlCortarUrgencia = false
+            pedirOpciones(c)
+          } else {
+            reiniciarBarrido(c)
+          }
+        }
+        break
+      }
+      if (e.hablando || e.esperandoHabla) break
       if (e.pausado) {
         reiniciarBarrido(c)
         break
@@ -219,6 +257,10 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       }
       break
 
+    case 'escuchando':
+      e.escuchando = accion.activo
+      break
+
     case 'finEsperaHabla':
       if (e.esperandoHabla) {
         e.esperandoHabla = false
@@ -233,6 +275,7 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
     case 'cortarUrgencia':
       if (!e.urgencia) break
       e.urgencia = false
+      e.urgenciaPaso = 'aviso'
       c.efectos.push({ tipo: 'detenerUrgencia' })
       if (e.pedirAlCortarUrgencia) {
         e.pedirAlCortarUrgencia = false
@@ -240,6 +283,14 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
       } else {
         reiniciarBarrido(c)
       }
+      break
+
+    case 'finConfirmacion':
+      if (e.urgencia) e.urgenciaPaso = 'aviso'
+      break
+
+    case 'repetir':
+      if (e.hayParaRepetir && !e.urgencia && !e.hablando && !e.esperandoHabla) repetir(c)
       break
   }
 

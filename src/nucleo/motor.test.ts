@@ -96,6 +96,41 @@ describe('motor', () => {
     assert.equal(detenida, true)
   })
 
+  test('la falsa alarma confirmada emite detenerUrgencia con falsaAlarma', () => {
+    const recibidos: { falsaAlarma?: boolean }[] = []
+    const off = bus.on('detenerUrgencia', (d) => recibidos.push(d))
+    bus.emit('parpadeoLargo', {}) // sin turno, lo primero iluminado es Urgencia
+    bus.emit('parpadeoLargo', {})
+    bus.emit('parpadeoLargo', {})
+    off()
+    assert.deepEqual(recibidos, [{ falsaAlarma: true }])
+  })
+
+  test('si no confirma la falsa alarma en 5 s vuelve al primer paso', () => {
+    bus.emit('parpadeoLargo', {})
+    bus.emit('parpadeoLargo', {})
+    assert.equal(nucleo.obtener().urgenciaPaso, 'confirmar')
+    mock.timers.tick(5000)
+    assert.equal(nucleo.obtener().urgenciaPaso, 'aviso')
+  })
+
+  test('repetir de la sala emite repetir en el bus', () => {
+    let repetido = false
+    const off = bus.on('repetir', () => (repetido = true))
+    mock.timers.tick(1000) // ilumina Si
+    bus.emit('parpadeoLargo', {})
+    bus.emit('hablando', { activo: true })
+    bus.emit('hablando', { activo: false })
+    nucleo.repetir()
+    off()
+    assert.equal(repetido, true)
+  })
+
+  test('el evento escuchando llega al estado', () => {
+    bus.emit('escuchando', { activo: true })
+    assert.equal(nucleo.obtener().escuchando, true)
+  })
+
   test('si pedirOpciones falla queda sin conexion', async () => {
     nucleo.detener()
     nucleo = crearNucleo({

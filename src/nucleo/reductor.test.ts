@@ -174,6 +174,13 @@ describe('turnos y opciones', () => {
   })
 })
 
+describe('parcial vacio', () => {
+  test('un parcial vacio deja de mostrar el parcial (voz cerro o descarto el turno)', () => {
+    const e = aplicar(estadoInicial, { tipo: 'parcial', texto: '¿Quer' }, { tipo: 'parcial', texto: '' }).estado
+    assert.equal(e.parcial, null)
+  })
+})
+
 describe('eleccion', () => {
   test('sin eventos de ojos (simulador), el parpadeo largo elige directo', () => {
     const r = reducir(conOpciones(), { tipo: 'parpadeoLargo' })
@@ -189,7 +196,7 @@ describe('eleccion', () => {
 
   test('elegir una opcion la agrega al historial y limpia las opciones', () => {
     const r = reducir(iluminar(conOpciones(), 'opcion1'), { tipo: 'parpadeoLargo' })
-    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'No, hoy no.' })
+    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'No, hoy no.', origen: 'opcion' })
     assert.equal(r.estado.conversacion, 'escuchando')
     assert.equal(r.estado.opciones.length, 0)
     assert.equal(r.estado.ultimoTurno, null)
@@ -198,7 +205,7 @@ describe('eleccion', () => {
   test('Si es respuesta: dice "Si.", entra al historial y limpia las opciones', () => {
     const r = reducir(iluminar(conOpciones(), 'si'), { tipo: 'parpadeoLargo' })
     assert.deepEqual(decires(r.efectos), [{ tipo: 'decir', texto: 'Sí.' }])
-    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'Sí.' })
+    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'Sí.', origen: 'fija' })
     assert.equal(r.estado.opciones.length, 0)
   })
 
@@ -248,6 +255,90 @@ describe('eleccion', () => {
     e = r.estado
     assert.equal(e.conversacion, 'pensando')
     assert.ok(tipos(r.efectos).includes('pedirOpciones'))
+  })
+})
+
+describe('origen en el historial', () => {
+  test('una opcion elegida entra con origen opcion', () => {
+    const r = reducir(conOpciones(), { tipo: 'parpadeoLargo' })
+    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'Dale, de carne.', origen: 'opcion' })
+  })
+
+  test('Si y No entran con origen fija', () => {
+    const r = reducir(iluminar(conOpciones(), 'no'), { tipo: 'parpadeoLargo' })
+    assert.deepEqual(r.estado.historial.at(-1), { quien: 'usuario', texto: 'No.', origen: 'fija' })
+  })
+})
+
+describe('repetir', () => {
+  // Elige Si y espera a que termine de hablar.
+  function despuesDeDecirSi() {
+    const e = reducir(iluminar(conOpciones(), 'si'), { tipo: 'parpadeoLargo' }).estado
+    return aplicar(e, { tipo: 'hablando', activo: true }, { tipo: 'hablando', activo: false }).estado
+  }
+
+  test('antes de decir algo, Repetir no esta en el barrido', () => {
+    assert.ok(!nombres(conOpciones()).includes('repetir'))
+  })
+
+  test('despues de decir algo, Repetir es el ultimo del barrido', () => {
+    assert.equal(nombres(despuesDeDecirSi()).at(-1), 'repetir')
+  })
+
+  test('elegir Repetir emite repetir, no entra al historial y espera la habla', () => {
+    const antes = iluminar(despuesDeDecirSi(), 'repetir')
+    const r = reducir(antes, { tipo: 'parpadeoLargo' })
+    assert.ok(tipos(r.efectos).includes('repetir'))
+    assert.equal(decires(r.efectos).length, 0)
+    assert.deepEqual(r.estado.historial, antes.historial)
+    assert.equal(r.estado.esperandoHabla, true)
+  })
+
+  test('la sala puede repetir con un click, sin pasar por el barrido', () => {
+    const r = reducir(despuesDeDecirSi(), { tipo: 'repetir' })
+    assert.ok(tipos(r.efectos).includes('repetir'))
+  })
+
+  test('repetir de la sala se ignora mientras habla o si no hay nada dicho', () => {
+    assert.equal(reducir(estadoInicial, { tipo: 'repetir' }).efectos.length, 0)
+    const hablando = reducir(despuesDeDecirSi(), { tipo: 'hablando', activo: true }).estado
+    assert.equal(reducir(hablando, { tipo: 'repetir' }).efectos.length, 0)
+  })
+})
+
+describe('falsa alarma', () => {
+  function enUrgencia() {
+    return reducir(iluminar(estadoInicial, 'urgencia'), { tipo: 'parpadeoLargo' }).estado
+  }
+
+  test('el primer parpadeo largo pide confirmar', () => {
+    const r = reducir(enUrgencia(), { tipo: 'parpadeoLargo' })
+    assert.equal(r.estado.urgencia, true)
+    assert.equal(r.estado.urgenciaPaso, 'confirmar')
+    assert.ok(tipos(r.efectos).includes('armarConfirmacion'))
+  })
+
+  test('el segundo parpadeo largo corta la urgencia como falsa alarma', () => {
+    const r = aplicar(enUrgencia(), { tipo: 'parpadeoLargo' }, { tipo: 'parpadeoLargo' })
+    assert.equal(r.estado.urgencia, false)
+    assert.ok(r.efectos.some((x) => x.tipo === 'detenerUrgencia' && x.falsaAlarma === true))
+  })
+
+  test('funciona aunque la voz este diciendo la alarma', () => {
+    const e = reducir(enUrgencia(), { tipo: 'hablando', activo: true }).estado
+    const r = aplicar(e, { tipo: 'parpadeoLargo' }, { tipo: 'parpadeoLargo' })
+    assert.equal(r.estado.urgencia, false)
+  })
+
+  test('si no confirma a tiempo vuelve al primer paso', () => {
+    const e = aplicar(enUrgencia(), { tipo: 'parpadeoLargo' }, { tipo: 'finConfirmacion' }).estado
+    assert.equal(e.urgencia, true)
+    assert.equal(e.urgenciaPaso, 'aviso')
+  })
+
+  test('cuando la corta el cuidador no es falsa alarma', () => {
+    const r = reducir(enUrgencia(), { tipo: 'cortarUrgencia' })
+    assert.ok(r.efectos.some((x) => x.tipo === 'detenerUrgencia' && !x.falsaAlarma))
   })
 })
 

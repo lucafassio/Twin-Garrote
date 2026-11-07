@@ -10,6 +10,7 @@ export const VELOCIDAD_INICIAL_MS = 1200
 export const GESTO_URGENCIA_MS = 2000
 export const MAXIMO_ESPERA_HABLA_MS = 3000
 export const MAXIMO_OPCIONES = 4
+export const CONFIRMACION_FALSA_ALARMA_MS = 5000
 
 export type OpcionesNucleo = {
   pedirOpciones: (pedido: PedidoOpciones) => Promise<Opcion[]>
@@ -22,6 +23,7 @@ export type Nucleo = {
   obtener(): Estado
   suscribir(fn: () => void): () => void
   cortarUrgencia(): void
+  repetir(): void
   setVelocidad(ms: number): void
   velocidad(): number
 }
@@ -35,6 +37,7 @@ export function crearNucleo({ pedirOpciones, velocidadMs = VELOCIDAD_INICIAL_MS 
   let tick: ReturnType<typeof setInterval> | null = null
   let gesto: ReturnType<typeof setTimeout> | null = null
   let espera: ReturnType<typeof setTimeout> | null = null
+  let confirmacion: ReturnType<typeof setTimeout> | null = null
 
   function despachar(accion: Accion) {
     if (!activo) return
@@ -53,7 +56,8 @@ export function crearNucleo({ pedirOpciones, velocidadMs = VELOCIDAD_INICIAL_MS 
     if (tick) clearInterval(tick)
     if (gesto) clearTimeout(gesto)
     if (espera) clearTimeout(espera)
-    tick = gesto = espera = null
+    if (confirmacion) clearTimeout(confirmacion)
+    tick = gesto = espera = confirmacion = null
   }
 
   function ejecutar(efecto: Efecto) {
@@ -62,7 +66,14 @@ export function crearNucleo({ pedirOpciones, velocidadMs = VELOCIDAD_INICIAL_MS 
         bus.emit('decir', efecto.urgencia ? { texto: efecto.texto, urgencia: true } : { texto: efecto.texto })
         break
       case 'detenerUrgencia':
-        bus.emit('detenerUrgencia', {})
+        bus.emit('detenerUrgencia', efecto.falsaAlarma ? { falsaAlarma: true } : {})
+        break
+      case 'repetir':
+        bus.emit('repetir', {})
+        break
+      case 'armarConfirmacion':
+        if (confirmacion) clearTimeout(confirmacion)
+        confirmacion = setTimeout(() => despachar({ tipo: 'finConfirmacion' }), CONFIRMACION_FALSA_ALARMA_MS)
         break
       case 'pedirOpciones': {
         const { pedidoId } = efecto
@@ -100,6 +111,7 @@ export function crearNucleo({ pedirOpciones, velocidadMs = VELOCIDAD_INICIAL_MS 
         bus.on('ojos', ({ cerrados, progreso }) => despachar({ tipo: 'ojos', cerrados, progreso })),
         bus.on('parpadeoLargo', () => despachar({ tipo: 'parpadeoLargo' })),
         bus.on('hablando', ({ activo }) => despachar({ tipo: 'hablando', activo })),
+        bus.on('escuchando', ({ activo }) => despachar({ tipo: 'escuchando', activo })),
       ]
       reiniciarTick()
     },
@@ -117,6 +129,7 @@ export function crearNucleo({ pedirOpciones, velocidadMs = VELOCIDAD_INICIAL_MS 
       }
     },
     cortarUrgencia: () => despachar({ tipo: 'cortarUrgencia' }),
+    repetir: () => despachar({ tipo: 'repetir' }),
     setVelocidad(ms) {
       velocidad = Math.max(400, ms)
       if (activo) reiniciarTick()

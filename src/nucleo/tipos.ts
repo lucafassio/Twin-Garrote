@@ -1,6 +1,6 @@
 import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 
-export type ElementoFijo = 'urgencia' | 'si' | 'no' | 'espera' | 'otra'
+export type ElementoFijo = 'urgencia' | 'si' | 'no' | 'espera' | 'otra' | 'repetir'
 export type Elemento = { tipo: 'opcion'; indice: number } | { tipo: ElementoFijo }
 
 // Que muestran los cuadrantes.
@@ -19,8 +19,11 @@ export type Estado = {
   vueltas: number
   pausado: boolean // pausa del barrido tras 3 vueltas
   urgencia: boolean
+  urgenciaPaso: 'aviso' | 'confirmar' // "Fue sin querer" pide dos parpadeos largos
   pedirAlCortarUrgencia: boolean
+  hayParaRepetir: boolean // ya se dijo algo que Repetir puede volver a decir
   hablando: boolean
+  escuchando: boolean // el microfono esta escuchando (indicador para la sala)
   esperandoHabla: boolean // despues de elegir, hasta hablando false o el maximo
   ojosCerrados: boolean
   progreso: number
@@ -37,14 +40,19 @@ export type Accion =
   | { tipo: 'opcionesRecibidas'; pedidoId: number; opciones: Opcion[] }
   | { tipo: 'opcionesFallaron'; pedidoId: number }
   | { tipo: 'hablando'; activo: boolean }
+  | { tipo: 'escuchando'; activo: boolean }
   | { tipo: 'finEsperaHabla' }
   | { tipo: 'gestoUrgencia' }
-  | { tipo: 'cortarUrgencia' }
+  | { tipo: 'cortarUrgencia' } // la corta el cuidador (Escape o click)
+  | { tipo: 'finConfirmacion' } // vencio el tiempo para confirmar la falsa alarma
+  | { tipo: 'repetir' } // click de la sala en Repetir
 
 // Lo que el motor tiene que hacer afuera del reductor.
 export type Efecto =
   | { tipo: 'decir'; texto: string; urgencia?: boolean }
-  | { tipo: 'detenerUrgencia' }
+  | { tipo: 'detenerUrgencia'; falsaAlarma?: boolean }
+  | { tipo: 'repetir' }
+  | { tipo: 'armarConfirmacion' }
   | { tipo: 'pedirOpciones'; pedidoId: number; pedido: PedidoOpciones }
   | { tipo: 'reiniciarTick' }
   | { tipo: 'armarGestoUrgencia' }
