@@ -38,6 +38,13 @@ export default function DebugNucleo({ nucleo, estado, flotante = true }: Props) 
         {estado.eleccionPendiente ? ` · pendiente: ${estado.eleccionPendiente.tipo}` : ''}
       </div>
       <div>historial: {estado.historial.length} lineas</div>
+      <div>
+        lectura:{' '}
+        {estado.ultimaLectura
+          ? `para ${estado.ultimaLectura.paraUsuario.toFixed(2)} · completo ${estado.ultimaLectura.completo.toFixed(2)} · ${estado.ultimaLectura.tipo}`
+          : '-'}
+        {estado.tipoTurno ? ` · turno ${estado.tipoTurno}` : ''}
+      </div>
     </div>
   )
 }

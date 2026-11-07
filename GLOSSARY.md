@@ -63,8 +63,16 @@ Tono de la conversacion (formal, casual, intimo) que el LLM infiere del turno y 
 _Avoid_: formalidad, estilo
 
 **Turno**:
-Una frase completa del interlocutor, cerrada por un silencio corto (alrededor de un segundo) o a mano.
+Una frase completa del interlocutor dirigida al usuario. Se arma con uno o mas fragmentos que la lectura del turno acepta; recien ahi se piden opciones.
 _Avoid_: pregunta, mensaje, input
+
+**Fragmento**:
+Lo que voz cierra por un silencio corto (o a mano). Puede ser un turno entero, un pedazo ("Roberto…") o ruido. El nucleo los acumula hasta que la lectura decide.
+_Avoid_: turno parcial, chunk
+
+**Lectura del turno**:
+Juicio sobre lo acumulado antes de pedir opciones: si es para el usuario, si esta completo y que tipo de turno es (pregunta de si o no, abierta, comentario, saludo, pedido). La hace un modelo de decision si esta, o una heuristica local. Lo que no es para el usuario se descarta sin tocar las opciones en pantalla.
+_Avoid_: clasificador, filtro, gate
 
 **Opcion**:
 Una de las 4 respuestas candidatas que propone el LLM para el ultimo turno. Llegan ordenadas por probabilidad, la mas probable primero.

@@ -3,7 +3,7 @@ import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Opcion } from '@/eventos'
 import { elementosBarrido, estadoInicial, reducir } from './reductor'
-import type { Accion, Efecto, Estado } from './tipos'
+import type { Accion, Efecto, Estado, LecturaTurno } from './tipos'
 
 const OPCIONES: Opcion[] = [
   { intencion: 'aceptar', texto: 'Dale, de carne.' },
@@ -339,6 +339,115 @@ describe('falsa alarma', () => {
   test('cuando la corta el cuidador no es falsa alarma', () => {
     const r = reducir(enUrgencia(), { tipo: 'cortarUrgencia' })
     assert.ok(r.efectos.some((x) => x.tipo === 'detenerUrgencia' && !x.falsaAlarma))
+  })
+})
+
+describe('fragmentos y lectura del turno', () => {
+  const PARA_ROBERTO: LecturaTurno = { paraUsuario: 0.9, completo: 0.9, tipo: 'abierta' }
+  const INCOMPLETO: LecturaTurno = { paraUsuario: 0.9, completo: 0.2, tipo: 'otro' }
+  const RUIDO: LecturaTurno = { paraUsuario: 0.1, completo: 0.8, tipo: 'comentario' }
+
+  // Manda un fragmento y le responde la lectura indicada.
+  function fragmentoLeido(estado: Estado, texto: string, lectura: LecturaTurno) {
+    const r1 = reducir(estado, { tipo: 'fragmento', texto })
+    const r2 = reducir(r1.estado, { tipo: 'lectura', lecturaId: r1.estado.lecturaId, lectura })
+    return { estado: r2.estado, efectos: [...r1.efectos, ...r2.efectos] }
+  }
+
+  test('un fragmento pide una lectura y no pide opciones todavia', () => {
+    const r = reducir(estadoInicial, { tipo: 'fragmento', texto: 'qué querés comer' })
+    const leer = r.efectos.find((x) => x.tipo === 'leerTurno')
+    assert.ok(leer && leer.tipo === 'leerTurno')
+    assert.equal(leer.texto, 'qué querés comer')
+    assert.ok(!tipos(r.efectos).includes('pedirOpciones'))
+    assert.equal(r.estado.acumulado, 'qué querés comer')
+  })
+
+  test('si la lectura dice completo y para el usuario, se acepta como turno y se piden opciones', () => {
+    const r = fragmentoLeido(estadoInicial, 'qué querés comer', PARA_ROBERTO)
+    const pedido = r.efectos.find((x) => x.tipo === 'pedirOpciones')
+    assert.ok(pedido && pedido.tipo === 'pedirOpciones')
+    assert.equal(pedido.pedido.ultimoTurno, 'qué querés comer')
+    assert.equal(r.estado.acumulado, null)
+    assert.equal(r.estado.tipoTurno, 'abierta')
+  })
+
+  test('si esta incompleto, el siguiente fragmento se suma al acumulado', () => {
+    const e = fragmentoLeido(estadoInicial, 'Roberto', INCOMPLETO).estado
+    assert.equal(e.acumulado, 'Roberto')
+    const r = reducir(e, { tipo: 'fragmento', texto: 'querés un mate' })
+    const leer = r.efectos.find((x) => x.tipo === 'leerTurno')
+    assert.ok(leer && leer.tipo === 'leerTurno')
+    assert.equal(leer.texto, 'Roberto querés un mate')
+  })
+
+  test('si no es para el usuario se descarta: opciones y barrido quedan igual', () => {
+    const antes = iluminar(conOpciones(), 'opcion2')
+    const r = fragmentoLeido(antes, 'el proyecto está bueno', RUIDO)
+    assert.ok(!tipos(r.efectos).includes('pedirOpciones'))
+    assert.equal(r.estado.opciones.length, 4)
+    assert.equal(r.estado.iluminado, antes.iluminado)
+    assert.equal(r.estado.descartado, 'el proyecto está bueno')
+    assert.equal(r.estado.acumulado, null)
+    assert.deepEqual(r.estado.historial, antes.historial)
+  })
+
+  test('una lectura vieja se ignora', () => {
+    let e = reducir(estadoInicial, { tipo: 'fragmento', texto: 'Roberto' }).estado
+    const vieja = e.lecturaId
+    e = reducir(e, { tipo: 'fragmento', texto: 'querés un mate' }).estado
+    const r = reducir(e, { tipo: 'lectura', lecturaId: vieja, lectura: PARA_ROBERTO })
+    assert.ok(!tipos(r.efectos).includes('pedirOpciones'))
+    assert.equal(r.estado.acumulado, 'Roberto querés un mate')
+  })
+
+  test('al vencer el acumulado, si era para el usuario se acepta aunque este incompleto', () => {
+    const e = fragmentoLeido(estadoInicial, 'Roberto querés que te traiga', INCOMPLETO).estado
+    const r = reducir(e, { tipo: 'venceAcumulado' })
+    assert.ok(tipos(r.efectos).includes('pedirOpciones'))
+  })
+
+  test('al vencer el acumulado sin lectura todavia, no hace nada', () => {
+    const e = reducir(estadoInicial, { tipo: 'fragmento', texto: 'hola' }).estado
+    const r = reducir(e, { tipo: 'venceAcumulado' })
+    assert.equal(r.efectos.length, 0)
+    assert.equal(r.estado.acumulado, 'hola')
+  })
+
+  test('cada fragmento arma el vencimiento del acumulado', () => {
+    const r = reducir(estadoInicial, { tipo: 'fragmento', texto: 'hola' })
+    assert.ok(tipos(r.efectos).includes('armarVencimientoAcumulado'))
+  })
+
+  test('un fragmento nuevo borra el descartado y el parcial', () => {
+    let e = fragmentoLeido(estadoInicial, 'eh', RUIDO).estado
+    e = reducir(e, { tipo: 'parcial', texto: 'qué' }).estado
+    e = reducir(e, { tipo: 'fragmento', texto: 'qué hora es' }).estado
+    assert.equal(e.descartado, null)
+    assert.equal(e.parcial, null)
+  })
+
+  test('en una pregunta de si o no, el barrido arranca por Si y No', () => {
+    const SI_NO: LecturaTurno = { paraUsuario: 0.9, completo: 0.9, tipo: 'siNo' }
+    let e = fragmentoLeido(estadoInicial, 'tenés frío', SI_NO).estado
+    assert.deepEqual(nombres(e).slice(0, 2), ['si', 'no']) // mientras piensa el LLM
+    e = reducir(e, { tipo: 'opcionesRecibidas', pedidoId: e.pedidoId, opciones: OPCIONES }).estado
+    assert.deepEqual(nombres(e).slice(0, 3), ['si', 'no', 'opcion0'])
+  })
+
+  test('al responder se olvida el tipo de turno', () => {
+    const SI_NO: LecturaTurno = { paraUsuario: 0.9, completo: 0.9, tipo: 'siNo' }
+    const e = fragmentoLeido(estadoInicial, 'tenés frío', SI_NO).estado
+    const r = reducir(e, { tipo: 'parpadeoLargo' }) // elige Si, que esta primero
+    assert.deepEqual(decires(r.efectos), [{ tipo: 'decir', texto: 'Sí.' }])
+    assert.equal(r.estado.tipoTurno, null)
+  })
+
+  test('durante la urgencia un fragmento entra directo como turno, sin lectura', () => {
+    const e = reducir(iluminar(estadoInicial, 'urgencia'), { tipo: 'parpadeoLargo' }).estado
+    const r = reducir(e, { tipo: 'fragmento', texto: 'qué te pasa' })
+    assert.ok(!tipos(r.efectos).includes('leerTurno'))
+    assert.deepEqual(r.estado.historial.at(-1), { quien: 'interlocutor', texto: 'qué te pasa' })
   })
 })
 

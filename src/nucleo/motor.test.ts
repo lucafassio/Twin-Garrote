@@ -41,6 +41,7 @@ afterEach(() => {
 describe('motor', () => {
   test('un turno del bus pide opciones y las muestra', async () => {
     bus.emit('turno', { texto: '¿Queres mate?' })
+    await vaciarPromesas() // pasa por la lectura del turno (local, sin lector con modelo)
     assert.equal(pedidos.length, 1)
     assert.equal(pedidos[0].ultimoTurno, '¿Queres mate?')
     await vaciarPromesas()
@@ -55,8 +56,9 @@ describe('motor', () => {
   })
 
   test('un parpadeo largo emite decir en el bus', async () => {
-    bus.emit('turno', { texto: '¿Queres mate?' })
-    await vaciarPromesas()
+    bus.emit('turno', { texto: '¿Qué querés tomar?' }) // abierta: la opcion 1 va primero
+    await vaciarPromesas() // lectura del turno
+    await vaciarPromesas() // opciones
     bus.emit('parpadeoLargo', {})
     assert.deepEqual(dichos, [{ texto: 'Dale.' }])
   })
@@ -140,9 +142,85 @@ describe('motor', () => {
       },
     })
     nucleo.iniciar()
-    bus.emit('turno', { texto: 'Hola' })
+    bus.emit('turno', { texto: '¿Querés un mate?' })
+    await vaciarPromesas()
     await vaciarPromesas()
     assert.equal(nucleo.obtener().conversacion, 'sinConexion')
+  })
+
+  test('el ruido del bus no pide opciones', async () => {
+    bus.emit('turno', { texto: 'eh' })
+    await vaciarPromesas()
+    assert.equal(pedidos.length, 0)
+    assert.equal(nucleo.obtener().descartado, 'eh')
+  })
+
+  test('usa el lector con modelo si esta', async () => {
+    nucleo.detener()
+    const leidos: string[] = []
+    nucleo = crearNucleo({
+      velocidadMs: 1000,
+      pedirOpciones: async (p) => {
+        pedidos.push(p)
+        return OPCIONES
+      },
+      leerTurno: async (texto) => {
+        leidos.push(texto)
+        return { paraUsuario: 0.9, completo: 0.9, tipo: 'comentario' }
+      },
+    })
+    nucleo.iniciar()
+    bus.emit('turno', { texto: 'eh' }) // la heuristica lo descartaria; el modelo lo acepta
+    await vaciarPromesas()
+    assert.deepEqual(leidos, ['eh'])
+    assert.equal(pedidos.length, 1)
+  })
+
+  test('si el lector con modelo tarda mas de 800 ms, usa la heuristica local', async () => {
+    nucleo.detener()
+    nucleo = crearNucleo({
+      velocidadMs: 1000,
+      pedirOpciones: async (p) => {
+        pedidos.push(p)
+        return OPCIONES
+      },
+      leerTurno: () => new Promise(() => {}), // nunca responde
+    })
+    nucleo.iniciar()
+    bus.emit('turno', { texto: '¿Querés un mate?' })
+    await vaciarPromesas()
+    assert.equal(pedidos.length, 0)
+    mock.timers.tick(800)
+    await vaciarPromesas()
+    assert.equal(pedidos.length, 1)
+  })
+
+  test('si el lector con modelo falla, usa la heuristica local', async () => {
+    nucleo.detener()
+    nucleo = crearNucleo({
+      velocidadMs: 1000,
+      pedirOpciones: async (p) => {
+        pedidos.push(p)
+        return OPCIONES
+      },
+      leerTurno: async () => {
+        throw new Error('sin red')
+      },
+    })
+    nucleo.iniciar()
+    bus.emit('turno', { texto: '¿Querés un mate?' })
+    await vaciarPromesas()
+    await vaciarPromesas()
+    assert.equal(pedidos.length, 1)
+  })
+
+  test('un acumulado incompleto para el usuario se acepta a los 4 s', async () => {
+    bus.emit('turno', { texto: 'Roberto' })
+    await vaciarPromesas()
+    assert.equal(pedidos.length, 0)
+    mock.timers.tick(4000)
+    assert.equal(pedidos.length, 1)
+    assert.equal(pedidos[0].ultimoTurno, 'Roberto')
   })
 
   test('los suscriptores se enteran de cada cambio', () => {

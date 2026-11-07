@@ -33,15 +33,29 @@ export const estadoInicial: Estado = {
   progreso: 0,
   eleccionPendiente: null,
   turnoPendiente: null,
+  acumulado: null,
+  lecturaId: 0,
+  ultimaLectura: null,
+  descartado: null,
+  tipoTurno: null,
 }
 
+// Umbrales de la lectura del turno.
+export const UMBRAL_PARA_USUARIO = 0.4 // menos: no era para el usuario, se descarta
+export const UMBRAL_COMPLETO = 0.6 // mas: el turno termino, se piden opciones
+
 // Orden del barrido: opciones (por probabilidad) y despues la franja fija.
+// En una pregunta de si o no, Si y No van primero: se puede contestar sin esperar al LLM.
 export function elementosBarrido(estado: Estado): Elemento[] {
   const lista: Elemento[] = []
+  const siNoPrimero = estado.tipoTurno === 'siNo'
+  if (siNoPrimero) lista.push({ tipo: 'si' }, { tipo: 'no' })
   if (estado.conversacion === 'opciones') {
     estado.opciones.forEach((_, indice) => lista.push({ tipo: 'opcion', indice }))
   }
-  lista.push({ tipo: 'urgencia' }, { tipo: 'si' }, { tipo: 'no' }, { tipo: 'espera' })
+  lista.push({ tipo: 'urgencia' })
+  if (!siNoPrimero) lista.push({ tipo: 'si' }, { tipo: 'no' })
+  lista.push({ tipo: 'espera' })
   if (estado.conversacion !== 'pensando') lista.push({ tipo: 'otra' })
   if (estado.hayParaRepetir) lista.push({ tipo: 'repetir' })
   return lista
@@ -116,7 +130,25 @@ function responder(c: Ctx, texto: string, origen: 'opcion' | 'fija') {
   c.e.opciones = []
   c.e.ultimoTurno = null
   c.e.yaMostradas = []
+  c.e.tipoTurno = null
   reiniciarBarrido(c)
+}
+
+// Acepta el acumulado como turno (la lectura dijo que va, o vencio el tiempo).
+function aceptarAcumulado(c: Ctx) {
+  const texto = c.e.acumulado
+  if (texto === null) return
+  c.e.tipoTurno = c.e.ultimaLectura?.tipo ?? null
+  c.e.acumulado = null
+  c.e.ultimaLectura = null
+  if (c.e.ojosCerrados) c.e.turnoPendiente = texto
+  else recibirTurno(c, texto)
+}
+
+function descartarAcumulado(c: Ctx) {
+  c.e.descartado = c.e.acumulado
+  c.e.acumulado = null
+  c.e.ultimaLectura = null
 }
 
 function activarUrgencia(c: Ctx) {
@@ -162,6 +194,38 @@ export function reducir(estado: Estado, accion: Accion): Resultado {
     case 'turno':
       if (e.ojosCerrados && !e.urgencia) e.turnoPendiente = accion.texto
       else recibirTurno(c, accion.texto)
+      break
+
+    case 'fragmento': {
+      e.parcial = null
+      e.descartado = null
+      // En la urgencia no se filtra: lo que diga la sala entra directo.
+      if (e.urgencia) {
+        recibirTurno(c, accion.texto)
+        break
+      }
+      e.acumulado = e.acumulado ? `${e.acumulado} ${accion.texto}` : accion.texto
+      e.ultimaLectura = null
+      e.lecturaId += 1
+      c.efectos.push({ tipo: 'leerTurno', lecturaId: e.lecturaId, texto: e.acumulado, historial: e.historial })
+      c.efectos.push({ tipo: 'armarVencimientoAcumulado' })
+      break
+    }
+
+    case 'lectura': {
+      if (accion.lecturaId !== e.lecturaId || e.acumulado === null) break
+      const l = accion.lectura
+      e.ultimaLectura = l
+      if (l.paraUsuario < UMBRAL_PARA_USUARIO) descartarAcumulado(c)
+      else if (l.completo >= UMBRAL_COMPLETO) aceptarAcumulado(c)
+      // Para el usuario pero incompleto: se espera el siguiente fragmento o el vencimiento.
+      break
+    }
+
+    case 'venceAcumulado':
+      if (e.acumulado === null || e.ultimaLectura === null) break
+      if (e.ultimaLectura.paraUsuario >= UMBRAL_PARA_USUARIO) aceptarAcumulado(c)
+      else descartarAcumulado(c)
       break
 
     case 'parcial':

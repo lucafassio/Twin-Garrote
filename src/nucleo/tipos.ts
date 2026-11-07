@@ -1,5 +1,10 @@
 import type { LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 
+// Lectura del turno: que es lo que se escucho, antes de pedir opciones.
+// paraUsuario y completo son probabilidades 0..1 (de un modelo o de la heuristica local).
+export type TipoTurno = 'siNo' | 'abierta' | 'comentario' | 'saludo' | 'pedido' | 'otro'
+export type LecturaTurno = { paraUsuario: number; completo: number; tipo: TipoTurno }
+
 export type ElementoFijo = 'urgencia' | 'si' | 'no' | 'espera' | 'otra' | 'repetir'
 export type Elemento = { tipo: 'opcion'; indice: number } | { tipo: ElementoFijo }
 
@@ -29,10 +34,19 @@ export type Estado = {
   progreso: number
   eleccionPendiente: Elemento | null // se confirma al abrir los ojos
   turnoPendiente: string | null // turno que llego con los ojos cerrados
+  // Lectura del turno: los fragmentos de voz se acumulan hasta que la lectura los acepta.
+  acumulado: string | null
+  lecturaId: number
+  ultimaLectura: LecturaTurno | null // del acumulado actual
+  descartado: string | null // ultimo texto que no parecia para el usuario (se muestra en gris)
+  tipoTurno: TipoTurno | null // del turno que se esta respondiendo
 }
 
 export type Accion =
-  | { tipo: 'turno'; texto: string }
+  | { tipo: 'turno'; texto: string } // turno ya aceptado (por la lectura o tipeado por el operador)
+  | { tipo: 'fragmento'; texto: string } // lo que cerro voz: todavia hay que leerlo
+  | { tipo: 'lectura'; lecturaId: number; lectura: LecturaTurno }
+  | { tipo: 'venceAcumulado' }
   | { tipo: 'parcial'; texto: string }
   | { tipo: 'ojos'; cerrados: boolean; progreso: number }
   | { tipo: 'parpadeoLargo' }
@@ -53,6 +67,8 @@ export type Efecto =
   | { tipo: 'detenerUrgencia'; falsaAlarma?: boolean }
   | { tipo: 'repetir' }
   | { tipo: 'armarConfirmacion' }
+  | { tipo: 'leerTurno'; lecturaId: number; texto: string; historial: LineaHistorial[] }
+  | { tipo: 'armarVencimientoAcumulado' }
   | { tipo: 'pedirOpciones'; pedidoId: number; pedido: PedidoOpciones }
   | { tipo: 'reiniciarTick' }
   | { tipo: 'armarGestoUrgencia' }

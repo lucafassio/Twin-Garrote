@@ -98,15 +98,23 @@ export default function Pantalla({ estado, onCortarUrgencia, onRepetir, operador
     )
   }
 
-  const textoArriba = estado.parcial ?? estado.turnoMostrado
+  // Arriba: lo que va diciendo (parcial), lo que se esta decidiendo si es un turno
+  // (acumulado), o el ultimo turno aceptado.
+  const enCurso = estado.parcial ?? estado.acumulado
+  const textoArriba = enCurso ?? estado.turnoMostrado
 
   return (
     <div className="flex h-screen flex-col gap-4 bg-zinc-950 p-4 text-zinc-50">
       {/* Arriba: lo que dijo (o va diciendo) el interlocutor */}
       <header className="flex min-h-28 items-center justify-between gap-6 rounded-2xl bg-zinc-900 px-8 py-4">
-        <p className={`text-5xl leading-tight ${estado.parcial ? 'text-zinc-400 italic' : ''}`}>
-          {textoArriba ?? <span className="text-zinc-500">Esperando que alguien hable…</span>}
-        </p>
+        <div className="flex flex-col gap-1">
+          <p className={`text-5xl leading-tight ${enCurso ? 'text-zinc-400 italic' : ''}`}>
+            {textoArriba ?? <span className="text-zinc-500">Esperando que alguien hable…</span>}
+          </p>
+          {estado.descartado && !enCurso && (
+            <p className="text-2xl text-zinc-500">No parecía para vos: «{estado.descartado}»</p>
+          )}
+        </div>
         {estado.hablando || estado.esperandoHabla ? (
           <span className="shrink-0 text-3xl text-sky-300">Hablando…</span>
         ) : (
