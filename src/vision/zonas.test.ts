@@ -78,6 +78,14 @@ describe('clasificador de zonas', () => {
     assert.equal(c.clasificar(corrido)?.zona, 'c')
   })
 
+  test('exporta sus muestras y otro clasificador las importa igual', () => {
+    const a = entrenado()
+    const b = crearClasificadorZonas({ k: 7 })
+    b.importar(JSON.parse(JSON.stringify(a.datos())))
+    assert.equal(b.clasificar([1, 0, 0])?.zona, 'b')
+    assert.equal(b.muestras('c'), a.muestras('c'))
+  })
+
   test('guarda como maximo las ultimas muestras de cada zona', () => {
     const c = crearClasificadorZonas({ k: 3, maximoPorZona: 10 })
     c.entrenar(nube(A, 30, 0.05, 6).map((r) => ({ zona: 'a', rasgos: r })))

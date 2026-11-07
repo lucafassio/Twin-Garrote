@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { bus } from '@/eventos'
 import { crearEstabilizadorMirada } from '@/nucleo/estabilizadorMirada'
 import { calibrar, calibrarZonas, observarVision, setUmbral } from '@/vision'
+import { difiereEncuadre, type CalibracionGuardada } from './calibracionGuardada'
 import { evaluarEncuadre, type Encuadre, type Evaluacion } from './encuadre'
 import ObjetivoMirada from './ObjetivoMirada'
 import type { EstadoCamara } from './useCamara'
@@ -51,11 +52,15 @@ function Boton({ onClick, children, secundario, disabled }: { onClick: () => voi
 
 export function PasoCamara({
   camara,
+  guardada,
   onListo,
+  onUsarGuardada,
   onSaltear,
 }: {
   camara: { estado: EstadoCamara; error: string; reintentar: () => void }
-  onListo: () => void
+  guardada: CalibracionGuardada | null // ultima calibracion de este navegador, si hay
+  onListo: (encuadre: Encuadre | null) => void // seguir calibrando
+  onUsarGuardada: () => void // saltear la calibracion y usar la guardada
   onSaltear: () => void
 }) {
   const [evaluacion, setEvaluacion] = useState<Evaluacion | null>(null)
@@ -114,15 +119,71 @@ export function PasoCamara({
             {item(evaluacion?.centrada, 'Centrada')}
             {item(evaluacion?.distancia === 'bien', 'Buena distancia')}
           </ul>
-          <Boton onClick={onListo} disabled={!firme}>
-            Continuar
-          </Boton>
+          {guardada ? (
+            <OfertaGuardada
+              guardada={guardada}
+              actual={evaluacion?.promedio ?? null}
+              habilitado={firme}
+              onUsar={onUsarGuardada}
+              onCalibrar={() => onListo(evaluacion?.promedio ?? null)}
+            />
+          ) : (
+            <Boton onClick={() => onListo(evaluacion?.promedio ?? null)} disabled={!firme}>
+              Continuar
+            </Boton>
+          )}
         </>
       )}
       <Boton secundario onClick={onSaltear}>
         Saltear la preparación (sin cámara)
       </Boton>
     </Marco>
+  )
+}
+
+// Hay una calibracion guardada: usarla (directo a conversar) o calibrar de nuevo.
+// Si la cara quedo en otro lugar que al calibrar, se recomienda recalibrar.
+function OfertaGuardada({
+  guardada,
+  actual,
+  habilitado,
+  onUsar,
+  onCalibrar,
+}: {
+  guardada: CalibracionGuardada
+  actual: Encuadre | null
+  habilitado: boolean
+  onUsar: () => void
+  onCalibrar: () => void
+}) {
+  const cuando = new Date(guardada.fecha).toLocaleString('es-AR', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const movido = !!(guardada.encuadre && actual && difiereEncuadre(guardada.encuadre, actual))
+  return (
+    <div className="flex flex-col items-center gap-3">
+      {movido && <p className="text-2xl text-amber-300">Estás en otra posición que cuando calibraste: conviene calibrar de nuevo.</p>}
+      <div className="flex items-center gap-4">
+        {movido ? (
+          <>
+            <Boton onClick={onCalibrar} disabled={!habilitado}>
+              Calibrar de nuevo
+            </Boton>
+            <Boton secundario onClick={onUsar} disabled={!habilitado}>
+              Usar la guardada ({cuando})
+            </Boton>
+          </>
+        ) : (
+          <>
+            <Boton onClick={onUsar} disabled={!habilitado}>
+              Usar la calibración guardada
+            </Boton>
+            <Boton secundario onClick={onCalibrar} disabled={!habilitado}>
+              Calibrar de nuevo
+            </Boton>
+          </>
+        )}
+      </div>
+      {!movido && <p className="text-xl text-zinc-500">Guardada el {cuando}</p>}
+    </div>
   )
 }
 

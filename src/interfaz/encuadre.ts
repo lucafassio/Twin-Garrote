@@ -5,7 +5,14 @@
 
 export type Encuadre = { x: number; y: number; ancho: number }
 export type Distancia = 'bien' | 'cerca' | 'lejos'
-export type Evaluacion = { listo: boolean; cara: boolean; centrada: boolean; distancia: Distancia; consejo: string }
+export type Evaluacion = {
+  listo: boolean
+  cara: boolean
+  centrada: boolean
+  distancia: Distancia
+  consejo: string
+  promedio?: Encuadre // donde esta la cara en promedio (para guardar con la calibracion)
+}
 
 const VISTA_MINIMA = 0.8 // fraccion de cuadros con la cara vista
 const ANCHO_MINIMO = 0.08 // menos: muy lejos (el iris queda chico)
@@ -38,5 +45,5 @@ export function evaluarEncuadre(muestras: (Encuadre | null)[]): Evaluacion {
           ? 'Centrá la cara en el recuadro.'
           : 'Perfecto, quedate así.'
 
-  return { listo: cara && centrada && distancia === 'bien', cara, centrada, distancia, consejo }
+  return { listo: cara && centrada && distancia === 'bien', cara, centrada, distancia, consejo, promedio: { x, y, ancho } }
 }

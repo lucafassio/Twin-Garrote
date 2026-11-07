@@ -96,6 +96,18 @@ export function crearClasificadorZonas({ k = 15, maximoPorZona = 400 }: { k?: nu
       recalcular()
     },
 
+    // Muestras por zona (copia), para guardar la calibracion.
+    datos(): Record<string, number[][]> {
+      return Object.fromEntries([...porZona].map(([zona, lista]) => [zona, lista.map((r) => [...r])]))
+    },
+
+    // Carga muestras guardadas (reemplaza las actuales).
+    importar(datos: Record<string, number[][]>) {
+      porZona.clear()
+      for (const [zona, lista] of Object.entries(datos)) if (lista.length) sumar(zona, lista)
+      recalcular()
+    },
+
     // Suma muestras etiquetadas (por ejemplo, los cuadros antes de un parpadeo que eligio esa zona).
     agregar(zona: string, rasgos: number[][]) {
       if (!rasgos.length) return

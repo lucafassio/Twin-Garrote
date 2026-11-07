@@ -20,6 +20,23 @@ const EMISION_ZONAS_MS = 60
 
 export const estadoZonas = () => ({ lista: clasificador.listo(), zonas: clasificador.zonas() })
 
+export { LARGO_RASGOS } from './zonas'
+
+// Calibracion para guardar y restaurar (linea base del parpadeo, sensibilidad y mirada).
+export type DatosCalibracion = { lineaBase: number; umbral: number; zonas: Record<string, number[][]> }
+
+export function exportarCalibracion(): DatosCalibracion {
+  return { lineaBase, umbral, zonas: clasificador.datos() }
+}
+
+// Llamar con la camara ya prendida (al apagar, la linea base vuelve a 0).
+export function importarCalibracion(c: DatosCalibracion) {
+  lineaBase = c.lineaBase
+  setUmbral(c.umbral)
+  clasificador.importar(c.zonas)
+  probabilidades = null
+}
+
 function emitirZona(zona: string | null, confianza: number, ahora: number) {
   if (ahora - ultimaEmisionZona < EMISION_ZONAS_MS) return
   ultimaEmisionZona = ahora
