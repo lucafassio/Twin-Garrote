@@ -9,6 +9,7 @@
 // Semana: los bloques de dia de la semana, mas los hechos activos de importancia 6 o mas del periodo.
 // Mes: los bloques de semana que tocan el mes, mas los hechos activos de importancia 6 o mas del mes.
 import type { Cercania } from '@/eventos'
+import { dejaronDeValer } from './descartes.ts'
 import { describirDia } from './fechas.ts'
 import { enFila } from './fila.ts'
 import { enArgentina, periodoAnterior, periodoDe, type Corte, type Periodo } from './periodos.ts'
@@ -149,7 +150,22 @@ function pendientes(corte: Corte, bloques: Bloque[], ahora: Date): Periodo[] {
     lista.unshift(periodo)
     periodo = periodoAnterior(corte, periodo.desde)
   }
-  return lista.filter((p) => maduro(corte, p, ahora))
+  const nuevos = new Set(lista.map((p) => p.desde.getTime()))
+  const rehacer = descartadosSinRehacer(corte, bloques, ahora).filter((p) => !nuevos.has(p.desde.getTime()))
+  return [...rehacer, ...lista].sort((a, b) => a.desde.getTime() - b.desde.getTime()).filter((p) => maduro(corte, p, ahora))
+}
+
+// Los periodos ya cerrados con un bloque descartado (#40: citaba un hecho invalidado) y ninguno
+// vigente que lo reemplace, aunque haya bloques mas nuevos: se rehacen sin lo invalidado. Uno que
+// ya no tiene nada que resumir se borra (ver guardar).
+function descartadosSinRehacer(corte: Corte, bloques: Bloque[], ahora: Date): Periodo[] {
+  const periodos = new Map<number, Periodo>()
+  for (const b of bloques) {
+    if (!b.descartado) continue
+    const p = periodoDe(corte, new Date(b.desde))
+    if (p.hasta.getTime() <= ahora.getTime() && !tieneBloque(bloques, p)) periodos.set(p.desde.getTime(), p)
+  }
+  return [...periodos.values()]
 }
 
 // Un mes se arma recien cuando cerro la semana de su ultimo dia: si no, los dias del final del mes
@@ -246,14 +262,14 @@ function interpretar(texto: string, validas: Set<string>): { texto: string; fuen
 
 // Arma el bloque de un periodo. null si no hay material o el modelo no tuvo nada que decir.
 // Tira ErrorNivel si el modelo devuelve algo invalido dos veces.
+// Los ids de todo lo que ve el modelo al armar un periodo.
+const idsDe = (material: Material) =>
+  new Set([...material.resumenes.map(idResumen), ...material.bloques.map((b) => b.id), ...material.hechos.map((h) => h.id)])
+
 async function armar(corte: Corte, memoria: Memoria, periodo: Periodo, proveedor: Proveedor): Promise<Bloque | null> {
   const material = materialDe(corte, memoria, periodo)
-  if (material.resumenes.length === 0 && material.bloques.length === 0 && material.hechos.length === 0) return null
-  const validas = new Set([
-    ...material.resumenes.map(idResumen),
-    ...material.bloques.map((b) => b.id),
-    ...material.hechos.map((h) => h.id),
-  ])
+  const validas = idsDe(material)
+  if (validas.size === 0) return null
   const sistema = promptSistema(corte)
   const usuario = promptUsuario(corte, periodo, material)
   let respuesta = interpretar(await proveedor.generar({ sistema, usuario, salida: SALIDA_NIVEL }), validas)
@@ -286,11 +302,20 @@ export type BloquesDeHoy = { dia: Bloque | null; semana: Bloque | null }
 export function crearNiveles(deps: { almacen: Almacen; proveedorRollup: ProveedorRollup }) {
   // Releer antes de guardar (en fila): mientras el modelo pensaba, opciones o el agente pudieron
   // guardar. Desde aca solo se escriben los niveles. Un bloque del mismo periodo reemplaza al anterior.
-  function guardar(corte: Corte, bloque: Bloque) {
+  // Si mientras tanto se invalido algo que vio el modelo (#40), el bloque se guarda descartado y se
+  // rehace en el proximo cierre. Sin bloque, un descartado del periodo ya no tiene nada que resumir:
+  // se borra en vez de quedar colgado.
+  function guardar(corte: Corte, periodo: Periodo, bloque: Bloque | null, antes: Memoria, ahora: Date) {
     return enFila(deps.almacen, async () => {
       const fresca = await deps.almacen.leerMemoria()
       const niveles = nivelesDe(fresca)
-      const lista = [...niveles[corte].filter((b) => b.desde !== bloque.desde), bloque]
+      const desde = periodo.desde.toISOString()
+      const otros = niveles[corte].filter((b) => (bloque ? b.desde !== bloque.desde : !(b.descartado && b.desde === desde)))
+      if (!bloque && otros.length === niveles[corte].length) return
+      const invalidados = dejaronDeValer(antes, fresca)
+      const vio = [...idsDe(materialDe(corte, antes, periodo))].some((id) => invalidados.has(id))
+      const nuevo = bloque && vio ? { ...bloque, descartado: ahora.toISOString() } : bloque
+      const lista = [...otros, ...(nuevo ? [nuevo] : [])]
         .sort((a, b) => Date.parse(a.desde) - Date.parse(b.desde))
         .slice(-MAX_BLOQUES_GUARDADOS)
       await deps.almacen.guardarMemoria({ ...fresca, niveles: { ...niveles, [corte]: lista } })
@@ -298,10 +323,10 @@ export function crearNiveles(deps: { almacen: Almacen; proveedorRollup: Proveedo
   }
 
   // Arma un periodo con la memoria de ahora (que ya trae los bloques de abajo recien guardados).
-  async function armarYGuardar(corte: Corte, periodo: Periodo): Promise<Bloque | null> {
+  async function armarYGuardar(corte: Corte, periodo: Periodo, ahora: Date): Promise<Bloque | null> {
     const memoria = await deps.almacen.leerMemoria()
     const bloque = await armar(corte, memoria, periodo, deps.proveedorRollup(corte))
-    if (bloque) await guardar(corte, bloque)
+    await guardar(corte, periodo, bloque, memoria, ahora)
     return bloque
   }
 
@@ -313,19 +338,31 @@ export function crearNiveles(deps: { almacen: Almacen; proveedorRollup: Proveedo
     for (const corte of CORTES) {
       const bloques = nivelesDe(await deps.almacen.leerMemoria())[corte]
       for (const periodo of pendientes(corte, bloques, ahora)) {
-        const bloque = await armarYGuardar(corte, periodo)
+        const bloque = await armarYGuardar(corte, periodo, ahora)
         if (bloque) armados.push(bloque)
       }
     }
     return armados
   }
 
-  // "Consolidar ahora" (demo): arma el dia y la semana de hoy con lo que haya, sin esperar el corte.
-  // Cada bloque cubre hasta ahora; al cruzar el corte se rehace con el periodo completo.
+  // "Consolidar ahora" (demo): primero rehace los bloques descartados de periodos ya cerrados (#40),
+  // de abajo hacia arriba; si eso falla, lo viejo espera al proximo cierre y lo de hoy se arma igual.
+  // Despues arma el dia y la semana de hoy con lo que haya, sin esperar el corte. Cada bloque de hoy
+  // cubre hasta ahora; al cruzar el corte se rehace con el periodo completo.
   async function consolidarAhora(ahora: Date): Promise<BloquesDeHoy> {
+    try {
+      for (const corte of CORTES) {
+        const bloques = nivelesDe(await deps.almacen.leerMemoria())[corte]
+        for (const periodo of descartadosSinRehacer(corte, bloques, ahora).filter((p) => maduro(corte, p, ahora))) {
+          await armarYGuardar(corte, periodo, ahora)
+        }
+      }
+    } catch (e) {
+      console.error('[niveles de memoria] rehacer descartados', e)
+    }
     const hastaAhora = (corte: Corte) => ({ desde: periodoDe(corte, ahora).desde, hasta: new Date(ahora.getTime() + 1) })
-    const dia = await armarYGuardar('dia', hastaAhora('dia'))
-    const semana = await armarYGuardar('semana', hastaAhora('semana'))
+    const dia = await armarYGuardar('dia', hastaAhora('dia'), ahora)
+    const semana = await armarYGuardar('semana', hastaAhora('semana'), ahora)
     return { dia, semana }
   }
 

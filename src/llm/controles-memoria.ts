@@ -4,6 +4,8 @@
 import type { Almacen, Hecho } from './tipos.ts'
 import { estaVencido } from './fechas.ts'
 import { enFila } from './fila.ts'
+import { descartarLoQueCita } from './descartes.ts'
+import { idResumen } from './niveles.ts'
 
 // Cada hecho trae su fecha de evento (si tiene, en el propio hecho) y si esta vencido a la hora del pedido.
 export type HechoListado = Hecho & { vencido: boolean }
@@ -24,7 +26,8 @@ export async function listarHechos(almacen: Almacen, ahora: Date = new Date()): 
   }
 }
 
-// Invalidar a mano: el hecho deja de usarse en las opciones, y tambien el resumen de su conversacion.
+// Invalidar a mano: el hecho deja de usarse en las opciones, y tambien el resumen de su conversacion
+// y lo que los cita (bloques, propuesta de huella; la aceptada queda para revisar, ver descartes.ts).
 // Devuelve el hecho invalidado, o null si no hay un hecho activo con ese id.
 // En fila: guarda la memoria entera, no tiene que pisar una conversacion que se cerro en el medio.
 export function invalidarHecho(almacen: Almacen, id: string, ahora: Date = new Date()): Promise<Hecho | null> {
@@ -39,9 +42,12 @@ async function invalidar(almacen: Almacen, id: string, ahora: Date): Promise<Hec
   hecho.estado = 'invalidado'
   hecho.fechaInvalidacion = iso
   // El resumen de la conversacion de donde salio el hecho (mismo fin) tambien lo cuenta: se descarta.
-  for (const r of memoria.resumenes) {
-    if (r.fin === hecho.fecha && !r.descartado) r.descartado = iso
+  const resumenes = memoria.resumenes.filter((r) => r.fin === hecho.fecha)
+  for (const r of resumenes) {
+    if (!r.descartado) r.descartado = iso
   }
+  // Y todo lo que se armo a partir del hecho o de ese resumen (#40).
+  descartarLoQueCita(memoria, [hecho.id, ...resumenes.map(idResumen)], iso)
   await almacen.guardarMemoria(memoria)
   return hecho
 }

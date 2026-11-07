@@ -41,7 +41,7 @@ Lo que el sistema sabe del usuario y entra en cada pedido de opciones: el perfil
 _Avoid_: fingerprint, persona, contexto
 
 **Huella aprendida**:
-Bloque corto que el sistema propone una vez por mes con lo que aprendio del usuario (gustos, personas y como las llama, forma de hablar, temas a evitar). Queda pendiente hasta que la familia la acepta o la descarta; solo la aceptada entra a las opciones, marcada como aprendida, al lado del perfil (la huella base), que nunca cambia.
+Bloque corto que el sistema propone una vez por mes con lo que aprendio del usuario (gustos, personas y como las llama, forma de hablar, temas a evitar). Queda pendiente hasta que la familia la acepta o la descarta; solo la aceptada entra a las opciones, marcada como aprendida, al lado del perfil (la huella base), que nunca cambia. Si la familia invalida un hecho que la aceptada cita, queda para revisar: deja de entrar a las opciones hasta que la familia la vuelva a aceptar o la descarte.
 
 **Hecho**:
 Dato sobre el usuario o su entorno extraido de una conversacion ("Laura se opera el jueves"), con fecha, origen, interlocutor e importancia de 1 a 10. Cuando otro hecho lo contradice se invalida, no se borra. Tiene un tipo: estable (nunca vence), estado (puede tener fin) o evento (pasa en una fecha). Sin tipo, es estable.

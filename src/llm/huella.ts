@@ -10,6 +10,7 @@
 // anterior y las descartadas para no repetirlas. Una sola llamada, salida estructurada, fuentes
 // obligatorias. Con cercania formal no entra si cita algo intimo, derivado de las fuentes.
 import type { Cercania } from '@/eventos'
+import { dejaronDeValer } from './descartes.ts'
 import { estaVencido } from './fechas.ts'
 import { enFila } from './fila.ts'
 import { citaIntimo, hechosIntimos, nivelesDe, type ProveedorRollup } from './niveles.ts'
@@ -60,9 +61,20 @@ export function huellaDe(memoria: Memoria): HuellaAprendida {
   return memoria.huellaAprendida ?? {}
 }
 
+// La propuesta que la familia puede decidir: una descartada por invalidar un hecho (#40) no cuenta.
+export function propuestaPendiente(h: HuellaAprendida): PropuestaHuella | null {
+  return h.propuesta && !h.propuesta.descartado ? h.propuesta : null
+}
+
+// La aceptada que vale: una para revisar (citaba un hecho invalidado, #40) no, hasta que la familia
+// la vuelva a aceptar.
+export function aceptadaVigente(h: HuellaAprendida): HuellaAceptada | null {
+  return h.aceptada && !h.aceptada.paraRevisar ? h.aceptada : null
+}
+
 // La aceptada que entra al prompt de opciones, o null. Con cercania formal, ninguna que cite algo intimo.
 export function huellaParaPrompt(memoria: Memoria, cercania: Cercania | undefined): HuellaAceptada | null {
-  const aceptada = huellaDe(memoria).aceptada
+  const aceptada = aceptadaVigente(huellaDe(memoria))
   if (!aceptada || aceptada.texto.trim() === '') return null
   if (cercania === 'formal' && citaIntimo(aceptada, memoria)) return null
   return aceptada
@@ -84,7 +96,8 @@ export function describirFuentes(fuentes: string[], memoria: Memoria): FuenteDes
   return fuentes.map((id) => {
     if (id === FUENTE_FRASES) return { id, texto: 'Frases que dijo' }
     const h = hechos.get(id)
-    if (h) return { id, texto: h.texto }
+    // Una huella para revisar (#40) muestra cual de sus fuentes se invalido.
+    if (h) return { id, texto: h.estado === 'invalidado' ? `${h.texto} (ya no vale)` : h.texto }
     const b = bloques.get(id)
     if (b) return { id, texto: `Resumen ${nombreBloque(b)}` }
     return { id, texto: id }
@@ -124,7 +137,8 @@ function materialDe(memoria: Memoria, ahora: Date): Material {
       .sort((a, b) => b.importancia - a.importancia || Date.parse(b.fecha) - Date.parse(a.fecha))
       .slice(0, MAX_HECHOS),
     frases,
-    aceptada: huella.aceptada ?? null,
+    // Una aceptada para revisar cuenta algo invalidado: la propuesta no parte de ella.
+    aceptada: aceptadaVigente(huella),
     descartadas: huella.descartadas ?? [],
   }
 }
@@ -196,13 +210,19 @@ function interpretar(texto: string, validas: Set<string>): { texto: string; fuen
   return { texto: recortar(t), fuentes }
 }
 
+// Los ids de todo lo que puede citar la propuesta.
+function idsDe(material: Material): Set<string> {
+  const ids = new Set([...(material.bloque ? [material.bloque.id] : []), ...material.hechos.map((h) => h.id)])
+  if (material.frases.length > 0) ids.add(FUENTE_FRASES)
+  return ids
+}
+
 // Pide la propuesta. null si no hay material o no hay nada nuevo (vacia, igual a la aceptada o a una
 // descartada). Tira ErrorHuella si el modelo devuelve algo invalido dos veces.
 async function proponer(memoria: Memoria, ahora: Date, proveedor: Proveedor): Promise<PropuestaHuella | null> {
   const material = materialDe(memoria, ahora)
   if (!material.bloque && material.hechos.length === 0) return null
-  const validas = new Set([...(material.bloque ? [material.bloque.id] : []), ...material.hechos.map((h) => h.id)])
-  if (material.frases.length > 0) validas.add(FUENTE_FRASES)
+  const validas = idsDe(material)
   const sistema = promptSistema()
   const usuario = promptUsuario(material)
   let respuesta = interpretar(await proveedor.generar({ sistema, usuario, salida: SALIDA_HUELLA }), validas)
@@ -222,7 +242,10 @@ async function proponer(memoria: Memoria, ahora: Date, proveedor: Proveedor): Pr
 
 // Toca proponer si se cruzo un corte de mes desde la ultima propuesta. Sin propuestas previas, desde
 // la conversacion mas vieja que se recuerda: la primera llega al cruzar el primer corte de mes.
+// Una propuesta descartada por invalidar un hecho (#40) se rehace en el proximo cierre, sin esperar.
 function tocaProponer(memoria: Memoria, ahora: Date): boolean {
+  const huella = huellaDe(memoria)
+  if (huella.propuesta && !propuestaPendiente(huella)) return true
   const inicios = memoria.resumenes.map((r) => Date.parse(r.inicio)).filter(Number.isFinite)
   const ultima = huellaDe(memoria).ultimaPropuesta
   const desde = ultima ? Date.parse(ultima) : inicios.length > 0 ? Math.min(...inicios) : NaN
@@ -231,10 +254,13 @@ function tocaProponer(memoria: Memoria, ahora: Date): boolean {
 
 // --- Escritura (en fila: releer antes de guardar) ---------------------------------
 
-function cambiarHuella<T>(almacen: Almacen, cambio: (h: HuellaAprendida) => { huella: HuellaAprendida; valor: T } | null) {
+function cambiarHuella<T>(
+  almacen: Almacen,
+  cambio: (h: HuellaAprendida, fresca: Memoria) => { huella: HuellaAprendida; valor: T } | null,
+) {
   return enFila(almacen, async () => {
     const fresca = await almacen.leerMemoria()
-    const cambiada = cambio(huellaDe(fresca))
+    const cambiada = cambio(huellaDe(fresca), fresca)
     if (!cambiada) return null
     await almacen.guardarMemoria({ ...fresca, huellaAprendida: cambiada.huella })
     return cambiada.valor
@@ -247,11 +273,15 @@ function sinPropuesta(h: HuellaAprendida): HuellaAprendida {
   return resto
 }
 
+// Un texto mas en descartadas: no se vuelve a proponer igual.
+const conDescartada = (h: HuellaAprendida, texto: string) => [...(h.descartadas ?? []), texto].slice(-MAX_DESCARTADAS)
+
 // La pendiente pasa a aceptada (reemplaza a la anterior). null si no habia pendiente.
 export function aceptarHuella(almacen: Almacen, ahora: Date = new Date()): Promise<HuellaAceptada | null> {
   return cambiarHuella(almacen, (h) => {
-    if (!h.propuesta) return null
-    const aceptada = { texto: recortar(h.propuesta.texto), fuentes: h.propuesta.fuentes, fechaAceptacion: ahora.toISOString() }
+    const propuesta = propuestaPendiente(h)
+    if (!propuesta) return null
+    const aceptada = { texto: recortar(propuesta.texto), fuentes: propuesta.fuentes, fechaAceptacion: ahora.toISOString() }
     return { huella: { ...sinPropuesta(h), aceptada }, valor: aceptada }
   })
 }
@@ -259,9 +289,32 @@ export function aceptarHuella(almacen: Almacen, ahora: Date = new Date()): Promi
 // La pendiente pasa a descartadas: no entra al prompt ni se vuelve a proponer igual. false si no habia.
 export async function descartarHuella(almacen: Almacen): Promise<boolean> {
   const r = await cambiarHuella(almacen, (h) => {
-    if (!h.propuesta) return null
-    const descartadas = [...(h.descartadas ?? []), h.propuesta.texto].slice(-MAX_DESCARTADAS)
-    return { huella: { ...sinPropuesta(h), descartadas }, valor: true }
+    const propuesta = propuestaPendiente(h)
+    if (!propuesta) return null
+    return { huella: { ...sinPropuesta(h), descartadas: conDescartada(h, propuesta.texto) }, valor: true }
+  })
+  return r === true
+}
+
+// La aceptada para revisar (#40) vuelve a entrar al prompt, con fecha de aceptacion nueva. null si no
+// habia una para revisar.
+export function reaceptarHuella(almacen: Almacen, ahora: Date = new Date()): Promise<HuellaAceptada | null> {
+  return cambiarHuella(almacen, (h) => {
+    if (!h.aceptada?.paraRevisar) return null
+    const aceptada: HuellaAceptada = { ...h.aceptada, fechaAceptacion: ahora.toISOString() }
+    delete aceptada.paraRevisar
+    return { huella: { ...h, aceptada }, valor: aceptada }
+  })
+}
+
+// La aceptada para revisar (#40) se borra y pasa a descartadas: no se vuelve a proponer igual. false
+// si no habia una para revisar.
+export async function descartarAceptada(almacen: Almacen): Promise<boolean> {
+  const r = await cambiarHuella(almacen, (h) => {
+    if (!h.aceptada?.paraRevisar) return null
+    const resto = { ...h, descartadas: conDescartada(h, h.aceptada.texto) }
+    delete resto.aceptada
+    return { huella: resto, valor: true }
   })
   return r === true
 }
@@ -275,9 +328,19 @@ export function crearHuella(deps: { almacen: Almacen; proveedorRollup: Proveedor
     const propuesta = await proponer(memoria, ahora, deps.proveedorRollup('huella'))
     // Una propuesta nueva reemplaza a la pendiente que nadie miro. Mientras el modelo pensaba, la
     // familia pudo aceptar o descartar: se vuelve a mirar si repite algo contra la huella fresca.
-    return cambiarHuella(deps.almacen, (h) => {
-      const vale = propuesta && !repetida(h, propuesta.texto) ? propuesta : null
-      return { huella: { ...h, ...(vale ? { propuesta: vale } : {}), ultimaPropuesta: ahora.toISOString() }, valor: vale }
+    // Una descartada por invalidar un hecho (#40) se va aunque no haya nada nuevo: ya se rehizo. Si
+    // mientras tanto se invalido algo que vio el modelo, la nueva se guarda descartada y se rehace en
+    // el proximo cierre.
+    return cambiarHuella(deps.almacen, (h, fresca) => {
+      const nueva = propuesta && !repetida(h, propuesta.texto) ? propuesta : null
+      const invalidados = dejaronDeValer(memoria, fresca)
+      const vio = [...idsDe(materialDe(memoria, ahora))].some((id) => invalidados.has(id))
+      const guardada = nueva && vio ? { ...nueva, descartado: ahora.toISOString() } : nueva
+      const base = propuestaPendiente(h) ? h : sinPropuesta(h)
+      return {
+        huella: { ...base, ...(guardada ? { propuesta: guardada } : {}), ultimaPropuesta: ahora.toISOString() },
+        valor: guardada && !guardada.descartado ? guardada : null,
+      }
     })
   }
 

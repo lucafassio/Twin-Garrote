@@ -131,12 +131,18 @@ export type PropuestaHuella = {
   texto: string
   fuentes: string[] // ids de bloques y hechos ('frases' = los ejemplos de estilo)
   fecha: string // ISO
+  // ISO. Se descarta al invalidar a mano un hecho que cita (#40): no se muestra ni se acepta, y se
+  // rehace en el proximo cierre o con "Consolidar ahora".
+  descartado?: string
 }
 
 export type HuellaAceptada = {
   texto: string // a lo sumo TOPE_HUELLA caracteres
   fuentes: string[]
   fechaAceptacion: string // ISO
+  // ISO. Al invalidar a mano un hecho que cita (#40) no se borra sola: queda para revisar, sin entrar
+  // al prompt, hasta que la familia la vuelva a aceptar o la descarte.
+  paraRevisar?: string
 }
 
 export type HuellaAprendida = {

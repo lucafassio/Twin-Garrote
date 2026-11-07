@@ -158,6 +158,17 @@ export function LoQueAprendi({
     if (datos) setAviso(accion === 'aceptar' ? 'Huella aprendida aceptada: ya entra a las opciones.' : 'Propuesta descartada: no se vuelve a proponer igual.')
   }
 
+  // La aceptada para revisar (#40): citaba un hecho que se invalido.
+  async function revisarHuella(decision: 'aceptar' | 'descartar') {
+    const datos = await enviar('revisar', { accion: 'revisar', decision })
+    if (datos) setAviso(decision === 'aceptar' ? 'Huella aprendida aceptada de nuevo: vuelve a entrar a las opciones.' : 'Huella aprendida descartada: no se vuelve a proponer igual.')
+  }
+
+  async function invalidar(id: string) {
+    const datos = await enviar('invalidar', { accion: 'invalidar', id })
+    if (datos) setAviso('Hecho invalidado. Lo que lo citaba se descarta y se rehace en el proximo cierre o con Consolidar ahora.')
+  }
+
   return (
     <section className="space-y-4 rounded border p-4">
       <div className="flex flex-wrap items-center gap-4">
@@ -213,7 +224,7 @@ export function LoQueAprendi({
               </div>
             </div>
           )}
-          {huella.aceptada && (
+          {huella.aceptada && !huella.aceptada.paraRevisar && (
             <div className="rounded border-2 border-emerald-600 p-3">
               <p className="text-sm text-emerald-700">
                 <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">Aprendida</span> · aceptada{' '}
@@ -221,6 +232,32 @@ export function LoQueAprendi({
               </p>
               <p className="whitespace-pre-line">{huella.aceptada.texto}</p>
               <ListaFuentes fuentes={huella.aceptada.fuentesDescritas} />
+            </div>
+          )}
+          {huella.aceptada?.paraRevisar && (
+            <div className="rounded border-2 border-dashed border-red-500 p-3">
+              <p className="text-sm text-red-700">
+                <span className="rounded bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">Para revisar</span> · cita un
+                hecho que se invalido el {fecha(huella.aceptada.paraRevisar)} · no entra a las opciones hasta que la revisen
+              </p>
+              <p className="whitespace-pre-line">{huella.aceptada.texto}</p>
+              <ListaFuentes fuentes={huella.aceptada.fuentesDescritas} />
+              <div className="mt-2 flex gap-2">
+                <button
+                  className="rounded bg-emerald-700 px-4 py-1 font-semibold text-white disabled:opacity-50"
+                  disabled={ocupado !== null}
+                  onClick={() => revisarHuella('aceptar')}
+                >
+                  Volver a aceptar
+                </button>
+                <button
+                  className="rounded border px-4 py-1 hover:bg-gray-100 hover:text-black disabled:opacity-50"
+                  disabled={ocupado !== null}
+                  onClick={() => revisarHuella('descartar')}
+                >
+                  Descartar
+                </button>
+              </div>
             </div>
           )}
           <details className="rounded border p-3">
@@ -240,7 +277,8 @@ export function LoQueAprendi({
                 {[...niveles[corte]].reverse().map((b) => (
                   <li key={b.id} className={`rounded border p-3 ${b.descartado ? 'opacity-50' : ''}`}>
                     <p className="text-sm text-gray-500">
-                      {fechaBloque(corte, b)} · {fuentes(b.fuentes.length)}{b.descartado ? ' · descartado' : ''}
+                      {fechaBloque(corte, b)} · {fuentes(b.fuentes.length)}
+                      {b.descartado ? ' · descartado: citaba algo que ya no vale, se rehace en el proximo cierre' : ''}
                     </p>
                     <p>{b.texto}</p>
                   </li>
@@ -271,7 +309,7 @@ export function LoQueAprendi({
                 <button
                   className="shrink-0 rounded border px-3 py-1 text-sm hover:bg-gray-100 hover:text-black disabled:opacity-50"
                   disabled={ocupado !== null}
-                  onClick={() => enviar('invalidar', { accion: 'invalidar', id: h.id })}
+                  onClick={() => invalidar(h.id)}
                 >
                   Invalidar
                 </button>
@@ -297,7 +335,7 @@ export function LoQueAprendi({
                   <button
                     className="shrink-0 rounded border px-3 py-1 text-sm hover:bg-gray-100 hover:text-black disabled:opacity-50"
                     disabled={ocupado !== null}
-                    onClick={() => enviar('invalidar', { accion: 'invalidar', id: h.id })}
+                    onClick={() => invalidar(h.id)}
                   >
                     Invalidar
                   </button>

@@ -23,10 +23,15 @@
 //   POST { accion: 'descartar' }                         -> { ...lo aprendido }
 // 'aceptar' y 'descartar' deciden sobre la huella aprendida pendiente (404 si no hay). Todas las
 // respuestas traen `huella`: la base (nunca cambia), la pendiente, la aceptada y sus fuentes en palabras.
+//   POST { accion: 'revisar', decision: 'aceptar' | 'descartar' } -> { ...lo aprendido }
+// 'invalidar' descarta lo que cita al hecho (#40): bloques y propuesta pendiente se rehacen en el
+// proximo cierre o con 'consolidar'; la aceptada queda con paraRevisar y sin entrar a las opciones.
+// 'revisar' la vuelve a aceptar o la descarta (404 si no hay una para revisar).
 import { connection } from 'next/server'
 import type { LineaHistorial } from '@/eventos'
 import {
   aceptarHuella,
+  descartarAceptada,
   descartarHuella,
   describirFuentes,
   esEleccion,
@@ -34,6 +39,8 @@ import {
   invalidarHecho,
   listarHechos,
   nivelesDe,
+  propuestaPendiente,
+  reaceptarHuella,
   registrarEleccion,
 } from '@/llm'
 import type { Almacen } from '@/llm'
@@ -49,7 +56,10 @@ function esLinea(x: unknown): x is LineaHistorial {
 // Hechos, niveles y huella: lo que muestra "Lo que aprendi de vos".
 async function loAprendido(almacen: Almacen) {
   const [hechos, memoria, perfil] = await Promise.all([listarHechos(almacen), almacen.leerMemoria(), almacen.leerPerfil()])
-  const { propuesta, aceptada } = huellaDe(memoria)
+  const h = huellaDe(memoria)
+  // Una propuesta descartada por invalidar un hecho no se muestra: se rehace sola.
+  const propuesta = propuestaPendiente(h) ?? undefined
+  const aceptada = h.aceptada
   const conFuentes = <T extends { fuentes: string[] }>(x: T | undefined) =>
     x ? { ...x, fuentesDescritas: describirFuentes(x.fuentes, memoria) } : null
   return {
@@ -147,8 +157,17 @@ export async function POST(request: Request) {
     return Response.json(await loAprendido(almacen))
   }
 
+  if (cuerpo.accion === 'revisar') {
+    if (cuerpo.decision !== 'aceptar' && cuerpo.decision !== 'descartar') {
+      return Response.json({ error: "decision tiene que ser 'aceptar' o 'descartar'" }, { status: 400 })
+    }
+    const ok = cuerpo.decision === 'aceptar' ? (await reaceptarHuella(almacen)) !== null : await descartarAceptada(almacen)
+    if (!ok) return Response.json({ error: 'No hay una huella aprendida para revisar' }, { status: 404 })
+    return Response.json(await loAprendido(almacen))
+  }
+
   return Response.json(
-    { error: "accion tiene que ser 'invalidar', 'cerrar', 'elegir', 'consolidar', 'aceptar' o 'descartar'" },
+    { error: "accion tiene que ser 'invalidar', 'cerrar', 'elegir', 'consolidar', 'aceptar', 'descartar' o 'revisar'" },
     { status: 400 },
   )
 }
