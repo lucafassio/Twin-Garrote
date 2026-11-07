@@ -22,8 +22,13 @@ export type TiempoEstructurado =
 // Un dia del calendario, sin hora. Internamente: dias desde 1970-01-01.
 type Dia = number
 
+// Milisegundos del instante corridos a hora argentina: leerlos con getUTC*.
+function msEnArgentina(instante: Date): number {
+  return instante.getTime() + OFFSET_ARGENTINA_MS
+}
+
 function diaEnArgentina(instante: Date): Dia {
-  return Math.floor((instante.getTime() + OFFSET_ARGENTINA_MS) / DIA_MS)
+  return Math.floor(msEnArgentina(instante) / DIA_MS)
 }
 
 function diaDeCalendario(anio: number, mes: number, dia: number): Dia | null {
@@ -112,6 +117,29 @@ export function describirFecha(fecha: string, ahora: Date): string | null {
 export function describirDia(instante: Date): string {
   const p = partes(diaEnArgentina(instante))
   return `${NOMBRES_DIA[p.diaSemana]} ${p.dia}/${p.mes}/${p.anio}`
+}
+
+// Franja horaria del pedido en hora argentina: manana de 6 a 12, tarde de 12 a 20, noche de 20 a 6.
+export type Franja = 'manana' | 'tarde' | 'noche'
+const NOMBRES_FRANJA: Record<Franja, string> = { manana: 'a la mañana', tarde: 'a la tarde', noche: 'a la noche' }
+
+const horaEnArgentina = (instante: Date) => new Date(msEnArgentina(instante)).getUTCHours()
+
+export function franjaHoraria(instante: Date): Franja {
+  const hora = horaEnArgentina(instante)
+  return hora < 6 ? 'noche' : hora < 12 ? 'manana' : hora < 20 ? 'tarde' : 'noche'
+}
+
+// "sabado 7/11/2026, a la noche": el dia de la semana y la franja, para opciones y completado (#45).
+// Entre las 0 y las 6 el dia ya cambio: se aclara "de madrugada" para que el modelo no lo lea como la noche de ese dia.
+export function describirMomento(instante: Date): string {
+  const madrugada = horaEnArgentina(instante) < 6 ? ' (de madrugada)' : ''
+  return `${describirDia(instante)}, ${NOMBRES_FRANJA[franjaHoraria(instante)]}${madrugada}`
+}
+
+// La seccion del prompt de opciones y completado: a las 22 no se ofrece desayunar. La cuenta la hace el codigo.
+export function seccionMomento(ahora: Date): string {
+  return `# Momento\n${describirMomento(ahora)}. Lo que digas tiene que tener sentido para este dia y esta hora.`
 }
 
 // El texto del hecho con su fecha, tal como entra a los prompts: "Laura se opera (el jueves 12/11, en 2 dias)".

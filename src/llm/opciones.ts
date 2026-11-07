@@ -15,7 +15,7 @@ import type {
   ResultadoOpciones,
   ResumenConversacion,
 } from './tipos.ts'
-import { hechosVigentes, textoConFecha } from './fechas.ts'
+import { hechosVigentes, seccionMomento, textoConFecha } from './fechas.ts'
 import {
   abrirConversacion,
   armarCerrada,
@@ -324,6 +324,7 @@ function promptUsuario(p: {
   const memoriaCorta = seccionMemoriaCorta(memoria.resumenes, ahora)
   if (memoriaCorta) partes.push(memoriaCorta)
 
+  partes.push(seccionMomento(ahora))
   partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
   partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado: no sabes quien habla, no lo nombres'}`)
 

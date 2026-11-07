@@ -6,7 +6,7 @@
 import type { Cercania, LineaHistorial, PedidoOpciones } from '@/eventos'
 import type { Almacen, ConversacionActual, Hecho, Proveedor, SalidaProveedor } from './tipos.ts'
 import { lineasDeConversacion } from './conversacion.ts'
-import { hechosVigentes, textoConFecha } from './fechas.ts'
+import { hechosVigentes, seccionMomento, textoConFecha } from './fechas.ts'
 import { NUEVA_CONVERSACION_MS, seccionMemoriaCorta } from './opciones.ts'
 import { pesoDe } from './saliencia.ts'
 
@@ -57,6 +57,7 @@ export function crearCompletado(deps: DependenciasCompletado): CompletarFrase {
       const memoriaCorta = seccionMemoriaCorta(memoria.resumenes, ahora)
       if (memoriaCorta) partes.push(memoriaCorta)
 
+      partes.push(seccionMomento(ahora))
       partes.push(`# Cercania\n${pedido.cercania ?? 'no aclarada: inferi el registro del turno'}`)
       partes.push(`# Interlocutor\n${pedido.interlocutor?.trim() || 'no aclarado'}`)
 
