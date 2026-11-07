@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { bus } from '@/eventos'
+import { depuracionEscucha } from '@/voz/escuchar'
 
 // Monitor en vivo del bus: estado del microfono y ultimos eventos con la hora.
 // Sirve para ver en la demo si la voz escucha, si llegan turnos y si se eligen cosas.
@@ -18,6 +19,21 @@ export default function MonitorBus() {
   const [ultimoParcial, setUltimoParcial] = useState<number | null>(null)
   const [ahora, setAhora] = useState(() => Date.now())
   const [lineas, setLineas] = useState<Linea[]>([])
+  const [motor, setMotor] = useState('')
+  const [nivel, setNivel] = useState<{ nivel: number; hablando: boolean } | null>(null)
+  const [segmento, setSegmento] = useState<{ audioMs: number; respuestaMs: number } | null>(null)
+
+  // Ganchos de depuracion de voz: motor activo y, con Groq, nivel del micro y cada frase transcripta.
+  useEffect(() => {
+    depuracionEscucha.alMotor = setMotor
+    depuracionEscucha.alNivel = ({ nivel, hablando }) => setNivel({ nivel, hablando })
+    depuracionEscucha.alSegmento = ({ audioMs, respuestaMs }) => setSegmento({ audioMs, respuestaMs })
+    return () => {
+      depuracionEscucha.alMotor = null
+      depuracionEscucha.alNivel = null
+      depuracionEscucha.alSegmento = null
+    }
+  }, [])
 
   useEffect(() => {
     const anotar = (texto: string, color = 'text-zinc-300') =>
@@ -70,6 +86,27 @@ export default function MonitorBus() {
         <span className={escuchando ? 'text-emerald-300' : 'text-zinc-500'}>mic {escuchando ? 'ON' : 'off'}</span>
         <span className={hablando ? 'text-sky-300' : 'text-zinc-500'}>voz {hablando ? 'hablando' : 'callada'}</span>
         <span className="text-zinc-400">ultimo parcial: {hace}</span>
+      </div>
+      <div className="flex items-center gap-3 text-zinc-300">
+        <span>
+          motor <b className={motor === 'groq' ? 'text-amber-300' : 'text-sky-300'}>{motor || '-'}</b>
+        </span>
+        {nivel && (
+          <span className="flex items-center gap-1">
+            nivel
+            <span className="inline-block h-2 w-20 overflow-hidden rounded bg-zinc-800">
+              <span
+                className={`block h-full ${nivel.hablando ? 'bg-emerald-400' : 'bg-zinc-500'}`}
+                style={{ width: `${Math.min(100, nivel.nivel * 400)}%` }}
+              />
+            </span>
+          </span>
+        )}
+        {segmento && (
+          <span>
+            whisper {segmento.audioMs} ms de audio → {segmento.respuestaMs} ms
+          </span>
+        )}
       </div>
       <ul className="mt-1">
         {lineas.map((l, i) => (

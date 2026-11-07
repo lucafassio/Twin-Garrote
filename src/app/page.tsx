@@ -6,7 +6,7 @@ import MonitorBus from '@/interfaz/MonitorBus'
 import Pantalla from '@/interfaz/Pantalla'
 import SimuladorOjos from '@/interfaz/SimuladorOjos'
 import { useNucleo } from '@/interfaz/useNucleo'
-import { CampoTurno, escuchaDisponible, iniciarVoz } from '@/voz'
+import { ajustesVoz, CampoTurno, escuchaDisponible, iniciarVoz, type Motor } from '@/voz'
 
 // Pagina principal: solo la toca el path nucleo-interfaz.
 // "Empezar" hace falta: Chrome no deja hablar, sonar audio ni abrir el microfono sin un click previo.
@@ -52,9 +52,14 @@ function Inicio({ onEmpezar }: { onEmpezar: () => void }) {
 function Conversacion() {
   const { nucleo, estado } = useNucleo()
   const [herramientas, setHerramientas] = useState(true)
+  // Groq Whisper por defecto (si falta la clave o la red, voz vuelve sola a Chrome). Tecla M cambia.
+  const [motor, setMotor] = useState<Motor>('groq')
 
-  // Voz: escucha al interlocutor y dice las respuestas.
-  useEffect(() => iniciarVoz(), [])
+  // Voz: escucha al interlocutor y dice las respuestas. Cambiar de motor la reinicia.
+  useEffect(() => {
+    ajustesVoz.motor = motor
+    return iniciarVoz()
+  }, [motor])
 
   // TODO vision (#3): cuando exista iniciarVision(video), montar aca un <video> oculto,
   // iniciarVision(video) en un useEffect, DebugVision dentro de las herramientas y la tecla C para calibrar.
@@ -64,6 +69,7 @@ function Conversacion() {
     const alTeclear = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return
       if (e.key === 'd' || e.key === 'D') setHerramientas((v) => !v)
+      if (e.key === 'm' || e.key === 'M') setMotor((m) => (m === 'groq' ? 'google' : 'groq'))
     }
     window.addEventListener('keydown', alTeclear)
     return () => window.removeEventListener('keydown', alTeclear)
@@ -86,6 +92,7 @@ function Conversacion() {
                   <li><b className="text-zinc-200">Espacio</b> parpadeo largo (elige lo iluminado)</li>
                   <li><b className="text-zinc-200">Mantener O</b> ojos cerrados · al soltar elige · 2 s = urgencia</li>
                   <li><b className="text-zinc-200">Escape</b> o click corta la urgencia · <b className="text-zinc-200">+ / −</b> velocidad</li>
+                  <li><b className="text-zinc-200">M</b> cambia el motor de voz (ahora: {motor === 'groq' ? 'Groq Whisper' : 'Chrome'})</li>
                   <li><b className="text-zinc-200">D</b> oculta estas herramientas</li>
                 </ul>
               </div>
