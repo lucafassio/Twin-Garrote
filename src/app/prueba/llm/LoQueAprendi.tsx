@@ -1,0 +1,151 @@
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+import type { Cercania, LineaHistorial } from '@/eventos'
+import type { Hecho } from '@/llm/tipos'
+
+// Demo del aprendizaje (#12): "Lo que aprendí de vos" y el botón para cerrar la conversación.
+// El botón es solo para la demo: en el producto la conversación se cierra sola por el silencio.
+
+type Hechos = { activos: Hecho[]; invalidados: Hecho[] }
+
+const ORIGEN: Record<Hecho['origen'], string> = {
+  deletreo: 'lo deletreaste vos',
+  opcion: 'lo elegiste vos',
+  fija: 'opción fija',
+  interlocutor: 'lo dijo el interlocutor',
+  familia: 'lo cargó la familia',
+}
+
+function fecha(iso: string | null) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+}
+
+export function LoQueAprendi({
+  historial,
+  cercania,
+  alCerrar,
+}: {
+  historial: LineaHistorial[]
+  cercania: Cercania | ''
+  alCerrar: () => void
+}) {
+  const [hechos, setHechos] = useState<Hechos | null>(null)
+  const [ocupado, setOcupado] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const pedir = useCallback(async (init?: RequestInit) => {
+    const r = await fetch('/api/memoria', init)
+    const datos = await r.json()
+    if (!r.ok) throw new Error(datos.error ?? `HTTP ${r.status}`)
+    setHechos({ activos: datos.activos, invalidados: datos.invalidados })
+    return datos
+  }, [])
+
+  const recargar = useCallback(async () => {
+    setError(null)
+    try {
+      await pedir()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }, [pedir])
+
+  useEffect(() => {
+    recargar()
+  }, [recargar])
+
+  async function enviar(accion: string, cuerpo: object) {
+    setOcupado(accion)
+    setError(null)
+    setAviso(null)
+    try {
+      return await pedir({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo),
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+      return null
+    } finally {
+      setOcupado(null)
+    }
+  }
+
+  async function cerrar() {
+    const inicio = performance.now()
+    const antes = hechos?.activos.length ?? 0
+    const datos = await enviar('cerrar', { accion: 'cerrar', historial, ...(cercania ? { cercania } : {}) })
+    if (!datos) return
+    const ms = Math.round(performance.now() - inicio)
+    if (!datos.cerrada) {
+      setAviso('No había una conversación con líneas para cerrar.')
+    } else {
+      const nuevos = datos.activos.length - antes
+      setAviso(`Conversación cerrada (${datos.lineas} líneas, ${ms} ms, ${datos.proveedor}). Hechos activos: ${antes} → ${datos.activos.length}${nuevos > 0 ? ` (+${nuevos})` : ''}.`)
+    }
+    alCerrar()
+  }
+
+  return (
+    <section className="space-y-4 rounded border p-4">
+      <div className="flex flex-wrap items-center gap-4">
+        <h2 className="text-2xl font-bold">Lo que aprendí de vos</h2>
+        <button
+          className="rounded bg-amber-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
+          disabled={ocupado !== null}
+          onClick={cerrar}
+        >
+          Cerrar conversación
+        </button>
+        <button className="text-sm underline" disabled={ocupado !== null} onClick={recargar}>
+          Recargar
+        </button>
+        {ocupado === 'cerrar' && <span>Aprendiendo…</span>}
+      </div>
+      {aviso && <p className="text-sm">{aviso}</p>}
+      {error && <p className="rounded bg-red-100 p-3 text-red-800">Error: {error}</p>}
+
+      {hechos && hechos.activos.length === 0 && <p className="text-sm text-gray-500">Todavía no aprendí nada.</p>}
+      {hechos && hechos.activos.length > 0 && (
+        <ul className="space-y-2">
+          {hechos.activos.map((h) => (
+            <li key={h.id} className="flex items-start justify-between gap-4 rounded border p-3">
+              <div>
+                <p className="text-lg">{h.texto}</p>
+                <p className="text-sm text-gray-500">
+                  {ORIGEN[h.origen]} · interlocutor: {h.interlocutor ?? 'no se sabe'} · {fecha(h.fecha)} · importancia{' '}
+                  {h.importancia}
+                  {h.intimo ? ' · íntimo' : ''}
+                </p>
+              </div>
+              <button
+                className="shrink-0 rounded border px-3 py-1 text-sm hover:bg-gray-100 hover:text-black disabled:opacity-50"
+                disabled={ocupado !== null}
+                onClick={() => enviar('invalidar', { accion: 'invalidar', id: h.id })}
+              >
+                Invalidar
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {hechos && hechos.invalidados.length > 0 && (
+        <div>
+          <p className="text-sm font-semibold">Ya no vale ({hechos.invalidados.length})</p>
+          <ul className="text-sm text-gray-500">
+            {hechos.invalidados.map((h) => (
+              <li key={h.id}>
+                <span className="line-through">{h.texto}</span> · invalidado {fecha(h.fechaInvalidacion)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  )
+}

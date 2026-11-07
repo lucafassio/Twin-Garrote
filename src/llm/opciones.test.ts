@@ -144,6 +144,16 @@ describe('opciones', () => {
     assert.match(prompts[0].usuario, /almuerzo/)
   })
 
+  test('los resumenes descartados quedan fuera del prompt', async () => {
+    const { generar, prompts } = armar([respuesta()], {
+      resumenes: [
+        { inicio: despues(-60 * MIN).toISOString(), fin: despues(-50 * MIN).toISOString(), resumen: 'Laura se opera el jueves.', descartado: despues(-10 * MIN).toISOString() },
+      ],
+    })
+    await generar(pedido(), T0)
+    assert.doesNotMatch(prompts[0].usuario, /se opera/)
+  })
+
   test('las frases deletreadas aparecen antes que las elegidas como ejemplos de estilo', async () => {
     const { generar, prompts } = armar([respuesta()], {
       ejemplosEstilo: [

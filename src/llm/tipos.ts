@@ -59,6 +59,9 @@ export type ResumenConversacion = {
   inicio: string // ISO
   fin: string // ISO
   resumen: string
+  // ISO. Se descarta (no se borra) cuando se invalida a mano un hecho de esa conversacion:
+  // si no, el resumen seguiria contando lo invalidado. Opciones no usa los descartados.
+  descartado?: string
 }
 
 // La conversacion en curso, para detectar cuando empieza una nueva.

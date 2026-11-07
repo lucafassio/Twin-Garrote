@@ -195,7 +195,7 @@ function promptUsuario(p: {
   }
 
   const desde = ahora.getTime() - VENTANA_RESUMENES_MS
-  const resumenes = memoria.resumenes.filter((r) => Date.parse(r.fin) >= desde)
+  const resumenes = memoria.resumenes.filter((r) => !r.descartado && Date.parse(r.fin) >= desde)
   if (resumenes.length > 0) {
     partes.push(`# Conversaciones de hoy\n${resumenes.map((r) => `- ${r.resumen}`).join('\n')}`)
   }

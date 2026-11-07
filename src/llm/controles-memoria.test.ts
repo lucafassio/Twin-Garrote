@@ -53,6 +53,25 @@ describe('controles de memoria', () => {
     assert.equal(await invalidarHecho(almacen, 'no-existe', ahora), null)
   })
 
+  test('invalidarHecho descarta el resumen de la conversacion de donde salio', async () => {
+    const fin = '2026-11-07T14:05:00.000Z'
+    const almacen = crearAlmacenEnMemoria({
+      memoria: {
+        hechos: [hecho({ id: 'a', texto: 'Laura se opera el jueves', fecha: fin })],
+        resumenes: [
+          { inicio: '2026-11-07T14:00:00.000Z', fin, resumen: 'Le contaron que Laura se opera el jueves.' },
+          { inicio: '2026-11-07T10:00:00.000Z', fin: '2026-11-07T10:10:00.000Z', resumen: 'Hablaron de River.' },
+        ],
+      },
+    })
+    const ahora = new Date('2026-11-07T15:00:00Z')
+    await invalidarHecho(almacen, 'a', ahora)
+    const [conLaura, deRiver] = almacen.memoria().resumenes
+    assert.equal(conLaura.descartado, ahora.toISOString())
+    assert.equal(conLaura.resumen, 'Le contaron que Laura se opera el jueves.') // no se borra
+    assert.equal(deRiver.descartado, undefined)
+  })
+
   test('cerrarConversacion arma la conversacion desde donde empezo y la deja cerrada', async () => {
     const almacen = crearAlmacenEnMemoria({
       memoria: {

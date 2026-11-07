@@ -18,13 +18,19 @@ export async function listarHechos(almacen: Almacen): Promise<HechosListados> {
   }
 }
 
+// Invalidar a mano: el hecho deja de usarse en las opciones, y tambien el resumen de su conversacion.
 // Devuelve el hecho invalidado, o null si no hay un hecho activo con ese id.
 export async function invalidarHecho(almacen: Almacen, id: string, ahora: Date = new Date()): Promise<Hecho | null> {
   const memoria = await almacen.leerMemoria()
   const hecho = memoria.hechos.find((h) => h.id === id && h.estado === 'activo')
   if (!hecho) return null
+  const iso = ahora.toISOString()
   hecho.estado = 'invalidado'
-  hecho.fechaInvalidacion = ahora.toISOString()
+  hecho.fechaInvalidacion = iso
+  // El resumen de la conversacion de donde salio el hecho (mismo fin) tambien lo cuenta: se descarta.
+  for (const r of memoria.resumenes) {
+    if (r.fin === hecho.fecha && !r.descartado) r.descartado = iso
+  }
   await almacen.guardarMemoria(memoria)
   return hecho
 }
