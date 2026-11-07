@@ -700,5 +700,605 @@
     "seen": 1794074496.0798662,
     "ast_hash": "0349c17536b868686d336cb5563a410b",
     "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\eslint.config.mjs": {
+    "mtime": 1794073911.578196,
+    "ast_hash": "6c4307ffa009658f5c97f5629094c0c2",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\next.config.ts": {
+    "mtime": 1794073911.6126235,
+    "ast_hash": "9267652e4446755f1a8608f27b67c949",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\package.json": {
+    "mtime": 1794073911.618152,
+    "ast_hash": "ba8937d75210d7417c2048efdb3d3963",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\tsconfig.json": {
+    "mtime": 1794073911.7576232,
+    "ast_hash": "f72feb9cacb0424a693c5da6c503997a",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\eventos.ts": {
+    "mtime": 1794073911.66969,
+    "ast_hash": "e524e280b2439586c199452c7d56cd98",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\layout.tsx": {
+    "mtime": 1794073911.642619,
+    "ast_hash": "5ed424e8493622d8c0b4eab22f37cf73",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\page.tsx": {
+    "mtime": 1794074851.1166828,
+    "ast_hash": "1f5d67e56439de48a43eb2a49c73aeea",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\completar\\route.ts": {
+    "mtime": 1794073911.62663,
+    "ast_hash": "cd3bd333f378c9ff42b0a45f190dd125",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\deletrear\\route.ts": {
+    "mtime": 1794073911.6279292,
+    "ast_hash": "14b9461f94507376cedbd1ade5427fa3",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\elecciones\\route.ts": {
+    "mtime": 1794073911.6289418,
+    "ast_hash": "8c037460934e6f99ca612d2fd8ba4909",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\lectura\\route.ts": {
+    "mtime": 1794073911.6309478,
+    "ast_hash": "97beabe4a092b3b3ec6f3be44868fcff",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\memoria\\route.ts": {
+    "mtime": 1794073911.6319425,
+    "ast_hash": "0b3f06ee1048a69437aaf79b75384475",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\opciones\\route.ts": {
+    "mtime": 1794073911.6333163,
+    "ast_hash": "aa7988957d2f66feaade5fc4d9219c57",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\transcribir\\route.ts": {
+    "mtime": 1794073911.6348243,
+    "ast_hash": "4691addf524817ba992292759a30dd2f",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\api\\urgencia\\route.ts": {
+    "mtime": 1794073911.6381073,
+    "ast_hash": "75eddd156f65fd78212161b3dfe300b9",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\deletrear\\page.tsx": {
+    "mtime": 1794073911.645889,
+    "ast_hash": "8255f635f7b142704c4bd5c7127f7212",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\llm\\LoQueAprendi.tsx": {
+    "mtime": 1794074851.1176825,
+    "ast_hash": "cfbfbb887773b1bee37065f57e375e56",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\llm\\page.tsx": {
+    "mtime": 1794073911.650397,
+    "ast_hash": "b3bac731e502455cde9375b5b5604176",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\llm\\PruebaCompletado.tsx": {
+    "mtime": 1794073911.6478894,
+    "ast_hash": "1d4c8f9600cf9876b3ddbb739e42916f",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\llm\\PruebaCorte.tsx": {
+    "mtime": 1794073911.6488879,
+    "ast_hash": "034bf054b4a069545ba7642dfd01ed23",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\nucleo\\page.tsx": {
+    "mtime": 1794074851.1196733,
+    "ast_hash": "e429486cd8b6cdd114b206583695ad16",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\vision\\page.tsx": {
+    "mtime": 1794073911.6530526,
+    "ast_hash": "9be35952c76d1b7a2394b51b6fefbc06",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\voz\\page.tsx": {
+    "mtime": 1794073911.6557832,
+    "ast_hash": "b3cc94d65827b05b35e946377402d5b2",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\app\\prueba\\voz\\conversacion\\page.tsx": {
+    "mtime": 1794073911.6557832,
+    "ast_hash": "7d2328aceeb891e84e3b392da2097478",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\barrido.ts": {
+    "mtime": 1794073911.659795,
+    "ast_hash": "7acfa605d631a6bbe57201c5f64af0e7",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\deletrear.test.ts": {
+    "mtime": 1794073911.6607995,
+    "ast_hash": "a28738225002c6dd096ee81d54cc3ee3",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\Deletrear.tsx": {
+    "mtime": 1794073911.657801,
+    "ast_hash": "e6879744187f8e0851dffe0e0f31d154",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\diccionario.ts": {
+    "mtime": 1794073911.6621614,
+    "ast_hash": "6fd2ff5272aafd232bc525c436d11d13",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\index.ts": {
+    "mtime": 1794073911.663176,
+    "ast_hash": "a1cc4453dae1c1d5d5f8c957f5f2aa09",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\llm.ts": {
+    "mtime": 1794073911.6641757,
+    "ast_hash": "f4d0cc3b20ba21a8ab0882880c2b7399",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\deletrear\\prediccion.ts": {
+    "mtime": 1794073911.6661763,
+    "ast_hash": "0aeaa1f64f8bb345af39e3f9aad6aadb",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\dev\\Simulador.tsx": {
+    "mtime": 1794073911.6681743,
+    "ast_hash": "6f737f754c12a43e8dce58f03b38ae9b",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\interfaz\\DebugNucleo.tsx": {
+    "mtime": 1794073911.670703,
+    "ast_hash": "251a777654ee8c0395ec6560af1d2fe1",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\interfaz\\index.ts": {
+    "mtime": 1794073911.67482,
+    "ast_hash": "458442821eb03d39a3f86a18c9910f25",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\interfaz\\MonitorBus.tsx": {
+    "mtime": 1794073911.671699,
+    "ast_hash": "a945518db0c6e770327ae094796b5d28",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\interfaz\\Pantalla.tsx": {
+    "mtime": 1794074851.1206894,
+    "ast_hash": "5e5733193ef38715ea2e1beac186836c",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\interfaz\\SimuladorOjos.tsx": {
+    "mtime": 1794073911.6736984,
+    "ast_hash": "6ed39ff1590198ae5bf6cd8cde22456d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\interfaz\\useNucleo.ts": {
+    "mtime": 1794074851.12169,
+    "ast_hash": "2e4def729bc35211698372813fd0b954",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\almacen-archivos.ts": {
+    "mtime": 1794073911.678106,
+    "ast_hash": "9366b6fe19115a59d3abc08b028eb15a",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\almacen.ts": {
+    "mtime": 1794073911.6791046,
+    "ast_hash": "7cbc542eaba6bce3884ed7eb2cde32df",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\cliente.test.ts": {
+    "mtime": 1794073911.680122,
+    "ast_hash": "c557e4b243866e40f02d59cdfefad459",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\cliente.ts": {
+    "mtime": 1794073911.680122,
+    "ast_hash": "a5e0256cadfdb9b27997542af4d26758",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\completado.test.ts": {
+    "mtime": 1794073911.6815884,
+    "ast_hash": "c0899c78a5b117f57d69a1fdd6008f69",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\completado.ts": {
+    "mtime": 1794073911.6828172,
+    "ast_hash": "6d9e89d36f6e28085970a839636066a8",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\controles-memoria.test.ts": {
+    "mtime": 1794073911.6841693,
+    "ast_hash": "2601f9a795b1b427db1c0e5f1a80c162",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\controles-memoria.ts": {
+    "mtime": 1794073911.6851847,
+    "ast_hash": "8aa22985d52b214232679c34b923c6ff",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\conversacion.ts": {
+    "mtime": 1794073911.6851847,
+    "ast_hash": "91e9c0bcf8dc17d2d40f0b386aeefd8d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\descartes.test.ts": {
+    "mtime": 1794073911.687307,
+    "ast_hash": "8bb94b22b691ce912e94054d69b75ce5",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\descartes.ts": {
+    "mtime": 1794073911.6883297,
+    "ast_hash": "c6bfd802f0ce683e6118df5409dadd36",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\elecciones-archivos.ts": {
+    "mtime": 1794074851.123125,
+    "ast_hash": "7729364ca84649bc4a645b715d7ada05",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\elecciones.test.ts": {
+    "mtime": 1794074851.1241472,
+    "ast_hash": "53d8cf71b5adbd2401ff2b24863f3e7d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\elecciones.ts": {
+    "mtime": 1794074851.1251397,
+    "ast_hash": "98f68874055a416906a4e6cf478f8b63",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\esquema.ts": {
+    "mtime": 1794073911.6920884,
+    "ast_hash": "2c108fe0aaaf75e28e3b11dab4a4b7da",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\fechas.ts": {
+    "mtime": 1794073911.6931105,
+    "ast_hash": "8503bad9a9cdd84c7c35de44e5ffeb53",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\fila.ts": {
+    "mtime": 1794073911.694623,
+    "ast_hash": "8aac2acd7a8970baa6de855b9bac5059",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\huella.test.ts": {
+    "mtime": 1794073911.695637,
+    "ast_hash": "b9741b902446ebc0e3c6da2981c1257a",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\huella.ts": {
+    "mtime": 1794073911.6971605,
+    "ast_hash": "a8aceac710b0e72126773e836a9e0ef7",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\index.ts": {
+    "mtime": 1794073911.6981711,
+    "ast_hash": "fed2a6b85750203a9d9dc92454975878",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\interlocutor.ts": {
+    "mtime": 1794073911.6991718,
+    "ast_hash": "593c77efbea87f3c13b67291abe77161",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\medir-latencias.ts": {
+    "mtime": 1794074851.4685411,
+    "ast_hash": "9785a55b38229fdd44306b539c734ce9",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\memoria-cargada.test.ts": {
+    "mtime": 1794074851.4695592,
+    "ast_hash": "8a980a315265cb1b32d2728788da9225",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\memoria-cargada.ts": {
+    "mtime": 1794074851.470557,
+    "ast_hash": "67cc599a1ef4f1c7c82e6171c18a3d8b",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\memoria.test.ts": {
+    "mtime": 1794073911.7021713,
+    "ast_hash": "0a675819439b257c961ad5dacf4778c8",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\memoria.ts": {
+    "mtime": 1794073911.703173,
+    "ast_hash": "0d4eacdb79d2c7bccdf77bbb0f6d7c39",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\momento.test.ts": {
+    "mtime": 1794073911.7036827,
+    "ast_hash": "0320c013f00968d92a0d4bc5512331ce",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\niveles.test.ts": {
+    "mtime": 1794073911.706066,
+    "ast_hash": "a8e0f10d753e224fc9a1ac2a7c991ca7",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\niveles.ts": {
+    "mtime": 1794073911.7070642,
+    "ast_hash": "f56a0d56f37173bb6b6105d353825f20",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\opciones.test.ts": {
+    "mtime": 1794073911.7083242,
+    "ast_hash": "f3ed42d896984837a1dd6ee08282ae14",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\opciones.ts": {
+    "mtime": 1794073911.709338,
+    "ast_hash": "af87ae388281caed3113ad15cce75c9a",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\pedido.ts": {
+    "mtime": 1794073911.7103362,
+    "ast_hash": "1271d82a5569592ccc9c947f1b5d4da9",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\perfil-roberto.ts": {
+    "mtime": 1794073911.7113402,
+    "ast_hash": "fb631c62982a5eb6138fa3fffff1f24e",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\periodos.test.ts": {
+    "mtime": 1794073911.7123418,
+    "ast_hash": "4e9a3841542551134fbb869c4b2edb6d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\periodos.ts": {
+    "mtime": 1794073911.7148798,
+    "ast_hash": "1789cbff4806e3a186268e8fe518c2ee",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\proveedor-anthropic.ts": {
+    "mtime": 1794073911.717232,
+    "ast_hash": "dc51c5f455633ad9081dc2b0aa44a0b6",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\proveedor-falso.ts": {
+    "mtime": 1794073911.71876,
+    "ast_hash": "78de513db9f6f5f7a191177454653f43",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\proveedor-gateway.ts": {
+    "mtime": 1794073911.71876,
+    "ast_hash": "12620c91cae017d4e125838fb4d1db7e",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\proveedores.test.ts": {
+    "mtime": 1794073911.720354,
+    "ast_hash": "7616705589199c6ad142de5c3e5fb748",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\proveedores.ts": {
+    "mtime": 1794073911.7217221,
+    "ast_hash": "e5f7c376f65f4ba4038b070ea9650298",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\saliencia.test.ts": {
+    "mtime": 1794073911.7233253,
+    "ast_hash": "d2a0eeb176d57e0384f4aa72d6f7ea31",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\saliencia.ts": {
+    "mtime": 1794073911.724341,
+    "ast_hash": "2a20e165e694e6fe7f5fb22dae8c8194",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\servidor.ts": {
+    "mtime": 1794073911.7253401,
+    "ast_hash": "55a83d0daa51587265bc8ec77560d130",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\tipos.ts": {
+    "mtime": 1794073911.7263367,
+    "ast_hash": "f263bef7da2d4bce038e7b54a7cc4faf",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\llm\\vencen.test.ts": {
+    "mtime": 1794073911.7273376,
+    "ast_hash": "dafb1adab556c850ed818c40802a97c2",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\index.ts": {
+    "mtime": 1794073911.73381,
+    "ast_hash": "c4da68760140aa67f72df355a097a550",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\lecturaCliente.ts": {
+    "mtime": 1794073911.7348402,
+    "ast_hash": "3bb422797765f962499b913e31b64fe7",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\lecturaLocal.test.ts": {
+    "mtime": 1794073911.7358625,
+    "ast_hash": "df58d7cb9110cc0068ffc14664416bc1",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\lecturaLocal.ts": {
+    "mtime": 1794073911.7366416,
+    "ast_hash": "7b504a85dfab0cdf3d49e0c5020bc793",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\lecturaModelo.test.ts": {
+    "mtime": 1794073911.7380037,
+    "ast_hash": "364363be016c3678e5739ca00e27a2d8",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\lecturaModelo.ts": {
+    "mtime": 1794073911.7380037,
+    "ast_hash": "fb536e942bd074265fe0a4d0cac7939d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\motor.test.ts": {
+    "mtime": 1794074851.1271417,
+    "ast_hash": "463adaf0ab1eeb8d491b3c27c97bb384",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\motor.ts": {
+    "mtime": 1794074851.1281435,
+    "ast_hash": "03fb896d1658533ed097b9d31d26ca3e",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\reductor.test.ts": {
+    "mtime": 1794074851.1291466,
+    "ast_hash": "ea359eb40be4f948614e413946d1fe83",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\reductor.ts": {
+    "mtime": 1794074851.1301384,
+    "ast_hash": "b569fc107b983089a14d68860a2496a0",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\tipos.ts": {
+    "mtime": 1794074851.1316538,
+    "ast_hash": "3c740fdebca3580a1f0280be8ad52b36",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\evalLectura\\casos.ts": {
+    "mtime": 1794073911.7307932,
+    "ast_hash": "ddc89190826fdc1c0a78981813f8e6cc",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\nucleo\\evalLectura\\correr.ts": {
+    "mtime": 1794073911.7318082,
+    "ast_hash": "cd1428cf60107a04e0adb21692256030",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\vision\\index.ts": {
+    "mtime": 1794073911.7475607,
+    "ast_hash": "dd82c06cb3c5d87808e8c96e3a31dbee",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\CampoTurno.tsx": {
+    "mtime": 1794073911.7485578,
+    "ast_hash": "3aaed5b1586e485e082915849328589d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\charla.ts": {
+    "mtime": 1794073911.7495604,
+    "ast_hash": "2a3d9b465620c0bf89184a5d92770280",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\escuchar.ts": {
+    "mtime": 1794073911.7505586,
+    "ast_hash": "da0aeb70578286b42c4a7e6015c11e80",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\escucharGroq.ts": {
+    "mtime": 1794073911.7520716,
+    "ast_hash": "f780ee6e5f71221e78405e0b27af408d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\hablar.ts": {
+    "mtime": 1794073911.7535846,
+    "ast_hash": "dc16334a6b8bc42862d8ad63e6fc75d7",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\index.ts": {
+    "mtime": 1794073911.7545993,
+    "ast_hash": "153a84a5f683965b1afea3e56f1c8d2a",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\sonidos.ts": {
+    "mtime": 1794073911.7561173,
+    "ast_hash": "373d391ff8213a8d382d64fd96c1429d",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\src\\voz\\turnoManual.ts": {
+    "mtime": 1794073911.7571175,
+    "ast_hash": "4bc6de317a8cb8d885f792da0444087e",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\AGENTS.md": {
+    "mtime": 1794073911.5595913,
+    "ast_hash": "efb888862c9f94a087a633f105bfafb5",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\CLAUDE.md": {
+    "mtime": 1794073911.56159,
+    "ast_hash": "e74c089f7764e8f5e7377af9be185662",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\GLOSSARY.md": {
+    "mtime": 1794073911.5629578,
+    "ast_hash": "1264368054da8f2d5bb642686a028a8a",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\adr\\0001-memoria-por-usuario.md": {
+    "mtime": 1794074851.4287584,
+    "ast_hash": "5861580d9b537444a56a72a4d8e07662",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\adr\\0002-voz-half-duplex.md": {
+    "mtime": 1794073911.5673585,
+    "ast_hash": "09934567f7c5636ffcdd832de28faaca",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\agents\\domain.md": {
+    "mtime": 1794073911.5688872,
+    "ast_hash": "b20c849deb2944f6fa5365c51f9cd134",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\agents\\issue-tracker.md": {
+    "mtime": 1794073911.5694225,
+    "ast_hash": "c7311b7eb3995eeb8cfaddd158b9c128",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\agents\\triage-labels.md": {
+    "mtime": 1794073911.5705361,
+    "ast_hash": "d7e50dac17098ccade780750b97517a1",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\research\\deletrear.md": {
+    "mtime": 1794073911.5721364,
+    "ast_hash": "d7ceaf9af2ea694e5d6906f72ff6c3d0",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\research\\llm-latencia-niveles.md": {
+    "mtime": 1794074851.4300165,
+    "ast_hash": "c0b52681d0c3cd5b92312daf63b08afb",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\research\\llm-onboarding-memoria.md": {
+    "mtime": 1794073911.5737078,
+    "ast_hash": "e3ab37e6c1c637db00e8c08bceb4f9f5",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\research\\llm.md": {
+    "mtime": 1794073911.5742147,
+    "ast_hash": "b4aeb31023f0b9fd601273b05e839061",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\research\\nucleo-interfaz.md": {
+    "mtime": 1794073911.575575,
+    "ast_hash": "8a017c3e02398d4d4fe0dca186e28635",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\docs\\research\\voz.md": {
+    "mtime": 1794073911.5776513,
+    "ast_hash": "e5e80b2b36bfcbe544cfd1e2e5e8a218",
+    "semantic_hash": ""
+  },
+  "C:\\Proyectos\\Twin-Garrote-41\\public\\palabras-es.txt": {
+    "mtime": 1794073911.6234958,
+    "ast_hash": "2fa308f73f8661a734e38bfd0220127b",
+    "semantic_hash": ""
   }
 }

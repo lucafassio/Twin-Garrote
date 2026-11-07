@@ -6,7 +6,9 @@
 // Dos modos:
 //   Contra un servidor levantado (punta a punta por las rutas). Escribe en .data/, igual que /prueba/llm:
 //     node src/llm/medir-latencias.ts http://localhost:3000
-//   Directo, sin servidor: los mismos modulos en este proceso, con un almacen en una carpeta temporal.
+//   Directo, sin servidor: los mismos modulos en este proceso, con un almacen en una carpeta temporal
+//   cargado con la memoria de un mes de uso (memoria-cargada.ts, #41: bloques de dia, semana y mes,
+//   huella aprendida aceptada, saliencia). Con --vacia, el almacen arranca vacio, para comparar.
 //   El proveedor sale de LLM_PROVEEDOR, asi se comparan los dos sin tocar el servidor:
 //     LLM_PROVEEDOR=gateway node --env-file=.env.local src/llm/medir-latencias.ts
 //     LLM_PROVEEDOR=anthropic node --env-file=.env.local src/llm/medir-latencias.ts
@@ -17,10 +19,15 @@ import type { Cercania, LineaHistorial, PedidoOpciones } from '@/eventos'
 import { crearAlmacenEnArchivos } from './almacen-archivos.ts'
 import { crearCompletado } from './completado.ts'
 import { listarHechos } from './controles-memoria.ts'
+import { memoriaCargada } from './memoria-cargada.ts'
+import { estimarTokens } from './tokens.ts'
 import { crearOpcionesConMemoria } from './memoria.ts'
 import { elegirProveedor } from './proveedores.ts'
+import type { Proveedor } from './tipos.ts'
 
-const BASE = process.argv[2]
+const ARGS = process.argv.slice(2)
+const VACIA = ARGS.includes('--vacia')
+const BASE = ARGS.find((a) => !a.startsWith('--'))
 const LIMITE_MS = 2500
 
 // Los mismos 10 turnos de src/app/prueba/llm/page.tsx.
@@ -60,10 +67,23 @@ function porHttp(base: string): Llamar {
     })
 }
 
+// Tokens estimados (sistema + usuario) de cada pedido de opciones, en orden. Solo en modo directo.
+const tokensOpciones: number[] = []
+
 // Lo mismo que hacen las tres rutas, sin Next en el medio.
 async function directo(): Promise<Llamar> {
-  const proveedor = elegirProveedor()
+  const real = elegirProveedor()
+  const proveedor: Proveedor = {
+    nombre: real.nombre,
+    generar(p) {
+      // Sin salida propia es un pedido de opciones: completado, memoria y rollups traen la suya.
+      const esOpciones = !p.salida
+      if (esOpciones) tokensOpciones.push(estimarTokens(p.sistema) + estimarTokens(p.usuario))
+      return real.generar(p)
+    },
+  }
   const almacen = crearAlmacenEnArchivos(await mkdtemp(join(tmpdir(), 'parpadeo-medir-')))
+  if (!VACIA) await almacen.guardarMemoria(memoriaCargada(new Date()))
   let errorMemoria: unknown = null
   const { generarOpciones, cierre, memoria } = crearOpcionesConMemoria({
     proveedor,
@@ -103,7 +123,11 @@ function mediana(xs: number[]): number {
 
 async function main() {
   const llamar = BASE ? porHttp(BASE) : await directo()
-  console.log(BASE ? `Punta a punta por ${BASE}` : 'Directo, sin servidor (almacen temporal)')
+  console.log(
+    BASE
+      ? `Punta a punta por ${BASE}`
+      : `Directo, sin servidor (almacen temporal ${VACIA ? 'vacio' : 'con memoria cargada'})`,
+  )
   // Calentamiento de las tres rutas: en dev, la primera llamada a cada una compila.
   await llamar('/api/opciones', armarPedido('Hola, ¿cómo andás?', 'familia'))
   await llamar('/api/completar', { prefijo: '', pedido: armarPedido('Hola', 'familia') })
@@ -149,6 +173,11 @@ async function main() {
     `\nOpciones: promedio ${promedio} ms, mediana ${mediana(totales)} ms, max ${Math.max(...totales)} ms` +
       ` (${totales.filter((x) => x > LIMITE_MS).length}/${TURNOS.length} pasan de ${LIMITE_MS} ms)`,
   )
+  if (tokensOpciones.length > 0) {
+    // El primero es el calentamiento: se cuentan los de los 10 turnos.
+    const t = tokensOpciones.slice(1, 1 + TURNOS.length)
+    console.log(`Prompt de opciones: ~${Math.min(...t)} a ~${Math.max(...t)} tokens estimados`)
+  }
   console.log(`Completado "quiero mil": "${String(completado.datos.frase)}" en ${completado.ms} ms`)
   const activos = (cierre.datos.activos as { texto?: string }[] | undefined) ?? []
   console.log(
