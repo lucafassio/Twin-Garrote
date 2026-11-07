@@ -11,6 +11,8 @@ Parpadeo: comunicacion aumentativa para personas con ELA. Hackathon de 5 horas, 
 - **Cada path prueba lo suyo en su pagina propia** `src/app/prueba/<path>/page.tsx`. La pagina principal `src/app/page.tsx` es solo del path nucleo-interfaz.
 - **Git:** todos empujan directo a `main`, sin branches ni PRs. `git pull --rebase` antes de cada push. Commits chicos y seguidos.
 - Texto de UI en espanol rioplatense con voseo.
+- **Next.js 16**: puede diferir de lo que conoces. Ver `AGENTS.md` y `node_modules/next/dist/docs/` antes de usar APIs de Next.
+- Correr `npx tsc --noEmit` antes de cada push: no romperle el build a los demas.
 
 ## Agent skills
 
