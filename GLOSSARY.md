@@ -11,12 +11,16 @@ Persona con ELA que habla a traves del sistema. En la demo, "Roberto".
 _Avoid_: paciente, persona, enfermo
 
 **Interlocutor**:
-Quien le habla al usuario en voz alta (familiar, medico, jurado).
+Quien le habla al usuario en voz alta (familiar, medico, jurado). Puede haber varios a la vez; el sistema no distingue quien es quien.
 _Avoid_: hablante, otro
 
 **Perfil**:
 Datos del usuario y su forma de hablar (familia, gustos, tono, frases tipicas, temas a evitar) que carga un familiar en el onboarding. Es la base de la huella: el aprendizaje no lo modifica.
 _Avoid_: config, persona
+
+**Contacto**:
+Persona fuera de la sala a la que le llega al celular el aviso de urgencia, con el contexto de la charla.
+_Avoid_: familiar, cuidador, contacto de emergencia
 
 **Onboarding**:
 Carga inicial del perfil para un usuario nuevo, hecha por un familiar en menos de 10 minutos. Lo que carga la familia queda marcado como dicho *sobre* el usuario, no *por* el usuario.
@@ -59,7 +63,7 @@ Tono de la conversacion (formal, casual, intimo) que el LLM infiere del turno y 
 _Avoid_: formalidad, estilo
 
 **Turno**:
-Una frase completa del interlocutor, cerrada por un segundo de silencio.
+Una frase completa del interlocutor, cerrada por un silencio corto (alrededor de un segundo) o a mano.
 _Avoid_: pregunta, mensaje, input
 
 **Opcion**:
@@ -74,12 +78,16 @@ _Avoid_: autocompletado de palabra, sugerencia
 Opcion, Si o No que el usuario eligio y que el sistema dijo en voz alta. Responde el turno: entra al historial y limpia las opciones. "Espera" no es respuesta.
 _Avoid_: output, salida
 
+**Aviso**:
+Sonido corto que suena siempre antes de que el sistema diga algo en voz alta, para que la sala haga silencio. Desde el aviso hasta que el sistema termina de hablar, no se escucha.
+_Avoid_: chime, campana, alerta
+
 **Opciones fijas**:
-Si, No, Espera y Otra: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial.
+Si, No, Espera, Otra y Repetir: siempre visibles y elegibles, no dependen del LLM. "Otra" pide 4 opciones nuevas para el mismo turno. "Espera" pide tiempo al interlocutor: se dice en voz alta, mantiene las opciones y no entra al historial. "Repetir" vuelve a decir la ultima respuesta sin que entre de nuevo al historial; tambien la puede pedir cualquiera de la sala.
 _Avoid_: botones rapidos, atajos
 
 **Urgencia**:
-Pedido de ayuda siempre disponible, que no pasa por el LLM. Se dispara eligiendola en el barrido o con el gesto de urgencia.
+Pedido de ayuda siempre disponible, que no pasa por el LLM. Se dispara eligiendola en el barrido o con el gesto de urgencia. Corta todo lo que este pasando, hace sonar una alarma en la sala y le avisa al contacto con las ultimas lineas de la charla. Termina como atendida (alguien de la sala la apaga) o como falsa alarma (el usuario confirma que fue sin querer); el contacto recibe un mensaje distinto en cada caso.
 _Avoid_: alarma, panico, emergencia
 
 ### Seleccion
