@@ -39,9 +39,11 @@ export type Eventos = {
   transcripcionParcial: { texto: string } // lo que va diciendo el interlocutor, en vivo
   turno: { texto: string } // turno completo (fin de turno detectado o tipeado)
   hablando: { activo: boolean } // el sistema esta diciendo algo en voz alta
+  escuchando: { activo: boolean } // el microfono esta transcribiendo (no escucha desde el aviso hasta que termina de hablar)
   // nucleo -> voz
   decir: { texto: string; urgencia?: boolean }
-  detenerUrgencia: Record<string, never>
+  detenerUrgencia: { falsaAlarma?: boolean } // sin falsaAlarma = atendida por alguien de la sala
+  repetir: Record<string, never> // vuelve a decir la ultima respuesta
 }
 
 type Handler<T> = (payload: T) => void
