@@ -23,11 +23,14 @@ export type LineaHistorial = {
 // Relacion del interlocutor con el usuario. Opcional: si nadie la aclara, la infiere el LLM.
 export type Cercania = 'familia' | 'conocido' | 'formal'
 
+export type TipoTurno = 'siNo' | 'abierta' | 'comentario' | 'saludo' | 'pedido' | 'otro'
+
 // Pedido al LLM. ultimoTurno null = el usuario quiere iniciar charla (eligio Otra sin turno).
 export type PedidoOpciones = {
   historial: LineaHistorial[]
   ultimoTurno: string | null
   yaMostradas: string[] // opciones ya mostradas para este turno, para no repetirlas
+  tipoTurno?: TipoTurno // lectura del nucleo; sin aviso se conserva la regla anterior
   cercania?: Cercania // opcional: define tono y que hechos se pueden usar
   interlocutor?: string // opcional: nombre o rol de quien habla ("Marta", "el medico"). Sin el, el LLM no asume quien es
 }

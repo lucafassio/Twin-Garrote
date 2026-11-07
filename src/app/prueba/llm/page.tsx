@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { Cercania, LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
+import type { Cercania, LineaHistorial, Opcion, PedidoOpciones, TipoTurno } from '@/eventos'
 import PruebaCompletado from './PruebaCompletado'
 import PruebaCorte from './PruebaCorte'
 import { LoQueAprendi } from './LoQueAprendi'
@@ -36,6 +36,7 @@ type Respuesta = {
 export default function Prueba() {
   const [turno, setTurno] = useState(TURNOS_DE_PRUEBA[0].turno)
   const [sinTurno, setSinTurno] = useState(false)
+  const [tipoTurno, setTipoTurno] = useState<TipoTurno | ''>('')
   const [cercania, setCercania] = useState<Cercania | ''>(TURNOS_DE_PRUEBA[0].cercania ?? '')
   const [interlocutor, setInterlocutor] = useState('')
   const [historial, setHistorial] = useState<LineaHistorial[]>([])
@@ -53,6 +54,7 @@ export default function Prueba() {
       ultimoTurno: sinTurno ? null : turno,
       yaMostradas: mostradas,
       ...(cercania ? { cercania } : {}),
+      ...(tipoTurno && !sinTurno ? { tipoTurno } : {}),
       ...(interlocutor.trim() ? { interlocutor: interlocutor.trim() } : {}),
     }
     setCargando(true)
@@ -97,6 +99,7 @@ export default function Prueba() {
     ultimoTurno: sinTurno ? null : turno,
     yaMostradas: [],
     ...(cercania ? { cercania } : {}),
+    ...(tipoTurno && !sinTurno ? { tipoTurno } : {}),
     ...(interlocutor.trim() ? { interlocutor: interlocutor.trim() } : {}),
   }
 
@@ -121,6 +124,23 @@ export default function Prueba() {
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={sinTurno} onChange={(e) => setSinTurno(e.target.checked)} />
             Sin turno (arrancar charla)
+          </label>
+          <label className="flex items-center gap-2">
+            Tipo de turno
+            <select
+              className="rounded border bg-transparent p-1"
+              value={tipoTurno}
+              disabled={sinTurno}
+              onChange={(e) => setTipoTurno(e.target.value as TipoTurno | '')}
+            >
+              <option value="">sin aviso</option>
+              <option value="siNo">si o no</option>
+              <option value="abierta">abierta</option>
+              <option value="comentario">comentario</option>
+              <option value="saludo">saludo</option>
+              <option value="pedido">pedido</option>
+              <option value="otro">otro</option>
+            </select>
           </label>
           <label className="flex items-center gap-2">
             Cercanía

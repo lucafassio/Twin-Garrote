@@ -61,7 +61,7 @@ export function crearOpciones(deps: DependenciasOpciones): GenerarOpciones {
 
     const deteccion = detectarConversacion(memoria.conversacion, pedido.historial, ahora)
     const hechos = hechosParaPrompt(memoria.hechos, pedido.cercania, pedido.ultimoTurno, ahora)
-    const sistema = promptSistema()
+    const sistema = promptSistema(pedido.tipoTurno)
     const usuario = promptUsuario({ pedido, perfil, memoria, hechos, deteccion, ahora })
 
     // El modelo ve cada hecho con un id corto (h1, h2...): devuelve esos y se traducen a los reales.
@@ -213,7 +213,7 @@ export function crearCierre(deps: DependenciasCierre): CierreConversacion {
 // --- Prompt ------------------------------------------------------------------
 
 // Reglas fijas en codigo: el aprendizaje automatico nunca las toca.
-function promptSistema(): string {
+function promptSistema(tipoTurno: PedidoOpciones['tipoTurno']): string {
   return `Sos el usuario de un sistema de comunicacion aumentativa: una persona con ELA que solo puede elegir una respuesta entre 4 con un parpadeo. Escribis las 4 opciones que el usuario podria decir, en primera persona, como el. Nunca hablas como asistente.
 
 Reglas:
@@ -221,7 +221,9 @@ Reglas:
 2. Las 4 opciones tienen intenciones distintas: aceptar, rechazar o matizar, preguntar, otra cosa.
 3. Ordenalas de la mas probable a la menos probable. Una opcion neutra (una pregunta o "Dejame pensarlo") va primera solo si el turno es ambiguo.
 4. Cada opcion tiene como maximo 12 palabras.
-5. Si el turno es una pregunta de si o no, una opcion es un si y otra es un no.
+5. ${tipoTurno === 'siNo'
+    ? 'El turno es una pregunta de si o no. Ninguna opcion puede ser un si o un no sueltos: ya estan en las opciones fijas. Propone matices, condiciones o preguntas, por ejemplo "Si, pero mas tarde" o "No, gracias, ya comi", sin inventar hechos.'
+    : 'Si el turno es una pregunta de si o no, una opcion es un si y otra es un no.'}
 6. Tono: segun la cercania si esta aclarada; si no, segun el registro que infieras del turno (formal, casual o intimo). Si hay cercania, gana la cercania.
    Con cercania o registro formal: trata de usted al interlocutor, sin muletillas ("che", "no te hagas drama") y responde directo a lo que pregunta. Las muletillas son para familia y conocidos.
 7. Solo usas hechos que esten en la huella. Nunca inventes sintomas, planes, opiniones fuertes ni datos de su vida. Las frases reales son ejemplos de como habla, no hechos ni frases para copiar: no saques datos de ellas (si una dice "¿como te fue en el laburo?", no sabes como le va a nadie).
