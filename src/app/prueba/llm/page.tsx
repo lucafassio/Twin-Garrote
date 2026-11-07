@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Cercania, LineaHistorial, Opcion, PedidoOpciones } from '@/eventos'
 import PruebaCompletado from './PruebaCompletado'
+import PruebaCorte from './PruebaCorte'
 import { LoQueAprendi } from './LoQueAprendi'
 
 // Pagina de prueba del path llm. Solo la toca ese path.
@@ -87,6 +88,14 @@ export default function Prueba() {
     setRespuesta(null)
     setYaMostradas([])
     setTurno('')
+  }
+
+  const pedidoDePagina: PedidoOpciones = {
+    historial,
+    ultimoTurno: sinTurno ? null : turno,
+    yaMostradas: [],
+    ...(cercania ? { cercania } : {}),
+    ...(interlocutor.trim() ? { interlocutor: interlocutor.trim() } : {}),
   }
 
   const promedio = mediciones.length
@@ -217,15 +226,9 @@ export default function Prueba() {
         </section>
       )}
 
-      <PruebaCompletado
-        pedido={{
-          historial,
-          ultimoTurno: sinTurno ? null : turno,
-          yaMostradas: [],
-          ...(cercania ? { cercania } : {}),
-          ...(interlocutor.trim() ? { interlocutor: interlocutor.trim() } : {}),
-        }}
-      />
+      <PruebaCompletado pedido={pedidoDePagina} />
+
+      <PruebaCorte pedido={pedidoDePagina} />
 
       <LoQueAprendi
         historial={historial}

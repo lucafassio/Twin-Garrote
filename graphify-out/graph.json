@@ -55,84 +55,6 @@
   },
   "nodes": [
     {
-      "id": "src_voz_escuchar_alternativa",
-      "label": "Alternativa",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "alternativa",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_voz_escuchar_escucha",
-      "label": "Escucha",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "escucha",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L28"
-    },
-    {
-      "id": "src_voz_escuchar_eventoresultado",
-      "label": "EventoResultado",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "eventoresultado",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_voz_escuchar_opcionesescucha",
-      "label": "OpcionesEscucha",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "opcionesescucha",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L39"
-    },
-    {
-      "id": "src_voz_escuchar_reconocedor",
-      "label": "Reconocedor",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "reconocedor",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_voz_escuchar_resultado",
-      "label": "Resultado",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "resultado",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L6"
-    },
-    {
       "id": "src_llm_memoria_accion",
       "label": "Accion",
       "_callable": true,
@@ -146,19 +68,6 @@
       "source_location": "L235"
     },
     {
-      "id": "src_llm_memoria_actualizarmemoria",
-      "label": "ActualizarMemoria",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "memoria.ts",
-      "file_type": "code",
-      "norm_label": "actualizarmemoria",
-      "source_file": "src/llm/memoria.ts",
-      "source_location": "L72"
-    },
-    {
       "id": "src_llm_memoria_candidato",
       "label": "Candidato",
       "_callable": true,
@@ -170,19 +79,6 @@
       "norm_label": "candidato",
       "source_file": "src/llm/memoria.ts",
       "source_location": "L236"
-    },
-    {
-      "id": "src_llm_memoria_dependenciasmemoria",
-      "label": "DependenciasMemoria",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "memoria.ts",
-      "file_type": "code",
-      "norm_label": "dependenciasmemoria",
-      "source_file": "src/llm/memoria.ts",
-      "source_location": "L68"
     },
     {
       "id": "src_llm_memoria_errormemoria",
@@ -224,17 +120,17 @@
       "source_location": "L74"
     },
     {
-      "id": "src_llm_opciones_dependenciasopciones",
-      "label": "DependenciasOpciones",
+      "id": "src_eventos_intencion",
+      "label": "Intencion",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 11,
       "community_name": "opciones.ts",
       "file_type": "code",
-      "norm_label": "dependenciasopciones",
-      "source_file": "src/llm/opciones.ts",
-      "source_location": "L31"
+      "norm_label": "intencion",
+      "source_file": "src/eventos.ts",
+      "source_location": "L3"
     },
     {
       "id": "src_llm_opciones_deteccion",
@@ -263,19 +159,6 @@
       "source_location": "L24"
     },
     {
-      "id": "src_llm_opciones_generaropciones",
-      "label": "GenerarOpciones",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "opciones.ts",
-      "file_type": "code",
-      "norm_label": "generaropciones",
-      "source_file": "src/llm/opciones.ts",
-      "source_location": "L39"
-    },
-    {
       "id": "src_llm_opciones_respuestamodelo",
       "label": "RespuestaModelo",
       "_callable": true,
@@ -287,45 +170,6 @@
       "norm_label": "respuestamodelo",
       "source_file": "src/llm/opciones.ts",
       "source_location": "L235"
-    },
-    {
-      "id": "src_llm_tipos_conversacionactual",
-      "label": "ConversacionActual",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "opciones.ts",
-      "file_type": "code",
-      "norm_label": "conversacionactual",
-      "source_file": "src/llm/tipos.ts",
-      "source_location": "L68"
-    },
-    {
-      "id": "src_llm_tipos_registro",
-      "label": "Registro",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "opciones.ts",
-      "file_type": "code",
-      "norm_label": "registro",
-      "source_file": "src/llm/tipos.ts",
-      "source_location": "L90"
-    },
-    {
-      "id": "src_llm_tipos_resultadoopciones",
-      "label": "ResultadoOpciones",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "opciones.ts",
-      "file_type": "code",
-      "norm_label": "resultadoopciones",
-      "source_file": "src/llm/tipos.ts",
-      "source_location": "L92"
     },
     {
       "id": "src_llm_tipos_conversacioncerrada",
@@ -341,19 +185,6 @@
       "source_location": "L99"
     },
     {
-      "id": "src_llm_tipos_proveedor",
-      "label": "Proveedor",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "opciones.test.ts",
-      "file_type": "code",
-      "norm_label": "proveedor",
-      "source_file": "src/llm/tipos.ts",
-      "source_location": "L7"
-    },
-    {
       "id": "src_llm_completado_completarfrase",
       "label": "CompletarFrase",
       "_callable": true,
@@ -365,19 +196,6 @@
       "norm_label": "completarfrase",
       "source_file": "src/llm/completado.ts",
       "source_location": "L30"
-    },
-    {
-      "id": "src_llm_completado_dependenciascompletado",
-      "label": "DependenciasCompletado",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 15,
-      "community_name": "completado.ts",
-      "file_type": "code",
-      "norm_label": "dependenciascompletado",
-      "source_file": "src/llm/completado.ts",
-      "source_location": "L25"
     },
     {
       "id": "src_llm_tipos_promptproveedor",
@@ -393,43 +211,17 @@
       "source_location": "L12"
     },
     {
-      "id": "src_app_prueba_llm_loqueaprendi_hechos",
-      "label": "Hechos",
+      "id": "src_llm_tipos_conversacionactual",
+      "label": "ConversacionActual",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 16,
       "community_name": "llm/tipos.ts",
       "file_type": "code",
-      "norm_label": "hechos",
-      "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_eventos_cercania",
-      "label": "Cercania",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "cercania",
-      "source_file": "src/eventos.ts",
-      "source_location": "L24"
-    },
-    {
-      "id": "src_eventos_lineahistorial",
-      "label": "LineaHistorial",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "lineahistorial",
-      "source_file": "src/eventos.ts",
-      "source_location": "L17"
+      "norm_label": "conversacionactual",
+      "source_file": "src/llm/tipos.ts",
+      "source_location": "L68"
     },
     {
       "id": "src_llm_tipos_ejemploestilo",
@@ -445,19 +237,6 @@
       "source_location": "L51"
     },
     {
-      "id": "src_llm_tipos_hecho",
-      "label": "Hecho",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "hecho",
-      "source_file": "src/llm/tipos.ts",
-      "source_location": "L31"
-    },
-    {
       "id": "src_llm_tipos_origenhecho",
       "label": "OrigenHecho",
       "_callable": true,
@@ -469,6 +248,32 @@
       "norm_label": "origenhecho",
       "source_file": "src/llm/tipos.ts",
       "source_location": "L29"
+    },
+    {
+      "id": "src_llm_tipos_registro",
+      "label": "Registro",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "llm/tipos.ts",
+      "file_type": "code",
+      "norm_label": "registro",
+      "source_file": "src/llm/tipos.ts",
+      "source_location": "L90"
+    },
+    {
+      "id": "src_llm_tipos_resultadoopciones",
+      "label": "ResultadoOpciones",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "llm/tipos.ts",
+      "file_type": "code",
+      "norm_label": "resultadoopciones",
+      "source_file": "src/llm/tipos.ts",
+      "source_location": "L92"
     },
     {
       "id": "src_llm_tipos_resumenconversacion",
@@ -497,6 +302,32 @@
       "source_location": "L20"
     },
     {
+      "id": "src_eventos_opcion",
+      "label": "Opcion",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "opcion",
+      "source_file": "src/eventos.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_interfaz_debugnucleo_props",
+      "label": "Props",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "props",
+      "source_file": "src/interfaz/DebugNucleo.tsx",
+      "source_location": "L8"
+    },
+    {
       "id": "src_nucleo_motor_leerturno",
       "label": "LeerTurno",
       "_callable": true,
@@ -508,6 +339,19 @@
       "norm_label": "leerturno",
       "source_file": "src/nucleo/motor.ts",
       "source_location": "L18"
+    },
+    {
+      "id": "src_nucleo_motor_nucleo",
+      "label": "Nucleo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "nucleo",
+      "source_file": "src/nucleo/motor.ts",
+      "source_location": "L27"
     },
     {
       "id": "src_nucleo_motor_opcionesnucleo",
@@ -588,17 +432,17 @@
       "source_location": "L14"
     },
     {
-      "id": "src_nucleo_tipos_elementofijo",
-      "label": "ElementoFijo",
+      "id": "src_nucleo_tipos_estado",
+      "label": "Estado",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "reductor.ts",
       "file_type": "code",
-      "norm_label": "elementofijo",
+      "norm_label": "estado",
       "source_file": "src/nucleo/tipos.ts",
-      "source_location": "L13"
+      "source_location": "L19"
     },
     {
       "id": "src_nucleo_tipos_resultado",
@@ -705,6 +549,175 @@
       "source_location": "L5"
     },
     {
+      "id": "src_app_prueba_llm_pruebacorte_estado",
+      "label": "Estado",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "estado",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_medicion",
+      "label": "Medicion",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "medicion",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_llm_cliente_pedidocancelado",
+      "label": "PedidoCancelado",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pedidocancelado",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_llm_cliente_test_llamada",
+      "label": "Llamada",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "llamada",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_interfaz_monitorbus_linea",
+      "label": "Linea",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "linea",
+      "source_file": "src/interfaz/MonitorBus.tsx",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_voz_escuchar_alternativa",
+      "label": "Alternativa",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "alternativa",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_voz_escuchar_eventoresultado",
+      "label": "EventoResultado",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "eventoresultado",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_voz_escuchar_opcionesescucha",
+      "label": "OpcionesEscucha",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "opcionesescucha",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_voz_escuchar_reconocedor",
+      "label": "Reconocedor",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "reconocedor",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_voz_escuchar_resultado",
+      "label": "Resultado",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "resultado",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_voz_escuchar_escucha",
+      "label": "Escucha",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "escucha",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L28"
+    },
+    {
+      "id": "src_voz_escuchargroq_opcionesgroq",
+      "label": "OpcionesGroq",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "opcionesgroq",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_app_api_transcribir_route_segmento",
+      "label": "Segmento",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "transcribir/route.ts",
+      "file_type": "code",
+      "norm_label": "segmento",
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L12"
+    },
+    {
       "id": "src_llm_proveedores_entorno",
       "label": "Entorno",
       "_callable": true,
@@ -731,30 +744,17 @@
       "source_location": "L12"
     },
     {
-      "id": "src_interfaz_debugnucleo_props",
-      "label": "Props",
+      "id": "src_llm_tipos_proveedor",
+      "label": "Proveedor",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
+      "community": 4,
+      "community_name": "proveedores.ts",
       "file_type": "code",
-      "norm_label": "props",
-      "source_file": "src/interfaz/DebugNucleo.tsx",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_interfaz_monitorbus_linea",
-      "label": "Linea",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
-      "file_type": "code",
-      "norm_label": "linea",
-      "source_file": "src/interfaz/MonitorBus.tsx",
-      "source_location": "L11"
+      "norm_label": "proveedor",
+      "source_file": "src/llm/tipos.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_interfaz_pantalla_celdaprops",
@@ -783,17 +783,43 @@
       "source_location": "L61"
     },
     {
-      "id": "src_nucleo_tipos_estado",
-      "label": "Estado",
+      "id": "src_nucleo_tipos_elementofijo",
+      "label": "ElementoFijo",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "app/page.tsx",
       "file_type": "code",
-      "norm_label": "estado",
+      "norm_label": "elementofijo",
       "source_file": "src/nucleo/tipos.ts",
-      "source_location": "L19"
+      "source_location": "L13"
+    },
+    {
+      "id": "src_voz_index_motor",
+      "label": "Motor",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "app/page.tsx",
+      "file_type": "code",
+      "norm_label": "motor",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L18"
+    },
+    {
+      "id": "src_app_prueba_llm_loqueaprendi_hechos",
+      "label": "Hechos",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "hechos",
+      "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
+      "source_location": "L10"
     },
     {
       "id": "src_app_prueba_llm_page_medicion",
@@ -806,7 +832,7 @@
       "file_type": "code",
       "norm_label": "medicion",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L24"
+      "source_location": "L25"
     },
     {
       "id": "src_app_prueba_llm_page_respuesta",
@@ -819,7 +845,7 @@
       "file_type": "code",
       "norm_label": "respuesta",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L26"
+      "source_location": "L27"
     },
     {
       "id": "src_app_prueba_llm_pruebacompletado_medicion",
@@ -833,6 +859,19 @@
       "norm_label": "medicion",
       "source_file": "src/app/prueba/llm/PruebaCompletado.tsx",
       "source_location": "L11"
+    },
+    {
+      "id": "src_eventos_cercania",
+      "label": "Cercania",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "cercania",
+      "source_file": "src/eventos.ts",
+      "source_location": "L24"
     },
     {
       "id": "src_eventos_eventos",
@@ -858,33 +897,20 @@
       "file_type": "code",
       "norm_label": "handler",
       "source_file": "src/eventos.ts",
-      "source_location": "L50"
+      "source_location": "L52"
     },
     {
-      "id": "src_eventos_intencion",
-      "label": "Intencion",
+      "id": "src_eventos_lineahistorial",
+      "label": "LineaHistorial",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "intencion",
+      "norm_label": "lineahistorial",
       "source_file": "src/eventos.ts",
-      "source_location": "L3"
-    },
-    {
-      "id": "src_eventos_opcion",
-      "label": "Opcion",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "eventos.ts",
-      "file_type": "code",
-      "norm_label": "opcion",
-      "source_file": "src/eventos.ts",
-      "source_location": "L4"
+      "source_location": "L17"
     },
     {
       "id": "src_eventos_pedidoopciones",
@@ -913,17 +939,17 @@
       "source_location": "L6"
     },
     {
-      "id": "src_nucleo_motor_nucleo",
-      "label": "Nucleo",
+      "id": "src_llm_tipos_hecho",
+      "label": "Hecho",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "nucleo",
-      "source_file": "src/nucleo/motor.ts",
-      "source_location": "L27"
+      "norm_label": "hecho",
+      "source_file": "src/llm/tipos.ts",
+      "source_location": "L31"
     },
     {
       "id": "src_llm_almacen_almacenenmemoria",
@@ -932,11 +958,89 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "almacenenmemoria",
       "source_file": "src/llm/almacen.ts",
       "source_location": "L9"
+    },
+    {
+      "id": "src_llm_completado_dependenciascompletado",
+      "label": "DependenciasCompletado",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "llm/index.ts",
+      "file_type": "code",
+      "norm_label": "dependenciascompletado",
+      "source_file": "src/llm/completado.ts",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_llm_controles_memoria_hechoslistados",
+      "label": "HechosListados",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "llm/index.ts",
+      "file_type": "code",
+      "norm_label": "hechoslistados",
+      "source_file": "src/llm/controles-memoria.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_llm_memoria_actualizarmemoria",
+      "label": "ActualizarMemoria",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "llm/index.ts",
+      "file_type": "code",
+      "norm_label": "actualizarmemoria",
+      "source_file": "src/llm/memoria.ts",
+      "source_location": "L72"
+    },
+    {
+      "id": "src_llm_memoria_dependenciasmemoria",
+      "label": "DependenciasMemoria",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "llm/index.ts",
+      "file_type": "code",
+      "norm_label": "dependenciasmemoria",
+      "source_file": "src/llm/memoria.ts",
+      "source_location": "L68"
+    },
+    {
+      "id": "src_llm_opciones_dependenciasopciones",
+      "label": "DependenciasOpciones",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "llm/index.ts",
+      "file_type": "code",
+      "norm_label": "dependenciasopciones",
+      "source_file": "src/llm/opciones.ts",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_llm_opciones_generaropciones",
+      "label": "GenerarOpciones",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "llm/index.ts",
+      "file_type": "code",
+      "norm_label": "generaropciones",
+      "source_file": "src/llm/opciones.ts",
+      "source_location": "L39"
     },
     {
       "id": "src_llm_tipos_almacen",
@@ -945,7 +1049,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "almacen",
       "source_file": "src/llm/tipos.ts",
@@ -958,24 +1062,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "perfilhuella",
       "source_file": "src/llm/tipos.ts",
       "source_location": "L45"
-    },
-    {
-      "id": "src_llm_controles_memoria_hechoslistados",
-      "label": "HechosListados",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "hechoslistados",
-      "source_file": "src/llm/controles-memoria.ts",
-      "source_location": "L7"
     },
     {
       "id": "src_app_prueba_voz_page_prueba",
@@ -983,119 +1074,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "prueba()",
       "source_file": "src/app/prueba/voz/page.tsx",
       "source_location": "L11"
-    },
-    {
-      "id": "src_voz_campoturno_campoturno",
-      "label": "CampoTurno()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "campoturno()",
-      "source_file": "src/voz/CampoTurno.tsx",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_voz_charla_anotarencurso",
-      "label": "anotarEnCurso()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "anotarencurso()",
-      "source_file": "src/voz/charla.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_voz_charla_anotarlinea",
-      "label": "anotarLinea()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "anotarlinea()",
-      "source_file": "src/voz/charla.ts",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_voz_charla_contextocharla",
-      "label": "contextoCharla()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "contextocharla()",
-      "source_file": "src/voz/charla.ts",
-      "source_location": "L21"
-    },
-    {
-      "id": "src_voz_escuchar_constructor",
-      "label": "constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "constructor()",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_voz_escuchar_crearescucha",
-      "label": "crearEscucha()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "crearescucha()",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L49"
-    },
-    {
-      "id": "src_voz_escuchar_crearescucha_arrancar",
-      "label": "arrancar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "arrancar()",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L88"
-    },
-    {
-      "id": "src_voz_escuchar_crearescucha_cerrarturno",
-      "label": "cerrarTurno()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "cerrarturno()",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L69"
-    },
-    {
-      "id": "src_voz_escuchar_crearescucha_descartar",
-      "label": "descartar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "descartar()",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L80"
     },
     {
       "id": "src_voz_hablar_callar",
@@ -1103,7 +1086,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "callar()",
       "source_file": "src/voz/hablar.ts",
@@ -1115,7 +1098,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "cargarvoces()",
       "source_file": "src/voz/hablar.ts",
@@ -1127,7 +1110,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "elegirvoz()",
       "source_file": "src/voz/hablar.ts",
@@ -1139,7 +1122,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "hablar()",
       "source_file": "src/voz/hablar.ts",
@@ -1151,23 +1134,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "avisarcontacto()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L141"
-    },
-    {
-      "id": "src_voz_index_esperafindeturno",
-      "label": "esperaFinDeTurno()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "esperafindeturno()",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L26"
+      "source_location": "L199"
     },
     {
       "id": "src_voz_index_esperar",
@@ -1175,11 +1146,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "esperar()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L36"
+      "source_location": "L43"
     },
     {
       "id": "src_voz_index_iniciarvoz",
@@ -1187,11 +1158,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "iniciarvoz()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L38"
+      "source_location": "L45"
     },
     {
       "id": "src_voz_index_iniciarvoz_decir",
@@ -1199,11 +1170,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "decir()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L69"
+      "source_location": "L71"
     },
     {
       "id": "src_voz_index_iniciarvoz_empezarhabla",
@@ -1211,11 +1182,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "empezarhabla()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L55"
+      "source_location": "L57"
     },
     {
       "id": "src_voz_index_iniciarvoz_terminarhabla",
@@ -1223,11 +1194,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "terminarhabla()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L64"
+      "source_location": "L66"
     },
     {
       "id": "src_voz_index_iniciarvoz_urgencia",
@@ -1235,11 +1206,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "urgencia()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L78"
+      "source_location": "L80"
     },
     {
       "id": "src_voz_index_mensajeurgencia",
@@ -1247,23 +1218,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "mensajeurgencia()",
       "source_file": "src/voz/index.ts",
-      "source_location": "L134"
-    },
-    {
-      "id": "src_voz_sonidos_campana",
-      "label": "campana()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "campana()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L50"
+      "source_location": "L192"
     },
     {
       "id": "src_voz_sonidos_cortarsonidos",
@@ -1271,107 +1230,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "cortarsonidos()",
       "source_file": "src/voz/sonidos.ts",
       "source_location": "L70"
-    },
-    {
-      "id": "src_voz_sonidos_ctx",
-      "label": "ctx()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "ctx()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_voz_sonidos_esperar",
-      "label": "esperar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "esperar()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L75"
-    },
-    {
-      "id": "src_voz_sonidos_salidacampana",
-      "label": "salidaCampana()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "salidacampana()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L32"
-    },
-    {
-      "id": "src_voz_sonidos_sonaralarma",
-      "label": "sonarAlarma()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "sonaralarma()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L86"
-    },
-    {
-      "id": "src_voz_sonidos_sonaraviso",
-      "label": "sonarAviso()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "sonaraviso()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L80"
-    },
-    {
-      "id": "src_voz_sonidos_tono",
-      "label": "tono()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "tono()",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_voz_turnomanual_cerrarturno",
-      "label": "cerrarTurno()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "cerrarturno()",
-      "source_file": "src/voz/turnoManual.ts",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_voz_turnomanual_registrarcierre",
-      "label": "registrarCierre()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "registrarcierre()",
-      "source_file": "src/voz/turnoManual.ts",
-      "source_location": "L6"
     },
     {
       "id": "src_llm_memoria_crearagentememoria",
@@ -1674,18 +1537,6 @@
       "source_location": "L171"
     },
     {
-      "id": "src_llm_almacen_crearalmacenenmemoria",
-      "label": "crearAlmacenEnMemoria()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "opciones.test.ts",
-      "file_type": "code",
-      "norm_label": "crearalmacenenmemoria()",
-      "source_file": "src/llm/almacen.ts",
-      "source_location": "L14"
-    },
-    {
       "id": "src_llm_opciones_test_armar",
       "label": "armar()",
       "_callable": true,
@@ -1770,16 +1621,16 @@
       "source_location": "L65"
     },
     {
-      "id": "src_llm_proveedor_falso_crearproveedorfalso",
-      "label": "crearProveedorFalso()",
+      "id": "src_llm_almacen_crearalmacenenmemoria",
+      "label": "crearAlmacenEnMemoria()",
       "_callable": true,
       "_origin": "ast",
-      "community": 14,
-      "community_name": "opciones.test.ts",
+      "community": 15,
+      "community_name": "completado.ts",
       "file_type": "code",
-      "norm_label": "crearproveedorfalso()",
-      "source_file": "src/llm/proveedor-falso.ts",
-      "source_location": "L26"
+      "norm_label": "crearalmacenenmemoria()",
+      "source_file": "src/llm/almacen.ts",
+      "source_location": "L14"
     },
     {
       "id": "src_llm_completado_crearcompletado",
@@ -1890,18 +1741,6 @@
       "source_location": "L26"
     },
     {
-      "id": "src_llm_controles_memoria_test_hecho",
-      "label": "hecho()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "hecho()",
-      "source_file": "src/llm/controles-memoria.test.ts",
-      "source_location": "L9"
-    },
-    {
       "id": "src_app_api_urgencia_route_ntfy",
       "label": "ntfy()",
       "_callable": true,
@@ -2008,6 +1847,18 @@
       "norm_label": "reiniciartick()",
       "source_file": "src/nucleo/motor.ts",
       "source_location": "L83"
+    },
+    {
+      "id": "src_nucleo_motor_test_vaciarpromesas",
+      "label": "vaciarPromesas()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "vaciarpromesas()",
+      "source_file": "src/nucleo/motor.test.ts",
+      "source_location": "L13"
     },
     {
       "id": "src_nucleo_reductor_aceptaracumulado",
@@ -2235,7 +2086,7 @@
       "file_type": "code",
       "norm_label": "despuesdedecirsi()",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L275"
+      "source_location": "L306"
     },
     {
       "id": "src_nucleo_reductor_test_enurgencia",
@@ -2247,7 +2098,7 @@
       "file_type": "code",
       "norm_label": "enurgencia()",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L310"
+      "source_location": "L341"
     },
     {
       "id": "src_nucleo_reductor_test_fragmentoleido",
@@ -2259,7 +2110,7 @@
       "file_type": "code",
       "norm_label": "fragmentoleido()",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L351"
+      "source_location": "L382"
     },
     {
       "id": "src_nucleo_reductor_test_iluminar",
@@ -2514,6 +2365,186 @@
       "source_location": "L69"
     },
     {
+      "id": "src_app_prueba_llm_pruebacorte_esperar",
+      "label": "esperar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "esperar()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_ms",
+      "label": "ms()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "ms()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L130"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "label": "PruebaCorte()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pruebacorte()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_pruebacorte_completar",
+      "label": "completar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "completar()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L45"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_pruebacorte_letrasrapidas",
+      "label": "letrasRapidas()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "letrasrapidas()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L61"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_pruebacorte_pedir",
+      "label": "pedir()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pedir()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_pruebacorte_turnosseguidos",
+      "label": "turnosSeguidos()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "turnosseguidos()",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_llm_cliente_completarfrase",
+      "label": "completarFrase()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "completarfrase()",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L60"
+    },
+    {
+      "id": "src_llm_cliente_esabortado",
+      "label": "esAbortado()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "esabortado()",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L23"
+    },
+    {
+      "id": "src_llm_cliente_espedidocancelado",
+      "label": "esPedidoCancelado()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "espedidocancelado()",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_llm_cliente_pedidocancelado_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_llm_cliente_pedircompletado",
+      "label": "pedirCompletado()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pedircompletado()",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L73"
+    },
+    {
+      "id": "src_llm_cliente_pediropciones",
+      "label": "pedirOpciones()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pediropciones()",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_llm_cliente_test_opciones",
+      "label": "opciones()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "opciones()",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L39"
+    },
+    {
+      "id": "src_llm_cliente_test_pedido",
+      "label": "pedido()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pedido()",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L38"
+    },
+    {
       "id": "src_app_layout_rootlayout",
       "label": "RootLayout()",
       "_callable": true,
@@ -2524,6 +2555,414 @@
       "norm_label": "rootlayout()",
       "source_file": "src/app/layout.tsx",
       "source_location": "L9"
+    },
+    {
+      "id": "src_app_page_inicio",
+      "label": "Inicio()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "inicio()",
+      "source_file": "src/app/page.tsx",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_interfaz_monitorbus_monitorbus",
+      "label": "MonitorBus()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "monitorbus()",
+      "source_file": "src/interfaz/MonitorBus.tsx",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_voz_escuchar_constructor",
+      "label": "constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "constructor()",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_voz_escuchar_crearescucha",
+      "label": "crearEscucha()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "crearescucha()",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_voz_escuchar_crearescucha_arrancar",
+      "label": "arrancar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "arrancar()",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L93"
+    },
+    {
+      "id": "src_voz_escuchar_crearescucha_cerrarturno",
+      "label": "cerrarTurno()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "cerrarturno()",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L74"
+    },
+    {
+      "id": "src_voz_escuchar_crearescucha_descartar",
+      "label": "descartar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "descartar()",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L85"
+    },
+    {
+      "id": "src_voz_escuchar_escuchadisponible",
+      "label": "escuchaDisponible()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "escuchadisponible()",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L26"
+    },
+    {
+      "id": "src_voz_escuchargroq_awav",
+      "label": "aWav()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "awav()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L197"
+    },
+    {
+      "id": "src_voz_escuchargroq_crearescuchagroq",
+      "label": "crearEscuchaGroq()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "crearescuchagroq()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L53"
+    },
+    {
+      "id": "src_voz_escuchargroq_crearescuchagroq_cerrarfrase",
+      "label": "cerrarFrase()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "cerrarfrase()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L122"
+    },
+    {
+      "id": "src_voz_escuchargroq_crearescuchagroq_descartar",
+      "label": "descartar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "descartar()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L159"
+    },
+    {
+      "id": "src_voz_escuchargroq_crearescuchagroq_preparar",
+      "label": "preparar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "preparar()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L69"
+    },
+    {
+      "id": "src_voz_escuchargroq_crearescuchagroq_procesar",
+      "label": "procesar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "procesar()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L83"
+    },
+    {
+      "id": "src_voz_escuchargroq_crearescuchagroq_transcribir",
+      "label": "transcribir()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "transcribir()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L136"
+    },
+    {
+      "id": "src_voz_escuchargroq_groqdisponible",
+      "label": "groqDisponible()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "groqdisponible()",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_voz_index_crearescuchaconmotor",
+      "label": "crearEscuchaConMotor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "crearescuchaconmotor()",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L138"
+    },
+    {
+      "id": "src_voz_index_crearescuchaconmotor_pasaragoogle",
+      "label": "pasarAGoogle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "pasaragoogle()",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L162"
+    },
+    {
+      "id": "src_voz_index_esperafindeturno",
+      "label": "esperaFinDeTurno()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "esperafindeturno()",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L33"
+    },
+    {
+      "id": "src_voz_campoturno_campoturno",
+      "label": "CampoTurno()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "campoturno()",
+      "source_file": "src/voz/CampoTurno.tsx",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_voz_charla_anotarencurso",
+      "label": "anotarEnCurso()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "anotarencurso()",
+      "source_file": "src/voz/charla.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_voz_charla_anotarlinea",
+      "label": "anotarLinea()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "anotarlinea()",
+      "source_file": "src/voz/charla.ts",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_voz_charla_contextocharla",
+      "label": "contextoCharla()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "contextocharla()",
+      "source_file": "src/voz/charla.ts",
+      "source_location": "L21"
+    },
+    {
+      "id": "src_voz_turnomanual_cerrarturno",
+      "label": "cerrarTurno()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "cerrarturno()",
+      "source_file": "src/voz/turnoManual.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_voz_turnomanual_registrarcierre",
+      "label": "registrarCierre()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "registrarcierre()",
+      "source_file": "src/voz/turnoManual.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_voz_sonidos_campana",
+      "label": "campana()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "campana()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L50"
+    },
+    {
+      "id": "src_voz_sonidos_ctx",
+      "label": "ctx()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "ctx()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_voz_sonidos_esperar",
+      "label": "esperar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "esperar()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L75"
+    },
+    {
+      "id": "src_voz_sonidos_salidacampana",
+      "label": "salidaCampana()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "salidacampana()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_voz_sonidos_sonaralarma",
+      "label": "sonarAlarma()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "sonaralarma()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L86"
+    },
+    {
+      "id": "src_voz_sonidos_sonaraviso",
+      "label": "sonarAviso()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "sonaraviso()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L80"
+    },
+    {
+      "id": "src_voz_sonidos_tono",
+      "label": "tono()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "tono()",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_app_api_transcribir_route_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "transcribir/route.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_app_api_transcribir_route_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "transcribir/route.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L18"
     },
     {
       "id": "src_app_api_completar_route_espedido",
@@ -2586,6 +3025,18 @@
       "source_location": "L8"
     },
     {
+      "id": "src_llm_proveedor_falso_crearproveedorfalso",
+      "label": "crearProveedorFalso()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "proveedores.ts",
+      "file_type": "code",
+      "norm_label": "crearproveedorfalso()",
+      "source_file": "src/llm/proveedor-falso.ts",
+      "source_location": "L26"
+    },
+    {
       "id": "src_llm_proveedor_gateway_crearproveedorgateway",
       "label": "crearProveedorGateway()",
       "_callable": true,
@@ -2632,18 +3083,6 @@
       "norm_label": "home()",
       "source_file": "src/app/page.tsx",
       "source_location": "L13"
-    },
-    {
-      "id": "src_app_page_inicio",
-      "label": "Inicio()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
-      "file_type": "code",
-      "norm_label": "inicio()",
-      "source_file": "src/app/page.tsx",
-      "source_location": "L19"
     },
     {
       "id": "src_app_prueba_deletrear_page_prueba",
@@ -2718,18 +3157,6 @@
       "source_location": "L10"
     },
     {
-      "id": "src_interfaz_monitorbus_monitorbus",
-      "label": "MonitorBus()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
-      "file_type": "code",
-      "norm_label": "monitorbus()",
-      "source_file": "src/interfaz/MonitorBus.tsx",
-      "source_location": "L15"
-    },
-    {
       "id": "src_interfaz_pantalla_celda",
       "label": "Celda()",
       "_callable": true,
@@ -2802,16 +3229,40 @@
       "source_location": "L6"
     },
     {
-      "id": "src_voz_escuchar_escuchadisponible",
-      "label": "escuchaDisponible()",
+      "id": "src_app_api_memoria_route_eslinea",
+      "label": "esLinea()",
       "_callable": true,
       "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
+      "community": 6,
+      "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "escuchadisponible()",
-      "source_file": "src/voz/escuchar.ts",
+      "norm_label": "eslinea()",
+      "source_file": "src/app/api/memoria/route.ts",
       "source_location": "L26"
+    },
+    {
+      "id": "src_app_api_memoria_route_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_app_api_memoria_route_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L37"
     },
     {
       "id": "src_app_prueba_llm_loqueaprendi_fecha",
@@ -2871,7 +3322,7 @@
       "file_type": "code",
       "norm_label": "prueba()",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L34"
+      "source_location": "L35"
     },
     {
       "id": "src_app_prueba_llm_page_prueba_elegir",
@@ -2883,7 +3334,7 @@
       "file_type": "code",
       "norm_label": "elegir()",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L82"
+      "source_location": "L83"
     },
     {
       "id": "src_app_prueba_llm_page_prueba_pedir",
@@ -2895,7 +3346,7 @@
       "file_type": "code",
       "norm_label": "pedir()",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L47"
+      "source_location": "L48"
     },
     {
       "id": "src_app_prueba_llm_pruebacompletado_pruebacompletado",
@@ -2922,40 +3373,100 @@
       "source_location": "L19"
     },
     {
-      "id": "src_llm_cliente_completarfrase",
-      "label": "completarFrase()",
+      "id": "src_llm_controles_memoria_cerrarconversacion",
+      "label": "cerrarConversacion()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "completarfrase()",
-      "source_file": "src/llm/cliente.ts",
-      "source_location": "L21"
+      "norm_label": "cerrarconversacion()",
+      "source_file": "src/llm/controles-memoria.ts",
+      "source_location": "L43"
     },
     {
-      "id": "src_llm_cliente_pediropciones",
-      "label": "pedirOpciones()",
+      "id": "src_llm_controles_memoria_invalidarhecho",
+      "label": "invalidarHecho()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "pediropciones()",
-      "source_file": "src/llm/cliente.ts",
-      "source_location": "L6"
+      "norm_label": "invalidarhecho()",
+      "source_file": "src/llm/controles-memoria.ts",
+      "source_location": "L23"
     },
     {
-      "id": "src_nucleo_motor_test_vaciarpromesas",
-      "label": "vaciarPromesas()",
+      "id": "src_llm_controles_memoria_listarhechos",
+      "label": "listarHechos()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "vaciarpromesas()",
-      "source_file": "src/nucleo/motor.test.ts",
-      "source_location": "L13"
+      "norm_label": "listarhechos()",
+      "source_file": "src/llm/controles-memoria.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_llm_controles_memoria_test_hecho",
+      "label": "hecho()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "hecho()",
+      "source_file": "src/llm/controles-memoria.test.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_llm_medir_latencias_main",
+      "label": "main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "main()",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L51"
+    },
+    {
+      "id": "src_llm_medir_latencias_mediana",
+      "label": "mediana()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "mediana()",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L45"
+    },
+    {
+      "id": "src_llm_medir_latencias_pedido",
+      "label": "pedido()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "pedido()",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L41"
+    },
+    {
+      "id": "src_llm_medir_latencias_post",
+      "label": "post()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L28"
     },
     {
       "id": "src_llm_almacen_archivos_crearalmacenenarchivos",
@@ -2963,7 +3474,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "crearalmacenenarchivos()",
       "source_file": "src/llm/almacen-archivos.ts",
@@ -2975,7 +3486,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "escribir()",
       "source_file": "src/llm/almacen-archivos.ts",
@@ -2987,7 +3498,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "leer()",
       "source_file": "src/llm/almacen-archivos.ts",
@@ -2999,71 +3510,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "memoriavacia()",
       "source_file": "src/llm/almacen.ts",
       "source_location": "L5"
-    },
-    {
-      "id": "src_llm_memoria_test_cerrada",
-      "label": "cerrada()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "cerrada()",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L51"
-    },
-    {
-      "id": "src_llm_memoria_test_despues",
-      "label": "despues()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "despues()",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_llm_memoria_test_generar",
-      "label": "generar()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "generar()",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L224"
-    },
-    {
-      "id": "src_llm_memoria_test_guionado",
-      "label": "guionado()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "guionado()",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_llm_memoria_test_hecho",
-      "label": "hecho()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "hecho()",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L33"
     },
     {
       "id": "src_llm_memoria_test_memoria",
@@ -3071,95 +3522,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "memoria()",
       "source_file": "src/llm/memoria.test.ts",
       "source_location": "L61"
-    },
-    {
-      "id": "src_llm_memoria_test_respuesta",
-      "label": "respuesta()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "respuesta()",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L58"
-    },
-    {
-      "id": "src_app_api_memoria_route_eslinea",
-      "label": "esLinea()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "eslinea()",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L26"
-    },
-    {
-      "id": "src_app_api_memoria_route_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L32"
-    },
-    {
-      "id": "src_app_api_memoria_route_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_llm_controles_memoria_cerrarconversacion",
-      "label": "cerrarConversacion()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "cerrarconversacion()",
-      "source_file": "src/llm/controles-memoria.ts",
-      "source_location": "L43"
-    },
-    {
-      "id": "src_llm_controles_memoria_invalidarhecho",
-      "label": "invalidarHecho()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "invalidarhecho()",
-      "source_file": "src/llm/controles-memoria.ts",
-      "source_location": "L23"
-    },
-    {
-      "id": "src_llm_controles_memoria_listarhechos",
-      "label": "listarHechos()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "listarhechos()",
-      "source_file": "src/llm/controles-memoria.ts",
-      "source_location": "L10"
     },
     {
       "id": "src_llm_memoria_creardisparadormemoria",
@@ -3167,7 +3534,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
       "norm_label": "creardisparadormemoria()",
       "source_file": "src/llm/memoria.ts",
@@ -3179,7 +3546,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
       "norm_label": "correr()",
       "source_file": "src/llm/memoria.ts",
@@ -3191,7 +3558,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
       "norm_label": "disparar()",
       "source_file": "src/llm/memoria.ts",
@@ -3203,95 +3570,101 @@
       "_callable": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
       "norm_label": "crearopcionesconmemoria()",
       "source_file": "src/llm/memoria.ts",
       "source_location": "L351"
     },
     {
+      "id": "src_llm_memoria_test_cerrada",
+      "label": "cerrada()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "file_type": "code",
+      "norm_label": "cerrada()",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L51"
+    },
+    {
+      "id": "src_llm_memoria_test_despues",
+      "label": "despues()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "file_type": "code",
+      "norm_label": "despues()",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_llm_memoria_test_generar",
+      "label": "generar()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "file_type": "code",
+      "norm_label": "generar()",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L224"
+    },
+    {
+      "id": "src_llm_memoria_test_guionado",
+      "label": "guionado()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "file_type": "code",
+      "norm_label": "guionado()",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_llm_memoria_test_hecho",
+      "label": "hecho()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "file_type": "code",
+      "norm_label": "hecho()",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L33"
+    },
+    {
+      "id": "src_llm_memoria_test_respuesta",
+      "label": "respuesta()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "file_type": "code",
+      "norm_label": "respuesta()",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L58"
+    },
+    {
       "id": "src_app_prueba_voz_page",
       "label": "voz/page.tsx",
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "voz/page.tsx",
       "source_file": "src/app/prueba/voz/page.tsx",
       "source_location": "L1"
     },
     {
-      "id": "src_voz_campoturno",
-      "label": "CampoTurno.tsx",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "campoturno.tsx",
-      "source_file": "src/voz/CampoTurno.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_voz_charla",
-      "label": "charla.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "charla.ts",
-      "source_file": "src/voz/charla.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_voz_charla_lineas",
-      "label": "lineas",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "lineas",
-      "source_file": "src/voz/charla.ts",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_voz_escuchar",
-      "label": "escuchar.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "escuchar.ts",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_voz_escuchar_depuracionescucha",
-      "label": "depuracionEscucha",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "depuracionescucha",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_voz_escuchar_errores_fatales",
-      "label": "ERRORES_FATALES",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "errores_fatales",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L47"
-    },
-    {
       "id": "src_voz_hablar",
       "label": "hablar.ts",
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "hablar.ts",
       "source_file": "src/voz/hablar.ts",
@@ -3302,7 +3675,7 @@
       "label": "PREFERIDAS_LOCAL",
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "preferidas_local",
       "source_file": "src/voz/hablar.ts",
@@ -3313,7 +3686,7 @@
       "label": "PREFERIDAS_RED",
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "preferidas_red",
       "source_file": "src/voz/hablar.ts",
@@ -3324,99 +3697,11 @@
       "label": "voces",
       "_origin": "ast",
       "community": 1,
-      "community_name": "voz/index.ts",
+      "community_name": "iniciarVoz",
       "file_type": "code",
       "norm_label": "voces",
       "source_file": "src/voz/hablar.ts",
       "source_location": "L4"
-    },
-    {
-      "id": "src_voz_index",
-      "label": "voz/index.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "voz/index.ts",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_voz_index_ajustesvoz",
-      "label": "ajustesVoz",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "ajustesvoz",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_voz_sonidos",
-      "label": "sonidos.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "sonidos.ts",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_voz_sonidos_activos",
-      "label": "activos",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "activos",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L4"
-    },
-    {
-      "id": "src_voz_sonidos_parciales",
-      "label": "PARCIALES",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "parciales",
-      "source_file": "src/voz/sonidos.ts",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_voz_turnomanual",
-      "label": "turnoManual.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "code",
-      "norm_label": "turnomanual.ts",
-      "source_file": "src/voz/turnoManual.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_voz_escuchar_ts_docref_adr_0002",
-      "label": "ADR-0002",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "concept",
-      "norm_label": "adr-0002",
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L3"
-    },
-    {
-      "id": "src_voz_index_ts_docref_adr_0002",
-      "label": "ADR-0002",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "voz/index.ts",
-      "file_type": "concept",
-      "norm_label": "adr-0002",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L1"
     },
     {
       "id": "src_llm_memoria",
@@ -3837,50 +4122,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_app_prueba_llm_loqueaprendi",
-      "label": "LoQueAprendi.tsx",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "loqueaprendi.tsx",
-      "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_app_prueba_llm_loqueaprendi_origen",
-      "label": "ORIGEN",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "origen",
-      "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_llm_controles_memoria_test",
-      "label": "controles-memoria.test.ts",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "controles-memoria.test.ts",
-      "source_file": "src/llm/controles-memoria.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_llm_controles_memoria_test_historial",
-      "label": "historial",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "llm/tipos.ts",
-      "file_type": "code",
-      "norm_label": "historial",
-      "source_file": "src/llm/controles-memoria.test.ts",
-      "source_location": "L20"
-    },
-    {
       "id": "src_llm_tipos",
       "label": "llm/tipos.ts",
       "_origin": "ast",
@@ -3922,6 +4163,17 @@
       "file_type": "code",
       "norm_label": "vision/index.ts",
       "source_file": "src/vision/index.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_interfaz_debugnucleo",
+      "label": "DebugNucleo.tsx",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "debugnucleo.tsx",
+      "source_file": "src/interfaz/DebugNucleo.tsx",
       "source_location": "L1"
     },
     {
@@ -4011,6 +4263,28 @@
       "norm_label": "maximo_opciones",
       "source_file": "src/nucleo/motor.ts",
       "source_location": "L13"
+    },
+    {
+      "id": "src_nucleo_motor_test",
+      "label": "motor.test.ts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "motor.test.ts",
+      "source_file": "src/nucleo/motor.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_nucleo_motor_test_opciones",
+      "label": "OPCIONES",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "reductor.ts",
+      "file_type": "code",
+      "norm_label": "opciones",
+      "source_file": "src/nucleo/motor.test.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_nucleo_motor_velocidad_inicial_ms",
@@ -4110,28 +4384,6 @@
       "norm_label": "texto_urgencia",
       "source_file": "src/nucleo/reductor.ts",
       "source_location": "L11"
-    },
-    {
-      "id": "src_nucleo_reductor_umbral_completo",
-      "label": "UMBRAL_COMPLETO",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "reductor.ts",
-      "file_type": "code",
-      "norm_label": "umbral_completo",
-      "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L45"
-    },
-    {
-      "id": "src_nucleo_reductor_umbral_para_usuario",
-      "label": "UMBRAL_PARA_USUARIO",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "reductor.ts",
-      "file_type": "code",
-      "norm_label": "umbral_para_usuario",
-      "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L44"
     },
     {
       "id": "src_nucleo_reductor_vueltas_antes_de_pausa",
@@ -4398,6 +4650,28 @@
       "source_location": "L8"
     },
     {
+      "id": "src_nucleo_reductor_umbral_completo",
+      "label": "UMBRAL_COMPLETO",
+      "_origin": "ast",
+      "community": 20,
+      "community_name": "correr.ts",
+      "file_type": "code",
+      "norm_label": "umbral_completo",
+      "source_file": "src/nucleo/reductor.ts",
+      "source_location": "L45"
+    },
+    {
+      "id": "src_nucleo_reductor_umbral_para_usuario",
+      "label": "UMBRAL_PARA_USUARIO",
+      "_origin": "ast",
+      "community": 20,
+      "community_name": "correr.ts",
+      "file_type": "code",
+      "norm_label": "umbral_para_usuario",
+      "source_file": "src/nucleo/reductor.ts",
+      "source_location": "L44"
+    },
+    {
       "id": "eslint_config",
       "label": "eslint.config.mjs",
       "_origin": "ast",
@@ -4418,6 +4692,61 @@
       "norm_label": "eslintconfig",
       "source_file": "eslint.config.mjs",
       "source_location": "L5"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte",
+      "label": "PruebaCorte.tsx",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "pruebacorte.tsx",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_prueba_llm_pruebacorte_turnos_seguidos",
+      "label": "TURNOS_SEGUIDOS",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "turnos_seguidos",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_llm_cliente",
+      "label": "cliente.ts",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "cliente.ts",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_llm_cliente_test",
+      "label": "cliente.test.ts",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "cliente.test.ts",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_llm_cliente_test_llamadas",
+      "label": "llamadas",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "PruebaCorte.tsx",
+      "file_type": "code",
+      "norm_label": "llamadas",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L16"
     },
     {
       "id": "next_config",
@@ -4904,6 +5233,349 @@
       "source_location": "L29"
     },
     {
+      "id": "src_interfaz_monitorbus",
+      "label": "MonitorBus.tsx",
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "monitorbus.tsx",
+      "source_file": "src/interfaz/MonitorBus.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_escuchar",
+      "label": "escuchar.ts",
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "escuchar.ts",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_escuchar_depuracionescucha",
+      "label": "depuracionEscucha",
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "depuracionescucha",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_voz_escuchar_errores_fatales",
+      "label": "ERRORES_FATALES",
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "code",
+      "norm_label": "errores_fatales",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L52"
+    },
+    {
+      "id": "src_voz_escuchar_ts_docref_adr_0002",
+      "label": "ADR-0002",
+      "_origin": "ast",
+      "community": 30,
+      "community_name": "escuchar.ts",
+      "file_type": "concept",
+      "norm_label": "adr-0002",
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_voz_escuchargroq",
+      "label": "escucharGroq.ts",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "crearEscuchaGroq",
+      "file_type": "code",
+      "norm_label": "escuchargroq.ts",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_research_deletrear",
+      "label": "deletrear.md",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "deletrear.md",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_research_deletrear_1_disposicion_de_letras",
+      "label": "1. Disposicion de letras",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "1. disposicion de letras",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "docs_research_deletrear_2_prediccion_de_palabras",
+      "label": "2. Prediccion de palabras",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "2. prediccion de palabras",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L68"
+    },
+    {
+      "id": "docs_research_deletrear_3_listas_de_frecuencia_de_palabras",
+      "label": "3. Listas de frecuencia de palabras",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3. listas de frecuencia de palabras",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L122"
+    },
+    {
+      "id": "docs_research_deletrear_4_bibliotecas_npm",
+      "label": "4. Bibliotecas npm",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "4. bibliotecas npm",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L147"
+    },
+    {
+      "id": "docs_research_deletrear_5_velocidad_realista",
+      "label": "5. Velocidad realista",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "5. velocidad realista",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L158"
+    },
+    {
+      "id": "docs_research_deletrear_6_correccion_de_errores",
+      "label": "6. Correccion de errores",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "6. correccion de errores",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L171"
+    },
+    {
+      "id": "docs_research_deletrear_7_cosas_que_cambian_el_plan_del_issue",
+      "label": "7. Cosas que cambian el plan del issue",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "7. cosas que cambian el plan del issue",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L188"
+    },
+    {
+      "id": "docs_research_deletrear_decisiones_del_grill_cierran_la_fase_0",
+      "label": "Decisiones del grill (cierran la Fase 0)",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "decisiones del grill (cierran la fase 0)",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L209"
+    },
+    {
+      "id": "docs_research_deletrear_preguntas_abiertas_para_el_grill",
+      "label": "Preguntas abiertas para el grill",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "preguntas abiertas para el grill",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L197"
+    },
+    {
+      "id": "docs_research_deletrear_propuesta",
+      "label": "Propuesta",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "propuesta",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "label": "Research: path deletrear (Fase 0)",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "research: path deletrear (fase 0)",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_research_deletrear_transformer_local_en_el_navegador_spike_descartado_para_hoy",
+      "label": "Transformer local en el navegador (spike, descartado para hoy)",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": "Research: path deletrear (Fase 0)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "transformer local en el navegador (spike, descartado para hoy)",
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L217"
+    },
+    {
+      "id": "src_eventos_bus",
+      "label": "bus",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "bus",
+      "source_file": "src/eventos.ts",
+      "source_location": "L56"
+    },
+    {
+      "id": "src_voz_campoturno",
+      "label": "CampoTurno.tsx",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "campoturno.tsx",
+      "source_file": "src/voz/CampoTurno.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_charla",
+      "label": "charla.ts",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "charla.ts",
+      "source_file": "src/voz/charla.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_charla_lineas",
+      "label": "lineas",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "lineas",
+      "source_file": "src/voz/charla.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_voz_index",
+      "label": "voz/index.ts",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "voz/index.ts",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_turnomanual",
+      "label": "turnoManual.ts",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "code",
+      "norm_label": "turnomanual.ts",
+      "source_file": "src/voz/turnoManual.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_index_ts_docref_adr_0002",
+      "label": "ADR-0002",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "voz/index.ts",
+      "file_type": "concept",
+      "norm_label": "adr-0002",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_sonidos",
+      "label": "sonidos.ts",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "sonidos.ts",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_voz_sonidos_activos",
+      "label": "activos",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "activos",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_voz_sonidos_parciales",
+      "label": "PARCIALES",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "sonidos.ts",
+      "file_type": "code",
+      "norm_label": "parciales",
+      "source_file": "src/voz/sonidos.ts",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_app_api_transcribir_route",
+      "label": "transcribir/route.ts",
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "transcribir/route.ts",
+      "file_type": "code",
+      "norm_label": "transcribir/route.ts",
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_app_api_completar_route",
       "label": "completar/route.ts",
       "_origin": "ast",
@@ -5157,28 +5829,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_eventos_bus",
-      "label": "bus",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
-      "file_type": "code",
-      "norm_label": "bus",
-      "source_file": "src/eventos.ts",
-      "source_location": "L54"
-    },
-    {
-      "id": "src_interfaz_debugnucleo",
-      "label": "DebugNucleo.tsx",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
-      "file_type": "code",
-      "norm_label": "debugnucleo.tsx",
-      "source_file": "src/interfaz/DebugNucleo.tsx",
-      "source_location": "L1"
-    },
-    {
       "id": "src_interfaz_index",
       "label": "interfaz/index.ts",
       "_origin": "ast",
@@ -5187,17 +5837,6 @@
       "file_type": "code",
       "norm_label": "interfaz/index.ts",
       "source_file": "src/interfaz/index.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_interfaz_monitorbus",
-      "label": "MonitorBus.tsx",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "app/page.tsx",
-      "file_type": "code",
-      "norm_label": "monitorbus.tsx",
-      "source_file": "src/interfaz/MonitorBus.tsx",
       "source_location": "L1"
     },
     {
@@ -5267,6 +5906,17 @@
       "source_location": "L1"
     },
     {
+      "id": "src_voz_index_ajustesvoz",
+      "label": "ajustesVoz",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "app/page.tsx",
+      "file_type": "code",
+      "norm_label": "ajustesvoz",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L21"
+    },
+    {
       "id": "ref_react",
       "label": "react",
       "_origin": "ast",
@@ -5276,6 +5926,83 @@
       "norm_label": "react",
       "source_file": "package.json",
       "source_location": "L18"
+    },
+    {
+      "id": "src_app_api_memoria_route",
+      "label": "memoria/route.ts",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "memoria/route.ts",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_api_memoria_route_almacen",
+      "label": "almacen",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "almacen",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_app_api_memoria_route_cercanias",
+      "label": "CERCANIAS",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "cercanias",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_app_api_memoria_route_memoria",
+      "label": "memoria",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "memoria",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_app_api_memoria_route_proveedor",
+      "label": "proveedor",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "proveedor",
+      "source_file": "src/app/api/memoria/route.ts",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_app_prueba_llm_loqueaprendi",
+      "label": "LoQueAprendi.tsx",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "loqueaprendi.tsx",
+      "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_prueba_llm_loqueaprendi_origen",
+      "label": "ORIGEN",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "origen",
+      "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
+      "source_location": "L12"
     },
     {
       "id": "src_app_prueba_llm_page",
@@ -5297,7 +6024,7 @@
       "file_type": "code",
       "norm_label": "turnos_de_prueba",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L11"
+      "source_location": "L12"
     },
     {
       "id": "src_app_prueba_llm_pruebacompletado",
@@ -5341,47 +6068,69 @@
       "file_type": "code",
       "norm_label": "handlers",
       "source_file": "src/eventos.ts",
-      "source_location": "L52"
+      "source_location": "L54"
     },
     {
-      "id": "src_llm_cliente",
-      "label": "cliente.ts",
+      "id": "src_llm_controles_memoria",
+      "label": "controles-memoria.ts",
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "cliente.ts",
-      "source_file": "src/llm/cliente.ts",
+      "norm_label": "controles-memoria.ts",
+      "source_file": "src/llm/controles-memoria.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_nucleo_motor_test",
-      "label": "motor.test.ts",
+      "id": "src_llm_controles_memoria_test",
+      "label": "controles-memoria.test.ts",
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "motor.test.ts",
-      "source_file": "src/nucleo/motor.test.ts",
+      "norm_label": "controles-memoria.test.ts",
+      "source_file": "src/llm/controles-memoria.test.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_nucleo_motor_test_opciones",
-      "label": "OPCIONES",
+      "id": "src_llm_controles_memoria_test_historial",
+      "label": "historial",
       "_origin": "ast",
       "community": 6,
       "community_name": "eventos.ts",
       "file_type": "code",
-      "norm_label": "opciones",
-      "source_file": "src/nucleo/motor.test.ts",
-      "source_location": "L7"
+      "norm_label": "historial",
+      "source_file": "src/llm/controles-memoria.test.ts",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_llm_medir_latencias",
+      "label": "medir-latencias.ts",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "medir-latencias.ts",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_llm_medir_latencias_turnos",
+      "label": "TURNOS",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "eventos.ts",
+      "file_type": "code",
+      "norm_label": "turnos",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L15"
     },
     {
       "id": "src_llm_almacen",
       "label": "almacen.ts",
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "almacen.ts",
       "source_file": "src/llm/almacen.ts",
@@ -5392,7 +6141,7 @@
       "label": "almacen-archivos.ts",
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "almacen-archivos.ts",
       "source_file": "src/llm/almacen-archivos.ts",
@@ -5403,51 +6152,29 @@
       "label": "CARPETA_DATOS",
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "carpeta_datos",
       "source_file": "src/llm/almacen-archivos.ts",
       "source_location": "L12"
     },
     {
-      "id": "src_llm_memoria_test",
-      "label": "memoria.test.ts",
+      "id": "src_llm_index",
+      "label": "llm/index.ts",
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
-      "norm_label": "memoria.test.ts",
-      "source_file": "src/llm/memoria.test.ts",
+      "norm_label": "llm/index.ts",
+      "source_file": "src/llm/index.ts",
       "source_location": "L1"
-    },
-    {
-      "id": "src_llm_memoria_test_lineas",
-      "label": "LINEAS",
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "lineas",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_llm_memoria_test_t0",
-      "label": "T0",
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "memoria.test.ts",
-      "file_type": "code",
-      "norm_label": "t0",
-      "source_file": "src/llm/memoria.test.ts",
-      "source_location": "L16"
     },
     {
       "id": "src_llm_perfil_roberto",
       "label": "perfil-roberto.ts",
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "perfil-roberto.ts",
       "source_file": "src/llm/perfil-roberto.ts",
@@ -5458,88 +6185,44 @@
       "label": "PERFIL_ROBERTO",
       "_origin": "ast",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "file_type": "code",
       "norm_label": "perfil_roberto",
       "source_file": "src/llm/perfil-roberto.ts",
       "source_location": "L4"
     },
     {
-      "id": "src_app_api_memoria_route",
-      "label": "memoria/route.ts",
+      "id": "src_llm_memoria_test",
+      "label": "memoria.test.ts",
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
-      "norm_label": "memoria/route.ts",
-      "source_file": "src/app/api/memoria/route.ts",
+      "norm_label": "memoria.test.ts",
+      "source_file": "src/llm/memoria.test.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_app_api_memoria_route_almacen",
-      "label": "almacen",
+      "id": "src_llm_memoria_test_lineas",
+      "label": "LINEAS",
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
-      "norm_label": "almacen",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L13"
+      "norm_label": "lineas",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L44"
     },
     {
-      "id": "src_app_api_memoria_route_cercanias",
-      "label": "CERCANIAS",
+      "id": "src_llm_memoria_test_t0",
+      "label": "T0",
       "_origin": "ast",
       "community": 9,
-      "community_name": "llm/index.ts",
+      "community_name": "memoria.test.ts",
       "file_type": "code",
-      "norm_label": "cercanias",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L24"
-    },
-    {
-      "id": "src_app_api_memoria_route_memoria",
-      "label": "memoria",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "memoria",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L15"
-    },
-    {
-      "id": "src_app_api_memoria_route_proveedor",
-      "label": "proveedor",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "proveedor",
-      "source_file": "src/app/api/memoria/route.ts",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_llm_controles_memoria",
-      "label": "controles-memoria.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "controles-memoria.ts",
-      "source_file": "src/llm/controles-memoria.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_llm_index",
-      "label": "llm/index.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "llm/index.ts",
-      "file_type": "code",
-      "norm_label": "llm/index.ts",
-      "source_file": "src/llm/index.ts",
-      "source_location": "L1"
+      "norm_label": "t0",
+      "source_file": "src/llm/memoria.test.ts",
+      "source_location": "L16"
     },
     {
       "id": "docs_research_llm_claude_p",
@@ -7197,18 +7880,6 @@
       "source_url": null
     },
     {
-      "id": "ref_node_test",
-      "label": "ref_node_test",
-      "_origin": "semantic",
-      "community": 15,
-      "community_name": "completado.ts",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "ref_node_test",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "ref_node_assert",
       "label": "ref_node_assert",
       "_origin": "semantic",
@@ -7245,14 +7916,14 @@
       "type": "external"
     },
     {
-      "id": "ref_node_os",
-      "label": "ref_node_os",
+      "id": "ref_node_test",
+      "label": "ref_node_test",
       "_origin": "semantic",
-      "community": 8,
-      "community_name": "memoria.test.ts",
+      "community": 4,
+      "community_name": "proveedores.ts",
       "external": true,
       "file_type": "concept",
-      "norm_label": "ref_node_os",
+      "norm_label": "ref_node_test",
       "source_file": "",
       "type": "external"
     },
@@ -7261,10 +7932,22 @@
       "label": "ref_node_path",
       "_origin": "semantic",
       "community": 8,
-      "community_name": "memoria.test.ts",
+      "community_name": "llm/index.ts",
       "external": true,
       "file_type": "concept",
       "norm_label": "ref_node_path",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "ref_node_os",
+      "label": "ref_node_os",
+      "_origin": "semantic",
+      "community": 9,
+      "community_name": "memoria.test.ts",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ref_node_os",
       "source_file": "",
       "type": "external"
     }
@@ -7423,7 +8106,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/page.tsx",
-      "source_location": "L57",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -7460,6 +8143,150 @@
       "context": "call",
       "source_file": "src/app/prueba/llm/LoQueAprendi.tsx",
       "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_llm_cliente_pediropciones",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_llm_cliente_espedidocancelado",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_llm_cliente_completarfrase",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_completar",
+      "target": "src_llm_cliente_completarfrase",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_completar",
+      "target": "src_app_prueba_llm_pruebacorte_ms",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_letrasrapidas",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte_completar",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_letrasrapidas",
+      "target": "src_app_prueba_llm_pruebacorte_esperar",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_pedir",
+      "target": "src_llm_cliente_pediropciones",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_pedir",
+      "target": "src_app_prueba_llm_pruebacorte_ms",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_pedir",
+      "target": "src_llm_cliente_espedidocancelado",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_turnosseguidos",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte_pedir",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_turnosseguidos",
+      "target": "src_app_prueba_llm_pruebacorte_esperar",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -7507,7 +8334,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/voz/page.tsx",
-      "source_location": "L155",
+      "source_location": "L234",
       "weight": 1.0
     },
     {
@@ -7519,7 +8346,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/voz/page.tsx",
-      "source_location": "L27",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -7531,7 +8358,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/voz/page.tsx",
-      "source_location": "L55",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -7543,7 +8370,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/voz/page.tsx",
-      "source_location": "L58",
+      "source_location": "L71",
       "weight": 1.0
     },
     {
@@ -7555,7 +8382,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/voz/page.tsx",
-      "source_location": "L68",
+      "source_location": "L81",
       "weight": 1.0
     },
     {
@@ -7616,6 +8443,42 @@
       "context": "call",
       "source_file": "src/llm/almacen.ts",
       "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_completarfrase",
+      "target": "src_llm_cliente_pedircompletado",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_pediropciones",
+      "target": "src_llm_cliente_pedidocancelado",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_pediropciones",
+      "target": "src_llm_cliente_esabortado",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L47",
       "weight": 1.0
     },
     {
@@ -7712,6 +8575,42 @@
       "context": "call",
       "source_file": "src/llm/completado.test.ts",
       "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias_main",
+      "target": "src_llm_medir_latencias_pedido",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias_main",
+      "target": "src_llm_medir_latencias_post",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias_main",
+      "target": "src_llm_medir_latencias_mediana",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -8587,7 +9486,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L248",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -8599,7 +9498,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L271",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -8611,7 +9510,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L273",
+      "source_location": "L275",
       "weight": 1.0
     },
     {
@@ -8623,7 +9522,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L283",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -8635,7 +9534,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L291",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -8647,7 +9546,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L336",
+      "source_location": "L338",
       "weight": 1.0
     },
     {
@@ -8659,7 +9558,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.ts",
-      "source_location": "L357",
+      "source_location": "L359",
       "weight": 1.0
     },
     {
@@ -8743,7 +9642,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L276",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -8755,7 +9654,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L276",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -8767,7 +9666,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L276",
+      "source_location": "L307",
       "weight": 1.0
     },
     {
@@ -8779,7 +9678,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L277",
+      "source_location": "L308",
       "weight": 1.0
     },
     {
@@ -8791,7 +9690,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L311",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -8803,7 +9702,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L311",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -8815,7 +9714,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L352",
+      "source_location": "L383",
       "weight": 1.0
     },
     {
@@ -8875,7 +9774,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/escuchar.ts",
-      "source_location": "L50",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
@@ -8888,6 +9787,54 @@
       "context": "call",
       "source_file": "src/voz/escuchar.ts",
       "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq_cerrarfrase",
+      "target": "src_voz_escuchargroq_crearescuchagroq_transcribir",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq_preparar",
+      "target": "src_voz_escuchargroq_crearescuchagroq_procesar",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq_procesar",
+      "target": "src_voz_escuchargroq_crearescuchagroq_cerrarfrase",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq_transcribir",
+      "target": "src_voz_escuchargroq_awav",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L142",
       "weight": 1.0
     },
     {
@@ -8911,7 +9858,43 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L152",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index_crearescuchaconmotor",
+      "target": "src_voz_escuchar_crearescucha",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index_crearescuchaconmotor",
+      "target": "src_voz_escuchargroq_crearescuchagroq",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index_crearescuchaconmotor",
+      "target": "src_voz_escuchargroq_groqdisponible",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L170",
       "weight": 1.0
     },
     {
@@ -8923,36 +9906,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L114",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
       "source": "src_voz_index_iniciarvoz",
-      "target": "src_voz_escuchar_crearescucha",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L44",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_index_iniciarvoz",
-      "target": "src_voz_turnomanual_registrarcierre",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L50",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_index_iniciarvoz",
-      "target": "src_voz_hablar_cargarvoces",
+      "target": "src_voz_index_crearescuchaconmotor",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -8964,6 +9923,30 @@
     },
     {
       "source": "src_voz_index_iniciarvoz",
+      "target": "src_voz_turnomanual_registrarcierre",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index_iniciarvoz",
+      "target": "src_voz_hablar_cargarvoces",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index_iniciarvoz",
       "target": "src_voz_hablar_callar",
       "relation": "calls",
       "_origin": "ast",
@@ -8971,7 +9954,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L58",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -8983,7 +9966,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L59",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -8995,7 +9978,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L71",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -9007,7 +9990,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L73",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -9019,7 +10002,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L84",
+      "source_location": "L86",
       "weight": 1.0
     },
     {
@@ -9031,7 +10014,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L93",
+      "source_location": "L95",
       "weight": 1.0
     },
     {
@@ -9043,7 +10026,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L94",
+      "source_location": "L96",
       "weight": 1.0
     },
     {
@@ -9055,7 +10038,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L70",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -9067,7 +10050,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L71",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -9079,7 +10062,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L73",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -9091,7 +10074,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L75",
+      "source_location": "L77",
       "weight": 1.0
     },
     {
@@ -9103,7 +10086,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L58",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -9115,7 +10098,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L59",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -9127,7 +10110,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L79",
+      "source_location": "L81",
       "weight": 1.0
     },
     {
@@ -9139,7 +10122,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L80",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -9151,7 +10134,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L82",
+      "source_location": "L84",
       "weight": 1.0
     },
     {
@@ -9163,7 +10146,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L84",
+      "source_location": "L86",
       "weight": 1.0
     },
     {
@@ -9175,7 +10158,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L86",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -9187,7 +10170,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L88",
+      "source_location": "L90",
       "weight": 1.0
     },
     {
@@ -9199,7 +10182,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L136",
+      "source_location": "L194",
       "weight": 1.0
     },
     {
@@ -9319,7 +10302,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L47",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -9331,7 +10314,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L82",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -9347,6 +10330,18 @@
       "weight": 1.0
     },
     {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte_completar",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
       "source": "src_nucleo_motor_crearnucleo",
       "target": "src_nucleo_motor_crearnucleo_despachar",
       "relation": "contains",
@@ -9359,6 +10354,18 @@
       "weight": 1.0
     },
     {
+      "source": "src_voz_index_crearescuchaconmotor",
+      "target": "src_voz_index_crearescuchaconmotor_pasaragoogle",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
       "source": "src_voz_index_iniciarvoz",
       "target": "src_voz_index_iniciarvoz_terminarhabla",
       "relation": "contains",
@@ -9367,7 +10374,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L64",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -9379,7 +10386,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L69",
+      "source_location": "L71",
       "weight": 1.0
     },
     {
@@ -9391,7 +10398,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/voz/index.ts",
-      "source_location": "L78",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -9588,7 +10595,7 @@
       "confidence_score": 1.0,
       "context": "export",
       "source_file": "src/voz/index.ts",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -9600,7 +10607,7 @@
       "confidence_score": 1.0,
       "context": "export",
       "source_file": "src/voz/index.ts",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0
     },
     {
@@ -9612,7 +10619,7 @@
       "confidence_score": 1.0,
       "context": "export",
       "source_file": "src/voz/index.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -10145,7 +11152,31 @@
     },
     {
       "source": "src_app_page",
+      "target": "src_voz_index_ajustesvoz",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_page",
       "target": "src_voz_index_iniciarvoz",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_page",
+      "target": "src_voz_index_motor",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -10265,7 +11296,7 @@
     },
     {
       "source": "src_app_prueba_llm_page",
-      "target": "src_app_prueba_llm_loqueaprendi_loqueaprendi",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -10273,6 +11304,18 @@
       "context": "import",
       "source_file": "src/app/prueba/llm/page.tsx",
       "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_page",
+      "target": "src_app_prueba_llm_loqueaprendi_loqueaprendi",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/page.tsx",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -10285,6 +11328,66 @@
       "context": "import",
       "source_file": "src/app/prueba/llm/PruebaCompletado.tsx",
       "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_eventos_opcion",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_eventos_pedidoopciones",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_llm_cliente_completarfrase",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_llm_cliente_espedidocancelado",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_llm_cliente_pediropciones",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -10481,6 +11584,18 @@
     },
     {
       "source": "src_app_prueba_voz_page",
+      "target": "src_voz_index_motor",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/voz/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_voz_page",
       "target": "src_voz_escuchar_depuracionescucha",
       "relation": "imports",
       "_origin": "ast",
@@ -10561,6 +11676,18 @@
       "context": "import",
       "source_file": "src/interfaz/MonitorBus.tsx",
       "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_interfaz_monitorbus",
+      "target": "src_voz_escuchar_depuracionescucha",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/interfaz/MonitorBus.tsx",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -10777,6 +11904,54 @@
       "context": "import",
       "source_file": "src/llm/cliente.ts",
       "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_eventos_pedidoopciones",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_completarfrase",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_espedidocancelado",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_pediropciones",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L6",
       "weight": 1.0
     },
     {
@@ -11089,6 +12264,42 @@
       "context": "import",
       "source_file": "src/llm/controles-memoria.test.ts",
       "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_eventos_cercania",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_eventos_lineahistorial",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_eventos_pedidoopciones",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -12580,6 +13791,54 @@
       "weight": 1.0
     },
     {
+      "source": "src_voz_escuchargroq",
+      "target": "src_voz_escuchar_escucha",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_sonidos_cortarsonidos",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_sonidos_sonaralarma",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_sonidos_sonaraviso",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
       "source": "src_voz_index",
       "target": "src_voz_turnomanual_registrarcierre",
       "relation": "imports",
@@ -12588,7 +13847,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/voz/index.ts",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0
     },
     {
@@ -12653,7 +13912,31 @@
     },
     {
       "source": "src_voz_index",
-      "target": "src_voz_hablar_callar",
+      "target": "src_voz_escuchar_depuracionescucha",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_escuchar_escucha",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_escuchargroq_crearescuchagroq",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -12661,6 +13944,30 @@
       "context": "import",
       "source_file": "src/voz/index.ts",
       "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_escuchargroq_groqdisponible",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_hablar_callar",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -12672,48 +13979,12 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/voz/index.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
       "source": "src_voz_index",
       "target": "src_voz_hablar_hablar",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L8",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_index",
-      "target": "src_voz_sonidos_cortarsonidos",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L9",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_index",
-      "target": "src_voz_sonidos_sonaralarma",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/voz/index.ts",
-      "source_location": "L9",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_index",
-      "target": "src_voz_sonidos_sonaraviso",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -13070,7 +14341,7 @@
     },
     {
       "source": "src_app_prueba_llm_page",
-      "target": "src_app_prueba_llm_loqueaprendi",
+      "target": "src_app_prueba_llm_pruebacorte",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -13078,6 +14349,18 @@
       "context": "import",
       "source_file": "src/app/prueba/llm/page.tsx",
       "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_page",
+      "target": "src_app_prueba_llm_loqueaprendi",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/page.tsx",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -13103,6 +14386,43 @@
       "source_file": "src/app/prueba/llm/PruebaCompletado.tsx",
       "source_location": "L4",
       "type_only": true,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "ref_react",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_eventos",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L4",
+      "type_only": true,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_llm_cliente",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -13384,6 +14704,18 @@
       "weight": 1.0
     },
     {
+      "source": "src_interfaz_monitorbus",
+      "target": "src_voz_escuchar",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/interfaz/MonitorBus.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
       "source": "src_interfaz_pantalla",
       "target": "ref_react",
       "relation": "imports_from",
@@ -13580,6 +14912,43 @@
       "weight": 1.0
     },
     {
+      "source": "src_llm_cliente_test",
+      "target": "ref_node_test",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_eventos",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L5",
+      "type_only": true,
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
       "source": "src_llm_completado",
       "target": "src_eventos",
       "relation": "imports_from",
@@ -13764,6 +15133,19 @@
       "context": "import",
       "source_file": "src/llm/controles-memoria.test.ts",
       "source_location": "L7",
+      "type_only": true,
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_eventos",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L9",
       "type_only": true,
       "weight": 1.0
     },
@@ -14637,6 +16019,31 @@
       "weight": 1.0
     },
     {
+      "source": "src_voz_escuchargroq",
+      "target": "src_voz_escuchar",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L6",
+      "type_only": true,
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_sonidos",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/voz/index.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
       "source": "src_voz_index",
       "target": "src_eventos",
       "relation": "imports_from",
@@ -14662,7 +16069,7 @@
     },
     {
       "source": "src_voz_index",
-      "target": "src_voz_hablar",
+      "target": "src_voz_escuchargroq",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -14674,7 +16081,7 @@
     },
     {
       "source": "src_voz_index",
-      "target": "src_voz_sonidos",
+      "target": "src_voz_hablar",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -15098,7 +16505,7 @@
       "confidence_score": 1.0,
       "context": "re-export",
       "source_file": "src/voz/index.ts",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0
     },
     {
@@ -15110,7 +16517,7 @@
       "confidence_score": 1.0,
       "context": "re-export",
       "source_file": "src/voz/index.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -15133,6 +16540,138 @@
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
       "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear",
+      "target": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_3_listas_de_frecuencia_de_palabras",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_4_bibliotecas_npm",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_5_velocidad_realista",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_6_correccion_de_errores",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L171",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_7_cosas_que_cambian_el_plan_del_issue",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L188",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_preguntas_abiertas_para_el_grill",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_decisiones_del_grill_cierran_la_fase_0",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L209",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_transformer_local_en_el_navegador_spike_descartado_para_hoy",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L217",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_1_disposicion_de_letras",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_2_prediccion_de_palabras",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_research_deletrear_research_path_deletrear_fase_0",
+      "target": "docs_research_deletrear_propuesta",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/research/deletrear.md",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -15631,6 +17170,39 @@
       "weight": 1.0
     },
     {
+      "source": "src_app_api_transcribir_route",
+      "target": "src_app_api_transcribir_route_segmento",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_api_transcribir_route",
+      "target": "src_app_api_transcribir_route_get",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_api_transcribir_route",
+      "target": "src_app_api_transcribir_route_post",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/api/transcribir/route.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
       "source": "src_app_api_urgencia_route",
       "target": "src_app_api_urgencia_route_ntfy",
       "relation": "contains",
@@ -15792,7 +17364,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -15803,7 +17375,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L24",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -15814,7 +17386,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -15825,7 +17397,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/prueba/llm/page.tsx",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -15859,6 +17431,105 @@
       "confidence_score": 1.0,
       "source_file": "src/app/prueba/llm/PruebaCompletado.tsx",
       "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_turnos_seguidos",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_ms",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L130",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_estado",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_medicion",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_esperar",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte_pedir",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte_turnosseguidos",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte",
+      "target": "src_app_prueba_llm_pruebacorte_pruebacorte_letrasrapidas",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -15990,7 +17661,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/eventos.ts",
-      "source_location": "L50",
+      "source_location": "L52",
       "weight": 1.0
     },
     {
@@ -16001,7 +17672,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/eventos.ts",
-      "source_location": "L52",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -16012,7 +17683,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/eventos.ts",
-      "source_location": "L54",
+      "source_location": "L56",
       "weight": 1.0
     },
     {
@@ -16056,7 +17727,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/interfaz/MonitorBus.tsx",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -16067,7 +17738,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/interfaz/MonitorBus.tsx",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -16248,13 +17919,35 @@
     },
     {
       "source": "src_llm_cliente",
-      "target": "src_llm_cliente_completarfrase",
+      "target": "src_llm_cliente_pedidocancelado",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/llm/cliente.ts",
-      "source_location": "L21",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente",
+      "target": "src_llm_cliente_espedidocancelado",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente",
+      "target": "src_llm_cliente_esabortado",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -16265,7 +17958,73 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/llm/cliente.ts",
-      "source_location": "L6",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente",
+      "target": "src_llm_cliente_completarfrase",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente",
+      "target": "src_llm_cliente_pedircompletado",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_test_llamadas",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_test_pedido",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_test_opciones",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_cliente_test",
+      "target": "src_llm_cliente_test_llamada",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.test.ts",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -16486,6 +18245,61 @@
       "confidence_score": 1.0,
       "source_file": "src/llm/esquema.ts",
       "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_llm_medir_latencias_turnos",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_llm_medir_latencias_post",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_llm_medir_latencias_pedido",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_llm_medir_latencias_mediana",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "src_llm_medir_latencias",
+      "target": "src_llm_medir_latencias_main",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/medir-latencias.ts",
+      "source_location": "L51",
       "weight": 1.0
     },
     {
@@ -18327,17 +20141,6 @@
     },
     {
       "source": "src_nucleo_reductor_test",
-      "target": "src_nucleo_reductor_test_despuesdedecirsi",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L275",
-      "weight": 1.0
-    },
-    {
-      "source": "src_nucleo_reductor_test",
       "target": "src_nucleo_reductor_test_decires",
       "relation": "contains",
       "_origin": "ast",
@@ -18349,13 +20152,13 @@
     },
     {
       "source": "src_nucleo_reductor_test",
-      "target": "src_nucleo_reductor_test_enurgencia",
+      "target": "src_nucleo_reductor_test_despuesdedecirsi",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L310",
+      "source_location": "L306",
       "weight": 1.0
     },
     {
@@ -18371,13 +20174,24 @@
     },
     {
       "source": "src_nucleo_reductor_test",
+      "target": "src_nucleo_reductor_test_enurgencia",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/nucleo/reductor.test.ts",
+      "source_location": "L341",
+      "weight": 1.0
+    },
+    {
+      "source": "src_nucleo_reductor_test",
       "target": "src_nucleo_reductor_test_fragmentoleido",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/nucleo/reductor.test.ts",
-      "source_location": "L351",
+      "source_location": "L382",
       "weight": 1.0
     },
     {
@@ -18608,7 +20422,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/escuchar.ts",
-      "source_location": "L35",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -18619,29 +20433,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/escuchar.ts",
-      "source_location": "L39",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_escuchar",
-      "target": "src_voz_escuchar_errores_fatales",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L47",
-      "weight": 1.0
-    },
-    {
-      "source": "src_voz_escuchar",
-      "target": "src_voz_escuchar_crearescucha",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/voz/escuchar.ts",
-      "source_location": "L49",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -18653,6 +20445,28 @@
       "confidence_score": 1.0,
       "source_file": "src/voz/escuchar.ts",
       "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchar",
+      "target": "src_voz_escuchar_errores_fatales",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchar",
+      "target": "src_voz_escuchar_crearescucha",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escuchar.ts",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -18696,7 +20510,106 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/escuchar.ts",
-      "source_location": "L80",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq",
+      "target": "src_voz_escuchargroq_awav",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq",
+      "target": "src_voz_escuchargroq_groqdisponible",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq",
+      "target": "src_voz_escuchargroq_crearescuchagroq",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq",
+      "target": "src_voz_escuchargroq_opcionesgroq",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq",
+      "target": "src_voz_escuchargroq_crearescuchagroq_cerrarfrase",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq",
+      "target": "src_voz_escuchargroq_crearescuchagroq_transcribir",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq",
+      "target": "src_voz_escuchargroq_crearescuchagroq_descartar",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq",
+      "target": "src_voz_escuchargroq_crearescuchagroq_preparar",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_escuchargroq_crearescuchagroq",
+      "target": "src_voz_escuchargroq_crearescuchagroq_procesar",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/escucharGroq.ts",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -18778,13 +20691,35 @@
     },
     {
       "source": "src_voz_index",
+      "target": "src_voz_index_crearescuchaconmotor",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/index.ts",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
+      "target": "src_voz_index_motor",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/voz/index.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_voz_index",
       "target": "src_voz_index_mensajeurgencia",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L134",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -18795,7 +20730,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L141",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -18806,7 +20741,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L17",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -18817,7 +20752,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L26",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -18828,7 +20763,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L36",
+      "source_location": "L43",
       "weight": 1.0
     },
     {
@@ -18839,7 +20774,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L38",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
@@ -18850,7 +20785,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/voz/index.ts",
-      "source_location": "L55",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -19195,6 +21130,17 @@
       "weight": 1.0
     },
     {
+      "source": "src_llm_cliente_pedidocancelado",
+      "target": "src_llm_cliente_pedidocancelado_constructor",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/llm/cliente.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
       "source": "src_llm_memoria_errormemoria",
       "target": "src_llm_memoria_errormemoria_constructor",
       "relation": "method",
@@ -19238,6 +21184,18 @@
       "context": "argument",
       "source_file": "src/app/api/memoria/route.ts",
       "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacorte_pruebacorte_completar",
+      "target": "src_llm_medir_latencias_pedido",
+      "relation": "indirect_call",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "context": "argument",
+      "source_file": "src/app/prueba/llm/PruebaCorte.tsx",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -19309,7 +21267,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/voz/escuchar.ts",
-      "source_location": "L117",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -19321,7 +21279,19 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/voz/escuchar.ts",
-      "source_location": "L130",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_prueba_llm_pruebacompletado_pruebacompletado_completar",
+      "target": "src_llm_medir_latencias_pedido",
+      "relation": "indirect_call",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "context": "collection",
+      "source_file": "src/app/prueba/llm/PruebaCompletado.tsx",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -19373,7 +21343,7 @@
       "weight": 1.0
     },
     {
-      "source": "src_voz_index_iniciarvoz",
+      "source": "src_voz_index_crearescuchaconmotor",
       "target": "src_voz_index_esperafindeturno",
       "relation": "indirect_call",
       "_origin": "ast",
@@ -19381,7 +21351,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "src/voz/index.ts",
-      "source_location": "L45",
+      "source_location": "L146",
       "weight": 1.0
     },
     {
@@ -21426,5 +23396,5 @@
       "source_file": "docs/research/nucleo-interfaz.md"
     }
   ],
-  "built_at_commit": "a7b1d03a80bb76c51d435d57a3c1fc5868332525"
+  "built_at_commit": "40fd69ee33b5167713022f3bdbdc20dd2f85cdb6"
 }

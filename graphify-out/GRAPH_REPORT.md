@@ -1,31 +1,31 @@
 # Graph Report - Twin-Garrote  (2026-11-07)
 
 ## Corpus Check
-- 81 files · ~50,982 words
+- 87 files · ~60,165 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 3 file(s) not represented in the graph (top: (none) 1, .ico 1, .css 1)
 
 ## Summary
-- 583 nodes · 1216 edges · 29 communities (24 shown, 3 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 44 edges (avg confidence: 0.85)
+- 640 nodes · 1327 edges · 36 communities (30 shown, 4 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 46 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a7b1d03a`
+- Built from commit: `40fd69ee`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Research: path llm
-- voz/index.ts
+- iniciarVoz
 - reductor.ts
 - package.json
 - proveedores.ts
 - app/page.tsx
 - eventos.ts
 - Research: path voz
-- memoria.test.ts
 - llm/index.ts
+- memoria.test.ts
 - memoria.ts
 - opciones.ts
 - compilerOptions
@@ -43,30 +43,37 @@
 - Research: path nucleo-interfaz
 - ADR 0001 Memoria por usuario
 - Agente de memoria
+- PruebaCorte.tsx
+- escuchar.ts
+- crearEscuchaGroq
+- Research: path deletrear (Fase 0)
+- voz/index.ts
+- sonidos.ts
+- transcribir/route.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `GLOSSARY.md (Parpadeo)` - 26 edges
-2. `iniciarVoz()` - 23 edges
+2. `iniciarVoz()` - 22 edges
 3. `reducir()` - 21 edges
-4. `LineaHistorial` - 19 edges
+4. `LineaHistorial` - 20 edges
 5. `Research: path llm` - 18 edges
 6. `Research: onboarding, aprendizaje y memoria` - 18 edges
 7. `compilerOptions` - 17 edges
 8. `Research: path voz` - 17 edges
-9. `react` - 14 edges
-10. `PedidoOpciones` - 13 edges
+9. `PedidoOpciones` - 16 edges
+10. `react` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `TD Snap QuickFires` --semantically_similar_to--> `Opciones fijas`  [EXTRACTED] [semantically similar]
-  docs/research/nucleo-interfaz.md → GLOSSARY.md
-- `renderHuella()` --implements--> `Huella`  [INFERRED]
-  docs/research/llm-onboarding-memoria.md → GLOSSARY.md
-- `Barrido lineal 1,2 s ajustable` --implements--> `Barrido`  [INFERRED]
   docs/research/nucleo-interfaz.md → GLOSSARY.md
 - `I, Robot? (autoetnografia AAC 2025)` --rationale_for--> `Cercania`  [INFERRED]
   docs/research/llm.md → GLOSSARY.md
 - `SocializeChat (cercania + memoria personal)` --rationale_for--> `Cercania`  [INFERRED]
   docs/research/llm.md → GLOSSARY.md
+- `Orden de opciones por probabilidad` --rationale_for--> `Opcion`  [INFERRED]
+  docs/research/nucleo-interfaz.md → GLOSSARY.md
+- `renderHuella()` --implements--> `Huella`  [INFERRED]
+  docs/research/llm-onboarding-memoria.md → GLOSSARY.md
 
 ## Import Cycles
 - None detected.
@@ -76,55 +83,55 @@
 - **Ciclo half-duplex: aviso, habla, relanzar escucha** — glossary_aviso, docs_adr_0002_voz_half_duplex_half_duplex, docs_research_voz_web_speech_api, docs_research_voz_speech_synthesis, docs_research_voz_relanzar_en_onend, docs_research_voz_chrome_sin_cancelacion_eco [INFERRED 0.85]
 - **Seleccion por barrido y parpadeo** — glossary_barrido, glossary_parpadeo_largo, glossary_pausa_del_barrido, glossary_gesto_de_urgencia, docs_research_nucleo_interfaz_congelar_con_ojos_cerrados, docs_research_nucleo_interfaz_barrido_lineal [INFERRED 0.85]
 
-## Communities (29 total, 3 thin omitted)
+## Communities (36 total, 4 thin omitted)
 
 ### Community 0 - "Research: path llm"
 Cohesion: 0.16
 Nodes (18): Research: path llm, claude -p, Gemini Flash free tier, Groq (llama-3.3-70b, structured outputs), I, Robot? (autoetnografia AAC 2025), Propuesta memoria en tres capas (perfil, estilo, hechos), Research: onboarding, aprendizaje y memoria, Generative Agents (Park et al. 2023) (+10 more)
 
-### Community 1 - "voz/index.ts"
-Cohesion: 0.07
-Nodes (47): Prueba(), CampoTurno(), anotarEnCurso(), anotarLinea(), contextoCharla(), lineas, Alternativa, constructor() (+39 more)
+### Community 1 - "iniciarVoz"
+Cohesion: 0.22
+Nodes (17): Prueba(), callar(), cargarVoces(), elegirVoz(), hablar(), PREFERIDAS_LOCAL, PREFERIDAS_RED, voces (+9 more)
 
 ### Community 2 - "reductor.ts"
 Cohesion: 0.07
-Nodes (52): ACUMULADO_VENCE_MS, CONFIRMACION_FALSA_ALARMA_MS, crearNucleo(), despachar(), ejecutar(), leer(), reiniciarTick(), GESTO_URGENCIA_MS (+44 more)
+Nodes (54): Opcion, Props, ACUMULADO_VENCE_MS, CONFIRMACION_FALSA_ALARMA_MS, crearNucleo(), despachar(), ejecutar(), leer() (+46 more)
 
 ### Community 3 - "package.json"
 Cohesion: 0.04
 Nodes (42): nextConfig, dependencies, ai, @anthropic-ai/sdk, @google/genai, groq-sdk, @mediapipe/tasks-vision, next (+34 more)
 
 ### Community 4 - "proveedores.ts"
-Cohesion: 0.12
-Nodes (19): ai, @anthropic-ai/sdk, completar, esPedido(), POST(), proveedor, esPedido(), { generarOpciones } (+11 more)
+Cohesion: 0.11
+Nodes (22): ai, @anthropic-ai/sdk, ref_node_test, completar, esPedido(), POST(), proveedor, esPedido() (+14 more)
 
 ### Community 5 - "app/page.tsx"
-Cohesion: 0.11
-Nodes (22): react, Conversacion(), Inicio(), Prueba(), Conversacion(), Simulador(), bus, DebugNucleo() (+14 more)
+Cohesion: 0.12
+Nodes (18): react, Conversacion(), Prueba(), Conversacion(), Simulador(), DebugNucleo(), AVISO_CUADRANTE, CeldaProps (+10 more)
 
 ### Community 6 - "eventos.ts"
-Cohesion: 0.09
-Nodes (21): fecha(), LoQueAprendi(), cerrar(), enviar(), Medicion, Prueba(), Respuesta, TURNOS_DE_PRUEBA (+13 more)
+Cohesion: 0.07
+Nodes (38): almacen, CERCANIAS, esLinea(), GET(), memoria, POST(), proveedor, fecha() (+30 more)
 
 ### Community 7 - "Research: path voz"
 Cohesion: 0.12
 Nodes (26): ADR 0002 Voz half-duplex, Reconocimiento de Chrome como base y fallback permanente, Half-duplex (abort() durante aviso y habla), Sin barge-in, Message banking (BCH, Team Gleason), Modelo de estados (escuchando, pensando, opciones, sinConexion, hablando...), Research: path voz, AssemblyAI streaming con speaker_labels (+18 more)
 
-### Community 8 - "memoria.test.ts"
-Cohesion: 0.14
-Nodes (16): ref_node_os, ref_node_path, AlmacenEnMemoria, CARPETA_DATOS, crearAlmacenEnArchivos(), memoriaVacia(), cerrada(), despues() (+8 more)
+### Community 8 - "llm/index.ts"
+Cohesion: 0.16
+Nodes (15): ref_node_path, AlmacenEnMemoria, CARPETA_DATOS, crearAlmacenEnArchivos(), memoriaVacia(), DependenciasCompletado, HechosListados, ActualizarMemoria (+7 more)
 
-### Community 9 - "llm/index.ts"
-Cohesion: 0.21
-Nodes (15): almacen, CERCANIAS, esLinea(), GET(), memoria, POST(), proveedor, cerrarConversacion() (+7 more)
+### Community 9 - "memoria.test.ts"
+Cohesion: 0.19
+Nodes (11): ref_node_os, crearDisparadorMemoria(), correr(), disparar(), crearOpcionesConMemoria(), cerrada(), despues(), generar() (+3 more)
 
 ### Community 10 - "memoria.ts"
-Cohesion: 0.15
-Nodes (20): Accion, ACCIONES, ActualizarMemoria, Candidato, crearAgenteMemoria(), DependenciasMemoria, ErrorMemoria, interpretar() (+12 more)
+Cohesion: 0.17
+Nodes (18): Accion, ACCIONES, Candidato, crearAgenteMemoria(), ErrorMemoria, interpretar(), nombreUsuario(), normalizar() (+10 more)
 
 ### Community 11 - "opciones.ts"
-Cohesion: 0.11
-Nodes (25): sumarEjemplos(), actualizarConversacion(), crearOpciones(), DependenciasOpciones, Deteccion, detectarConversacion(), ErrorOpciones, GenerarOpciones (+17 more)
+Cohesion: 0.13
+Nodes (21): Intencion, sumarEjemplos(), actualizarConversacion(), crearOpciones(), Deteccion, detectarConversacion(), ErrorOpciones, hechosParaPrompt() (+13 more)
 
 ### Community 12 - "compilerOptions"
 Cohesion: 0.10
@@ -136,15 +143,15 @@ Nodes (14): Next.js 16 breaking changes rule, src/eventos.ts contrato compartido
 
 ### Community 14 - "opciones.test.ts"
 Cohesion: 0.15
-Nodes (10): crearAlmacenEnMemoria(), armar(), CUATRO, guionado(), T0, CON_TURNO, crearProveedorFalso(), SIN_TURNO (+2 more)
+Nodes (7): armar(), CUATRO, guionado(), T0, CON_TURNO, SIN_TURNO, ConversacionCerrada
 
 ### Community 15 - "completado.ts"
-Cohesion: 0.22
-Nodes (13): ref_node_test, CompletarFrase, crearCompletado(), DependenciasCompletado, hechosParaCompletado(), interpretar(), normalizar(), promptSistema() (+5 more)
+Cohesion: 0.25
+Nodes (12): crearAlmacenEnMemoria(), CompletarFrase, crearCompletado(), hechosParaCompletado(), interpretar(), normalizar(), promptSistema(), renderLinea() (+4 more)
 
 ### Community 16 - "llm/tipos.ts"
-Cohesion: 0.20
-Nodes (10): Hechos, ORIGEN, Cercania, LineaHistorial, historial, EjemploEstilo, Hecho, OrigenHecho (+2 more)
+Cohesion: 0.25
+Nodes (7): ConversacionActual, EjemploEstilo, OrigenHecho, Registro, ResultadoOpciones, ResumenConversacion, SalidaProveedor
 
 ### Community 17 - "urgencia/route.ts"
 Cohesion: 0.83
@@ -152,7 +159,7 @@ Nodes (3): ntfy(), POST(), telegram()
 
 ### Community 20 - "correr.ts"
 Cohesion: 0.07
-Nodes (40): esLinea(), POST(), Caso, CASOS, ROBERTO_DALE, ROBERTO_FRIO, ROBERTO_LAURA, enTandas() (+32 more)
+Nodes (42): esLinea(), POST(), Caso, CASOS, ROBERTO_DALE, ROBERTO_FRIO, ROBERTO_LAURA, enTandas() (+34 more)
 
 ### Community 24 - "Huella"
 Cohesion: 0.18
@@ -174,25 +181,49 @@ Nodes (8): ADR 0001 Memoria por usuario, .data/ storage en servidor, Reglas del 
 Cohesion: 0.29
 Nodes (8): memoria.json (hechos aprendidos), Extraer de la conversacion cruda, no del resumen, Hibrido JSON en disco + markdown en prompt, Mem0 (ADD/UPDATE/DELETE/NOOP), Multi-Session Chat (Xu et al. 2022), Agente de memoria, Hecho, Memoria corta
 
+### Community 29 - "PruebaCorte.tsx"
+Cohesion: 0.16
+Nodes (18): esperar(), Estado, Medicion, ms(), PruebaCorte(), completar(), letrasRapidas(), pedir() (+10 more)
+
+### Community 30 - "escuchar.ts"
+Cohesion: 0.12
+Nodes (14): Inicio(), Linea, MonitorBus(), Alternativa, constructor(), crearEscucha(), depuracionEscucha, ERRORES_FATALES (+6 more)
+
+### Community 31 - "crearEscuchaGroq"
+Cohesion: 0.20
+Nodes (11): Escucha, aWav(), crearEscuchaGroq(), cerrarFrase(), preparar(), procesar(), transcribir(), groqDisponible() (+3 more)
+
+### Community 32 - "Research: path deletrear (Fase 0)"
+Cohesion: 0.15
+Nodes (12): 1. Disposicion de letras, 2. Prediccion de palabras, 3. Listas de frecuencia de palabras, 4. Bibliotecas npm, 5. Velocidad realista, 6. Correccion de errores, 7. Cosas que cambian el plan del issue, Decisiones del grill (cierran la Fase 0) (+4 more)
+
+### Community 33 - "voz/index.ts"
+Cohesion: 0.27
+Nodes (9): bus, CampoTurno(), anotarEnCurso(), anotarLinea(), contextoCharla(), lineas, ADR-0002, cerrarTurno() (+1 more)
+
+### Community 34 - "sonidos.ts"
+Cohesion: 0.38
+Nodes (9): activos, campana(), ctx(), esperar(), PARCIALES, salidaCampana(), sonarAlarma(), sonarAviso() (+1 more)
+
 ## Knowledge Gaps
-- **169 isolated node(s):** `eslintConfig`, `nextConfig`, `name`, `version`, `private` (+164 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 211 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **187 isolated node(s):** `eslintConfig`, `nextConfig`, `name`, `version`, `private` (+182 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 235 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `react` connect `app/page.tsx` to `llm/tipos.ts`, `voz/index.ts`, `package.json`, `eventos.ts`?**
-  _High betweenness centrality (0.101) - this node is a cross-community bridge._
-- **Why does `LineaHistorial` connect `llm/tipos.ts` to `voz/index.ts`, `reductor.ts`, `app/page.tsx`, `eventos.ts`, `memoria.test.ts`, `llm/index.ts`, `memoria.ts`, `opciones.ts`, `completado.ts`, `correr.ts`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Why does `react` connect `app/page.tsx` to `iniciarVoz`, `reductor.ts`, `package.json`, `voz/index.ts`, `eventos.ts`, `PruebaCorte.tsx`, `escuchar.ts`?**
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._
+- **Why does `LineaHistorial` connect `eventos.ts` to `voz/index.ts`, `reductor.ts`, `app/page.tsx`, `memoria.test.ts`, `memoria.ts`, `opciones.ts`, `completado.ts`, `llm/tipos.ts`, `correr.ts`?**
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+- **Why does `PedidoOpciones` connect `eventos.ts` to `reductor.ts`, `proveedores.ts`, `opciones.ts`, `opciones.test.ts`, `completado.ts`, `PruebaCorte.tsx`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
 - **What connects `eslintConfig`, `nextConfig`, `name` to the rest of the system?**
-  _169 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `voz/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.07320024198427103 - nodes in this community are weakly interconnected._
+  _187 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `reductor.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.07062146892655367 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06875 - nodes in this community are weakly interconnected._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
 - **Should `proveedores.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.12307692307692308 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11330049261083744 - nodes in this community are weakly interconnected._

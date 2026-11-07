@@ -1,14 +1,14 @@
 {
   "0": "Research: path llm",
-  "1": "voz/index.ts",
+  "1": "iniciarVoz",
   "2": "reductor.ts",
   "3": "package.json",
   "4": "proveedores.ts",
   "5": "app/page.tsx",
   "6": "eventos.ts",
   "7": "Research: path voz",
-  "8": "memoria.test.ts",
-  "9": "llm/index.ts",
+  "8": "llm/index.ts",
+  "9": "memoria.test.ts",
   "10": "memoria.ts",
   "11": "opciones.ts",
   "12": "compilerOptions",
@@ -27,5 +27,12 @@
   "25": "GLOSSARY.md (Parpadeo)",
   "26": "Research: path nucleo-interfaz",
   "27": "ADR 0001 Memoria por usuario",
-  "28": "Agente de memoria"
+  "28": "Agente de memoria",
+  "29": "PruebaCorte.tsx",
+  "30": "escuchar.ts",
+  "31": "crearEscuchaGroq",
+  "32": "Research: path deletrear (Fase 0)",
+  "33": "voz/index.ts",
+  "34": "sonidos.ts",
+  "35": "transcribir/route.ts"
 }
